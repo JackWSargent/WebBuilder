@@ -244,27 +244,24 @@ const App: React.FC = () => {
   const renderLayers = (children?: any) => {
     let layersArray = layers.map(layer => {});
     layersArray = buildLayerOrder(layersArray);
-    let returnedArray = layersArray.map(layer => {
-      return (
-        <ListItem button key={layer.id} className={classes.layer}>
-          {renderActive(layer.active, layer.id)}
-          <Typography
-            variant="subtitle2"
-            component="div"
-            align="center"
-            style={{
-              color: "#fff",
-              marginTop: 0,
-              fontSize: "1.15rem",
-              marginLeft: 12 * layer.nestedLevel
-            }}
-          >
-            {layer.name}
-          </Typography>
-        </ListItem>
-      );
+    return layersArray.map(layer => {
+      <ListItem button key={layer.id} className={classes.layer}>
+        {renderActive(layer.active, layer.id)}
+        <Typography
+          variant="subtitle2"
+          component="div"
+          align="center"
+          style={{
+            color: "#fff",
+            marginTop: 0,
+            fontSize: "1.15rem",
+            marginLeft: 12 * layer.nestedLevel
+          }}
+        >
+          {layer.name}
+        </Typography>
+      </ListItem>;
     });
-    return returnedArray;
   };
   React.useEffect(() => {}, [layers]);
 
