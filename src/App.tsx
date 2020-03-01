@@ -1,7 +1,7 @@
 import * as React from "react";
-import "./App.css";
-/* eslint-disable */
 
+/* eslint-disable */
+import "./App.css";
 // import Layer from "./components/layer";
 import clsx from "clsx";
 import {
@@ -28,7 +28,7 @@ import InboxIcon from "@material-ui/icons/MoveToInbox";
 import MailIcon from "@material-ui/icons/Mail";
 import CheckBoxIcon from "@material-ui/icons/CheckBox";
 import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
-import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from "constants";
+
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -151,7 +151,7 @@ const App: React.FC = () => {
 
   const handleActiveChange = id => {
     // TODO: make work with nested components
-    console.log("changing: " + id);
+    // console.log("changing: " + id);
     const newLayers = layers.map(layer => {
       // if this is the id we care about, change the last entry
       if (layer.id === id) {
@@ -175,61 +175,82 @@ const App: React.FC = () => {
         <CheckBoxIcon
           style={{ color: "#fff" }}
           onClick={() => handleActiveChange(id)}
-        ></CheckBoxIcon>
+        />
       );
     } else {
       return (
         <CheckBoxOutlineBlankIcon
           onClick={() => handleActiveChange(id)}
           style={{ color: "#fff" }}
-        ></CheckBoxOutlineBlankIcon>
+        />
       );
     }
   };
 
-  type Props = {
-    id?: number;
-    name?: string;
-    type?: string;
-    active?: boolean;
-    children?: Array<number>;
-    parent?: number;
-    nestedLevel?: number;
-  };
+  // type Props = {
+  //   id?: number;
+  //   name?: string;
+  //   type?: string;
+  //   active?: boolean;
+  //   children?: Array<number>;
+  //   parent?: number;
+  //   nestedLevel?: number;
+  // };
 
-  const LayerComponent: React.FC<Props> = props => {
-    const { id, active, name, nestedLevel } = props;
-    return (
-      <ListItem button key={id} className={classes.layer}>
-        {renderActive(active, id)}
-        <Typography
-          variant="subtitle2"
-          component="div"
-          align="center"
-          style={{
-            color: "#fff",
-            marginTop: 0,
-            fontSize: "1.15rem",
-            marginLeft: 12 * nestedLevel
-          }}
-        >
-          {name}
-        </Typography>
-      </ListItem>
-    );
-  };
+  // const LayerComponent: React.FC<Props> = props => {
+  //   const { id, active, name, nestedLevel } = props;
+  //   return (
+  //     <ListItem button key={id} className={classes.layer}>
+  //       {renderActive(active, id)}
+  //       <Typography
+  //         variant="subtitle2"
+  //         component="div"
+  //         align="center"
+  //         style={{
+  //           color: "#fff",
+  //           marginTop: 0,
+  //           fontSize: "1.15rem",
+  //           marginLeft: 12 * nestedLevel
+  //         }}
+  //       >
+  //         {name}
+  //       </Typography>
+  //     </ListItem>
+  //   );
+  // };
 
   const buildLayerOrder = layersArray => {
     let areMoreComponents = true;
     let newArray = [];
+    // console.log(layersArray);
+    // console.log(layersArray[0].row)
     for (let i = 0; areMoreComponents; i++) {
-      if (layersArray[i].parent && layersArray[i].row == i) {
+      if (!layersArray[i]) {
+        areMoreComponents = false;
+        console.log("returning new array");
+        return newArray;
+      }
+      // console.log(i);
+      // console.log(layersArray[i]);
+      // console.log(layersArray[i].row);
+      if (layersArray[i].row == i && !newArray.includes(layersArray[i])) {
+        // console.log("pushing a root");
         newArray.push(layersArray[i]);
-        if (layersArray[i].children.length > 0) {
+        if (
+          layersArray[i].children !== null &&
+          layersArray[i].children.length > 0
+        ) {
           for (let d = 0; d < layersArray[i].children.length; d++) {
-            let child =
-              layersArray[layersArray.findIndex(layersArray[i].children[d])];
-            newArray.push(child);
+            // console.log(d)
+
+            let child = layersArray.filter(
+              layer => layersArray[i].children[d] == layer.id
+            );
+
+            // console.log("line 236")
+            // console.log(child)
+            // console.log("pushing a child");
+            newArray.push(child[0]);
           }
         }
       } else {
@@ -241,29 +262,66 @@ const App: React.FC = () => {
     return newArray;
   };
 
-  const renderLayers = (children?: any) => {
-    let layersArray = layers.map(layer => {});
-    layersArray = buildLayerOrder(layersArray);
-    return layersArray.map(layer => {
-      <ListItem button key={layer.id} className={classes.layer}>
-        {renderActive(layer.active, layer.id)}
-        <Typography
-          variant="subtitle2"
-          component="div"
-          align="center"
-          style={{
-            color: "#fff",
-            marginTop: 0,
-            fontSize: "1.15rem",
-            marginLeft: 12 * layer.nestedLevel
-          }}
-        >
-          {layer.name}
-        </Typography>
-      </ListItem>;
+  const createLayers = layers => {
+    let layersArray = layers.map(layer => {
+      return layer;
     });
+    return layersArray;
   };
-  React.useEffect(() => {}, [layers]);
+
+  const renderLayers = () => {
+    let layersArray = createLayers(layers);
+    // console.log(layersArray);
+    layersArray = buildLayerOrder(layersArray);
+    // console.log("line 250");
+    // console.log(layersArray);
+    // setLayers(layersArray);
+    if (layersArray) {
+      // console.log("rendering layers");
+      return layersArray.map(layer => {
+        return (
+          <ListItem button key={layer.id} className={classes.layer}>
+            <div style={{ marginLeft: 12 * layer.nestedLevel }}></div>
+            {renderActive(layer.active, layer.id)}
+            <Typography
+              variant="subtitle2"
+              component="div"
+              align="center"
+              style={{
+                color: "#fff",
+                marginTop: 0,
+                fontSize: "1.15rem"
+                // marginLeft: 12 * layer.nestedLevel
+              }}
+            >
+              {layer.name}
+            </Typography>
+          </ListItem>
+        );
+      });
+      // return (
+      //   <ListItem button key={layersArray[0].id} className={classes.layer}>
+      //     {renderActive(layersArray[0].active, layersArray[0].id)}
+      //     <Typography
+      //       variant="subtitle2"
+      //       component="div"
+      //       align="center"
+      //       style={{
+      //         color: "#fff",
+      //         marginTop: 0,
+      //         fontSize: "1.15rem",
+      //         marginLeft: 12 * layersArray[0].nestedLevel
+      //       }}
+      //     >
+      //       {layersArray[0].name}
+      //     </Typography>
+      //   </ListItem>
+      // );
+    } else {
+      console.log("missing layers array");
+    }
+  };
+  React.useEffect(() => {}, []);
 
   const handleDrawerOpen = () => {
     setOpen(true);
