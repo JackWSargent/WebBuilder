@@ -111,7 +111,7 @@ const App: React.FC = () => {
       name: "Container",
       type: "div",
       active: true,
-      children: [300, 400],
+      children: [300],
       parent: null,
       nestedLevel: 0,
       row: 0
@@ -131,7 +131,7 @@ const App: React.FC = () => {
       name: "Container",
       type: "div",
       active: true,
-      children: null,
+      children: [400],
       parent: 100,
       nestedLevel: 1,
       row: 0
@@ -142,8 +142,8 @@ const App: React.FC = () => {
       type: "div",
       active: true,
       children: null,
-      parent: 100,
-      nestedLevel: 1,
+      parent: 300,
+      nestedLevel: 2,
       row: 0
     }
   ]);
@@ -187,72 +187,139 @@ const App: React.FC = () => {
     }
   };
 
-  // type Props = {
-  //   id?: number;
-  //   name?: string;
-  //   type?: string;
-  //   active?: boolean;
-  //   children?: Array<number>;
-  //   parent?: number;
-  //   nestedLevel?: number;
-  // };
+  let hasMoreChildren = false;
+  let hasMoreSiblings = true;
+  let currentLayerIndex = 0;
 
-  // const LayerComponent: React.FC<Props> = props => {
-  //   const { id, active, name, nestedLevel } = props;
-  //   return (
-  //     <ListItem button key={id} className={classes.layer}>
-  //       {renderActive(active, id)}
-  //       <Typography
-  //         variant="subtitle2"
-  //         component="div"
-  //         align="center"
-  //         style={{
-  //           color: "#fff",
-  //           marginTop: 0,
-  //           fontSize: "1.15rem",
-  //           marginLeft: 12 * nestedLevel
-  //         }}
-  //       >
-  //         {name}
-  //       </Typography>
-  //     </ListItem>
-  //   );
-  // };
+  /*
+  check has more children
+
+  Check for a child{
+    push child
+    run function with new child index starting
+  } else {
+    set moreChildren to false
+  }
+
+
+  */
+
+  const runDownNestedLayers = (
+    row: number,
+    currentLayerIndex: number,
+    layersArray: Array<any>,
+    newArray: Array<any>,
+    hasMoreChildren: boolean
+  ): Array<any> => {
+    // console.log(
+    //   "row: " +
+    //     row +
+    //     " CurrentlayerIndex: " +
+    //     currentLayerIndex +
+    //     " layersArray.length: " +
+    //     layersArray.length +
+    //     " newArray length: " +
+    //     newArray.length +
+    //     " hasMoreChildren: " +
+    //     hasMoreChildren
+    // );
+    if (
+      layersArray[currentLayerIndex].children &&
+      layersArray[currentLayerIndex].row == row
+      // !newArray.includes(layersArray[currentLayerIndex])
+    ) {
+      // console.log("found child");
+      let child = layersArray.filter(
+        layer => layersArray[currentLayerIndex].children[0] == layer.id
+      );
+      child = child[0];
+      currentLayerIndex = layersArray.indexOf(child);
+      newArray.push(child);
+    } else {
+      // console.log("could not find child to push");
+    }
+
+    if (layersArray[currentLayerIndex].children == null) {
+      // console.log("Setting has more children false");
+      hasMoreChildren = false;
+      return newArray;
+    } else {
+      hasMoreChildren = true;
+      console.log("running again");
+      runDownNestedLayers(
+        row,
+        currentLayerIndex,
+        layersArray,
+        newArray,
+        hasMoreChildren
+      );
+    }
+
+    // return newArray;
+  };
 
   const buildLayerOrder = layersArray => {
     let areMoreComponents = true;
     let newArray = [];
-    // console.log(layersArray);
-    // console.log(layersArray[0].row)
+
+    /* First Step
+    1: Rendering the first root layer 
+      - Row 0
+      - Not inside newArray
+      - Cannot have a parent
+      Push layer to newArray
+      (False) return
+    2: Check for a child
+      - Row 0
+      - Not inside newArray
+      - Has parent of root layer (Optional)
+      Push layer to newArray
+      (False) Attempt to render the next root layer if possible || return
+    3: Continue checking for children (Run as many times as possible)
+      - Row 0 
+      - Not inside newArray
+      - Has parent of layer previously put inside of newArray (Optional)
+      Push layer to newArray
+      (False) Attempt to render the next sibling layer if possible || return
+    */
     for (let i = 0; areMoreComponents; i++) {
       if (!layersArray[i]) {
         areMoreComponents = false;
-        console.log("returning new array");
+        // console.log("returning new array");
         return newArray;
       }
-      // console.log(i);
-      // console.log(layersArray[i]);
-      // console.log(layersArray[i].row);
-      if (layersArray[i].row == i && !newArray.includes(layersArray[i])) {
-        // console.log("pushing a root");
+      let current = i;
+
+      // if(!runDownNestedLayers(layersArray, newArray)){
+      //   return newArray;
+      // }
+      // console.log(newArray);
+      if (
+        layersArray[i].row == i &&
+        !newArray.includes(layersArray[i]) &&
+        !layersArray.parent
+      ) {
         newArray.push(layersArray[i]);
-        if (
-          layersArray[i].children !== null &&
-          layersArray[i].children.length > 0
-        ) {
-          for (let d = 0; d < layersArray[i].children.length; d++) {
-            // console.log(d)
-
-            let child = layersArray.filter(
-              layer => layersArray[i].children[d] == layer.id
-            );
-
-            // console.log("line 236")
-            // console.log(child)
-            // console.log("pushing a child");
-            newArray.push(child[0]);
-          }
-        }
+        newArray.concat(
+          runDownNestedLayers(
+            i,
+            current,
+            layersArray,
+            newArray,
+            hasMoreChildren
+          )
+        );
+        // if (
+        //   layersArray[i].children !== null &&
+        //   layersArray[i].children.length > 0
+        // ) {
+        //   for (let d = 0; d < layersArray[i].children.length; d++) {
+        //     let child = layersArray.filter(
+        //       layer => layersArray[i].children[d] == layer.id
+        //     );
+        //     newArray.push(child[0]);
+        //   }
+        // }
       } else {
         if (newArray.length == layersArray.length) {
           areMoreComponents = false;
@@ -271,13 +338,9 @@ const App: React.FC = () => {
 
   const renderLayers = () => {
     let layersArray = createLayers(layers);
-    // console.log(layersArray);
     layersArray = buildLayerOrder(layersArray);
-    // console.log("line 250");
     // console.log(layersArray);
-    // setLayers(layersArray);
     if (layersArray) {
-      // console.log("rendering layers");
       return layersArray.map(layer => {
         return (
           <ListItem button key={layer.id} className={classes.layer}>
@@ -291,7 +354,6 @@ const App: React.FC = () => {
                 color: "#fff",
                 marginTop: 0,
                 fontSize: "1.15rem"
-                // marginLeft: 12 * layer.nestedLevel
               }}
             >
               {layer.name}
@@ -299,24 +361,6 @@ const App: React.FC = () => {
           </ListItem>
         );
       });
-      // return (
-      //   <ListItem button key={layersArray[0].id} className={classes.layer}>
-      //     {renderActive(layersArray[0].active, layersArray[0].id)}
-      //     <Typography
-      //       variant="subtitle2"
-      //       component="div"
-      //       align="center"
-      //       style={{
-      //         color: "#fff",
-      //         marginTop: 0,
-      //         fontSize: "1.15rem",
-      //         marginLeft: 12 * layersArray[0].nestedLevel
-      //       }}
-      //     >
-      //       {layersArray[0].name}
-      //     </Typography>
-      //   </ListItem>
-      // );
     } else {
       console.log("missing layers array");
     }
