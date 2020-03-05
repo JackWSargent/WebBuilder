@@ -1,7 +1,11 @@
 import * as React from "react";
 
 const Canvas: React.FC = () => {
-  return <></>;
+  return (
+    <div className="app">
+      <div>Text</div>
+    </div>
+  );
 };
 
 export default Canvas;
