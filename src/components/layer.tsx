@@ -195,7 +195,7 @@ const Layer: React.FC<Props> = props => {
             let newSelected = selected;
             newSelected.splice(idx, 1);
             setSelected(newSelected);
-          }
+          } //
         }
 
         return {
