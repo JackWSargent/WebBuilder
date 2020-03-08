@@ -168,7 +168,7 @@ const Layer: React.FC<Props> = props => {
   };
 
   const handleSelectedState = id => {
-    const newLayers = layers.map(layer => {
+    let newLayers = layers.map(layer => {
       // if this is the id we care about, change the last entry
       if (layer.id === id) {
         // spread everything in layer and just change its selected state
@@ -179,9 +179,9 @@ const Layer: React.FC<Props> = props => {
             newSelected = newSelected.concat(selected);
             setSelected(newSelected);
           } else {
-            // console.log("setting selected: " + id);
-            // console.log(!layer.selected);
-            setSelected([layer.id]);
+            let newSelected = [];
+            newSelected = newSelected.concat(layer.id);
+            setSelected(newSelected);
           }
         } else if (layer.selected) {
           //Already selected
@@ -190,10 +190,10 @@ const Layer: React.FC<Props> = props => {
             let newSelected = selected;
             newSelected.splice(idx, 1);
             setSelected(newSelected);
-          } else {
-            console.log("emptying selected");
+          } else if (selected.includes(selected.indexOf(id))) {
+            let idx = selected.indexOf(id);
             let newSelected = selected;
-            newSelected.splice(0, selected.length);
+            newSelected.splice(idx, 1);
             setSelected(newSelected);
           }
         }
@@ -212,7 +212,7 @@ const Layer: React.FC<Props> = props => {
   };
 
   let hasMoreChildren = false;
-  let hasMoreSiblings = true;
+  // let hasMoreSiblings = true;
   let currentLayerIndex = 0;
 
   const checkForSiblings = (
@@ -263,7 +263,7 @@ const Layer: React.FC<Props> = props => {
               // console.log("true");
             }
           }
-          hasMoreSiblings = false;
+          // hasMoreSiblings = false;
         }
       }
     }
@@ -411,7 +411,7 @@ const Layer: React.FC<Props> = props => {
     window.addEventListener("keydown", event => {
       if (event.keyCode === 17) {
         setCtrl(true);
-        console.log(true);
+        // console.log(true);
       }
     });
     window.addEventListener("keyup", event => {
