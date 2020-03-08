@@ -123,12 +123,10 @@ const Layer: React.FC<Props> = props => {
     props.startSetComponents(components);
   };
 
-  const [componentsState, setComponentsState] = React.useState(components);
-
   const classes = useStyles();
   const theme = useTheme();
   const [selected, setSelected] = React.useState([]);
-  const [layers, setLayers] = React.useState(componentsState);
+  const [layers, setLayers] = React.useState(components);
   const [open, setOpen] = React.useState(true);
   const [ctrl, setCtrl] = React.useState(false);
 
