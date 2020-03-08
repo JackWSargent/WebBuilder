@@ -9,6 +9,7 @@ import {
   createStyles
 } from "@material-ui/core/styles";
 import Drawer from "@material-ui/core/Drawer";
+import Grid from "@material-ui/core/Grid";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -24,9 +25,17 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import CheckBoxIcon from "@material-ui/icons/CheckBox";
 import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
-import { ListSubheader } from "@material-ui/core";
 
-const drawerWidth = 240;
+import { connect } from "react-redux";
+import { startSetComponents } from "../redux/actions/components";
+import { Components } from "../redux/types/actions";
+import { AppState } from "../redux/store/storeConfiguration";
+import { Dispatch, bindActionCreators } from "redux";
+import { AppActions } from "../redux/types/actions";
+import { ThunkDispatch } from "redux-thunk";
+
+let sortedLayers = [];
+let drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
@@ -103,114 +112,25 @@ const useStyles = makeStyles((theme: Theme) =>
     }
   })
 );
+interface LayerProps {}
 
-const Layer: React.FC = () => {
+type Props = LayerProps & LinkStateProps & LinkDispatchProps;
+
+const Layer: React.FC<Props> = props => {
+  const { components } = props;
+
+  const onSet = (components: Components[]) => {
+    props.startSetComponents(components);
+  };
+
+  const [componentsState, setComponentsState] = React.useState(components);
+
   const classes = useStyles();
   const theme = useTheme();
-  const [layersHasChanged, setLayersHasChanged] = React.useState(true);
   const [selected, setSelected] = React.useState([]);
-  const [layers, setLayers] = React.useState([
-    {
-      id: 100,
-      name: "Container",
-      type: "div",
-      selected: false,
-      active: true,
-      children: [300, 800],
-      parent: null,
-      nestedLevel: 0,
-      row: 0
-    },
-    {
-      id: 200,
-      name: "Container",
-      type: "div",
-      selected: false,
-      active: true,
-      children: [500, 600],
-      parent: null,
-      nestedLevel: 0,
-      row: 1
-    },
-    {
-      id: 300,
-      name: "Container",
-      type: "div",
-      selected: false,
-      active: true,
-      children: [400],
-      parent: 100,
-      nestedLevel: 1,
-      row: 0
-    },
-    {
-      id: 400,
-      name: "Container",
-      type: "div",
-      selected: false,
-      active: true,
-      children: null,
-      parent: 300,
-      nestedLevel: 2,
-      row: 0
-    },
-    {
-      id: 500,
-      name: "Container",
-      type: "div",
-      selected: false,
-      active: true,
-      children: null,
-      parent: 200,
-      nestedLevel: 1,
-      row: 1
-    },
-    {
-      id: 600,
-      name: "Container",
-      type: "div",
-      selected: false,
-      active: true,
-      children: [700],
-      parent: 200,
-      nestedLevel: 1,
-      row: 1
-    },
-    {
-      id: 700,
-      name: "Container",
-      type: "div",
-      selected: false,
-      active: true,
-      children: [900],
-      parent: 600,
-      nestedLevel: 2,
-      row: 1
-    },
-    {
-      id: 800,
-      name: "Container",
-      type: "div",
-      selected: false,
-      active: true,
-      children: null,
-      parent: 100,
-      nestedLevel: 1,
-      row: 0
-    },
-    {
-      id: 900,
-      name: "Container",
-      type: "div",
-      selected: false,
-      active: true,
-      children: null,
-      parent: 700,
-      nestedLevel: 3,
-      row: 1
-    }
-  ]);
+  const [layers, setLayers] = React.useState(componentsState);
   const [open, setOpen] = React.useState(true);
+  const [ctrl, setCtrl] = React.useState(false);
 
   const handleActiveChange = id => {
     // console.log("changing: " + id);
@@ -254,27 +174,39 @@ const Layer: React.FC = () => {
       // if this is the id we care about, change the last entry
       if (layer.id === id) {
         // spread everything in layer and just change its selected state
-        let currentLayer = layer;
         if (!layer.selected) {
-          let newSelected = [layer.id];
-          newSelected = newSelected.concat(selected);
-          setSelected(newSelected);
-        } else {
-          let idx = selected.indexOf(id);
-          let newSelected = selected;
-          newSelected.splice(idx, 1);
-          setSelected(newSelected);
-          return {
-            ...layer,
-            selected: !layer.selected
-          };
+          // Not Selected
+          if (ctrl) {
+            let newSelected = [layer.id];
+            newSelected = newSelected.concat(selected);
+            setSelected(newSelected);
+          } else {
+            // console.log("setting selected: " + id);
+            // console.log(!layer.selected);
+            setSelected([layer.id]);
+          }
+        } else if (layer.selected) {
+          //Already selected
+          if (ctrl) {
+            let idx = selected.indexOf(id);
+            let newSelected = selected;
+            newSelected.splice(idx, 1);
+            setSelected(newSelected);
+          } else {
+            console.log("emptying selected");
+            let newSelected = selected;
+            newSelected.splice(0, selected.length);
+            setSelected(newSelected);
+          }
         }
+
         return {
           ...layer,
           selected: !layer.selected
         };
       } else {
         // otherwise, return the unaltered layer
+        // console.log("Returning unaltered layer");
         return layer;
       }
     });
@@ -384,7 +316,8 @@ const Layer: React.FC = () => {
       layersArray[currentLayerIndex].children == null &&
       layersArray.length == newArray.length
     ) {
-      // console.log(newArray);
+      // console.log("components");
+      // console.log(components);
       return newArray;
     } else {
       hasMoreChildren = true;
@@ -435,12 +368,14 @@ const Layer: React.FC = () => {
     let layersArray = layers.map(layer => {
       return layer;
     });
+    onSet(layers);
     return layersArray;
   };
 
   const renderLayers = () => {
     let layersArray = createLayers(layers);
     layersArray = buildLayerOrder(layersArray);
+    sortedLayers = layersArray;
     if (layersArray) {
       return layersArray.map(layer => {
         return (
@@ -474,7 +409,19 @@ const Layer: React.FC = () => {
       console.log("missing layers");
     }
   };
-  React.useEffect(() => {}, [layers, selected]);
+  React.useEffect(() => {
+    window.addEventListener("keydown", event => {
+      if (event.keyCode === 17) {
+        setCtrl(true);
+        console.log(true);
+      }
+    });
+    window.addEventListener("keyup", event => {
+      if (event.keyCode === 17) {
+        setCtrl(false);
+      }
+    });
+  }, [event, layers, selected]);
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -507,9 +454,6 @@ const Layer: React.FC = () => {
             >
               <MenuIcon />
             </IconButton>
-            <Typography variant="h6" noWrap>
-              Components
-            </Typography>
           </Toolbar>
         </AppBar>
         <Drawer
@@ -521,15 +465,28 @@ const Layer: React.FC = () => {
             paper: classes.drawerPaper
           }}
         >
-          <div className={classes.drawerHeader}>
-            <IconButton className={classes.icon} onClick={handleDrawerClose}>
-              {theme.direction === "ltr" ? (
-                <ChevronLeftIcon />
-              ) : (
-                <ChevronRightIcon />
-              )}
-            </IconButton>
-          </div>
+          <Grid container>
+            <Grid item xs={8}>
+              <Typography variant="h6" noWrap style={{ lineHeight: "64px" }}>
+                Components
+              </Typography>
+            </Grid>
+            <Grid item xs={4}>
+              <div className={classes.drawerHeader}>
+                <IconButton
+                  className={classes.icon}
+                  onClick={handleDrawerClose}
+                >
+                  {theme.direction === "ltr" ? (
+                    <ChevronLeftIcon />
+                  ) : (
+                    <ChevronRightIcon />
+                  )}
+                </IconButton>
+              </div>
+            </Grid>
+          </Grid>
+
           <Divider className="Divider" />
           {renderLayers()}
           <Divider className="Divider" />
@@ -546,6 +503,26 @@ const Layer: React.FC = () => {
   );
 };
 
-export default Layer;
-// app --> layers(map to a layer component)
-// layer + canvas
+interface LinkStateProps {
+  components: Components[];
+}
+
+const mapStateToProps = (
+  state: AppState,
+  ownProps: LayerProps
+): LinkStateProps => ({
+  components: state.components
+});
+
+interface LinkDispatchProps {
+  startSetComponents: (components: Components[]) => void;
+}
+
+const mapDispatchToProps = (
+  dispatch: ThunkDispatch<any, any, AppActions>,
+  ownProps: LayerProps
+): LinkDispatchProps => ({
+  startSetComponents: bindActionCreators(startSetComponents, dispatch)
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Layer);

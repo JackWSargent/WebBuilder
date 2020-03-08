@@ -3,7 +3,8 @@ import * as React from "react";
 import "./App.css";
 import Layer from "./components/layer";
 import Canvas from "./components/canvas";
-
+import { Provider } from "react-redux";
+import { store } from "./redux/store/storeConfiguration";
 import {
   makeStyles,
   useTheme,
@@ -19,9 +20,11 @@ const App: React.FC = () => {
 
   /* eslint-enable */
   return (
-    <div className="App">
-      <Layer></Layer>
-    </div>
+    <Provider store={store}>
+      <div className="App">
+        <Layer></Layer>
+      </div>
+    </Provider>
   );
 };
 
