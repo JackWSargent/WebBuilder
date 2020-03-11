@@ -13,7 +13,7 @@ import Grid from "@material-ui/core/Grid";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
-import List from "@material-ui/core/List";
+// import List from "@material-ui/core/List";
 import Typography from "@material-ui/core/Typography";
 import Divider from "@material-ui/core/Divider";
 import IconButton from "@material-ui/core/IconButton";
@@ -21,11 +21,11 @@ import MenuIcon from "@material-ui/icons/Menu";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import ListItem from "@material-ui/core/ListItem";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
-import ListItemText from "@material-ui/core/ListItemText";
+// import ListItemIcon from "@material-ui/core/ListItemIcon";
+// import ListItemText from "@material-ui/core/ListItemText";
 import CheckBoxIcon from "@material-ui/icons/CheckBox";
 import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
-
+import CanvasStyle from "./canvasStyle";
 import { connect } from "react-redux";
 import { startSetComponents } from "../redux/actions/components";
 import { Components } from "../redux/types/actions";
@@ -109,6 +109,14 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     divider: {
       backgroundColor: "#fff"
+    },
+    marginNS: {
+      marginTop: "100%",
+      width: 400,
+      height: "100%",
+
+      backgroundColor: "#fff",
+      zIndex: 1000
     }
   })
 );
@@ -121,6 +129,7 @@ const Layer: React.FC<Props> = props => {
 
   const onSet = (components: Components[]) => {
     props.startSetComponents(components);
+    console.log(components);
   };
 
   const classes = useStyles();
@@ -488,7 +497,9 @@ const Layer: React.FC<Props> = props => {
           <Divider className="Divider" />
           {renderLayers()}
           <Divider className="Divider" />
+          <CanvasStyle />
         </Drawer>
+
         <main
           className={clsx(classes.content, {
             [classes.contentShift]: open

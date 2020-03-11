@@ -1,11 +1,5 @@
 import { Components } from "../types/actions";
-import {
-  ComponentsActionTypes,
-  // ADD_EXPENSE,
-  // REMOVE_EXPENSE,
-  // EDIT_COMPONENTS,
-  SET_COMPONENTS
-} from "../types/actions";
+import { ComponentsActionTypes, SET_COMPONENTS } from "../types/actions";
 
 const componentsReducerDefaultState: Components[] = [
   {

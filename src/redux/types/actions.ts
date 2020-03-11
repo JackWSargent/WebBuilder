@@ -9,15 +9,34 @@ export interface Components {
   children?: number[];
   selected: boolean;
 }
-// action strings
-// export const ADD_EXPENSE = "ADD_EXPENSE";
-// export const EDIT_COMPONENTS = "EDIT_COMPONENTS";
-// export const REMOVE_EXPENSE = "REMOVE_EXPENSE";
+
+export interface CanvasStyling {
+  fontSize?: number;
+  boxSizing?: string;
+}
+
+export interface Canvas {
+  drawerOpen?: boolean;
+  drawerLeftMargin?: number;
+}
+
 export const SET_COMPONENTS = "SET_COMPONENTS";
+export const SET_CANVAS_STYLING = "SET_CANVAS_STYLING";
+export const SET_CANVAS = "SET_CANVAS";
 
 export interface SetComponentsAction {
   type: typeof SET_COMPONENTS;
   components: Components[];
+}
+
+export interface SetCanvasStylingAction {
+  type: typeof SET_CANVAS_STYLING;
+  canvasStyling: CanvasStyling[];
+}
+
+export interface SetCanvasAction {
+  type: typeof SET_CANVAS;
+  canvas: Canvas[];
 }
 
 // export interface EditComponentsAction {
@@ -36,8 +55,9 @@ export interface SetComponentsAction {
 // }
 
 export type ComponentsActionTypes = SetComponentsAction;
-// | EditComponentsAction;
-// | RemoveExpenseAction
-// | AddExpenseAction;
-
-export type AppActions = ComponentsActionTypes;
+export type CanvasStylingActionTypes = SetCanvasStylingAction;
+export type CanvasActionTypes = SetCanvasAction;
+export type AppActions =
+  | ComponentsActionTypes
+  | CanvasStylingActionTypes
+  | CanvasActionTypes;
