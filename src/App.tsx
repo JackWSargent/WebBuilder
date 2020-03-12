@@ -13,14 +13,6 @@ import {
   ThemeProvider,
   createMuiTheme
 } from "@material-ui/core/styles";
-import { connect } from "react-redux";
-import { startSetCanvas } from "./redux/actions/canvas";
-import { Canvas } from "./redux/types/actions";
-import { AppState } from "./redux/store/storeConfiguration";
-import { Dispatch, bindActionCreators } from "redux";
-import { AppActions } from "./redux/types/actions";
-import { ThunkDispatch } from "redux-thunk";
-import { TextField } from "@material-ui/core";
 
 const useStyles = makeStyles((theme: Theme) => createStyles({}));
 

@@ -28,7 +28,8 @@ import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
 import CanvasStyle from "./canvasStyle";
 import { connect } from "react-redux";
 import { startSetComponents } from "../redux/actions/components";
-import { Components } from "../redux/types/actions";
+import { startSetCanvas } from "../redux/actions/canvas";
+import { Components, Canvas } from "../redux/types/actions";
 import { AppState } from "../redux/store/storeConfiguration";
 import { Dispatch, bindActionCreators } from "redux";
 import { AppActions } from "../redux/types/actions";
@@ -125,7 +126,7 @@ interface LayerProps {}
 type Props = LayerProps & LinkStateProps & LinkDispatchProps;
 
 const Layer: React.FC<Props> = props => {
-  const { components } = props;
+  const { components, canvas } = props;
 
   const onSet = (components: Components[]) => {
     props.startSetComponents(components);
@@ -432,10 +433,12 @@ const Layer: React.FC<Props> = props => {
 
   const handleDrawerOpen = () => {
     setOpen(true);
+    props.startSetCanvas([{ drawerOpen: true }]);
   };
 
   const handleDrawerClose = () => {
     setOpen(false);
+    props.startSetCanvas([{ drawerOpen: false }]);
   };
   /* eslint-enable */
   return (
@@ -514,24 +517,28 @@ const Layer: React.FC<Props> = props => {
 
 interface LinkStateProps {
   components: Components[];
+  canvas: Canvas[];
 }
 
 const mapStateToProps = (
   state: AppState,
   ownProps: LayerProps
 ): LinkStateProps => ({
-  components: state.components
+  components: state.components,
+  canvas: state.canvas
 });
 
 interface LinkDispatchProps {
   startSetComponents: (components: Components[]) => void;
+  startSetCanvas: (canvas: Canvas[]) => void;
 }
 
 const mapDispatchToProps = (
   dispatch: ThunkDispatch<any, any, AppActions>,
   ownProps: LayerProps
 ): LinkDispatchProps => ({
-  startSetComponents: bindActionCreators(startSetComponents, dispatch)
+  startSetComponents: bindActionCreators(startSetComponents, dispatch),
+  startSetCanvas: bindActionCreators(startSetCanvas, dispatch)
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Layer);
