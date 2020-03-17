@@ -4,7 +4,8 @@ import { CanvasActionTypes, SET_CANVAS } from "../types/actions";
 const canvasReducerDefaultState: Canvas[] = [
   {
     drawerOpen: true,
-    drawerLeftMargin: 240
+    drawerLeftMargin: 240,
+    drawerClicked: false
   }
 ];
 

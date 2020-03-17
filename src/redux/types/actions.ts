@@ -18,6 +18,7 @@ export interface CanvasStyling {
 export interface Canvas {
   drawerOpen?: boolean;
   drawerLeftMargin?: number;
+  drawerClicked?: boolean;
 }
 
 export const SET_COMPONENTS = "SET_COMPONENTS";
