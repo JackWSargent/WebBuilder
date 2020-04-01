@@ -1,11 +1,11 @@
 // import uuid from "uuid";
 import { Components } from "../types/actions";
 import {
-  // ADD_EXPENSE,
-  AppActions,
-  // REMOVE_EXPENSE,
-  // EDIT_COMPONENTS,
-  SET_COMPONENTS
+    // ADD_EXPENSE,
+    AppActions,
+    // REMOVE_EXPENSE,
+    // EDIT_COMPONENTS,
+    SET_COMPONENTS
 } from "../types/actions";
 import { Dispatch } from "redux";
 import { AppState } from "../store/storeConfiguration";
@@ -26,8 +26,8 @@ import { AppState } from "../store/storeConfiguration";
 // });
 
 export const setComponents = (components: Components[]): AppActions => ({
-  type: SET_COMPONENTS,
-  components
+    type: SET_COMPONENTS,
+    components
 });
 
 // export const startAddExpense = (expenseData: {
@@ -68,8 +68,8 @@ export const setComponents = (components: Components[]): AppActions => ({
 //   };
 // };
 
-export const startSetComponents = (components: Components[]) => {
-  return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
-    dispatch(setComponents(components));
-  };
+export const SetComponents = (components: Components[]) => {
+    return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
+        dispatch(setComponents(components));
+    };
 };

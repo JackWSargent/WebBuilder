@@ -1,15 +1,18 @@
 import * as React from "react";
+/* eslint-disable */
 import { connect } from "react-redux";
-import { startSetCanvas } from "../redux/actions/canvas";
-import { Canvas } from "../redux/types/actions";
+import { SetCanvas } from "../redux/actions/canvas";
+import { Components, Canvas } from "../redux/types/actions";
 import { AppState } from "../redux/store/storeConfiguration";
 import { bindActionCreators } from "redux";
 import { AppActions } from "../redux/types/actions";
 import { ThunkDispatch } from "redux-thunk";
 import clsx from "clsx";
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
+import { SetComponents } from "../redux/actions/components";
+import Renderer from "./renderer";
 interface CanvasProps {}
-let defaultSize: number = 16;
+let defaultSize: number = 24;
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         divider: {
@@ -42,7 +45,8 @@ const useStyles = makeStyles((theme: Theme) =>
             height: "100%",
             width: "100%",
             minHeight: "100vh",
-            fontSize: defaultSize
+            fontSize: defaultSize,
+            backgroundColor: "#282c34"
         },
         topMargin: {
             marginTop: 64,
@@ -55,17 +59,13 @@ type Props = CanvasProps & LinkStateProps & LinkDispatchProps;
 const CanvasDisplay: React.FC<Props> = props => {
     const { canvas } = props;
     const classes = useStyles();
-    const [leftMargin, setLeftMargin] = React.useState(
-        canvas[0].drawerLeftMargin
-    );
-    const [marginToggle, setMarginToggle] = React.useState(
-        canvas[0].drawerClicked
-    );
+    const [leftMargin, setLeftMargin] = React.useState(canvas[0].drawerLeftMargin);
+    const [marginToggle, setMarginToggle] = React.useState(canvas[0].drawerClicked);
 
     const changeMargin = (event: React.MouseEvent<HTMLElement>): void => {
         let val = Math.min(600, event.clientX);
         val = Math.max(240, event.clientX);
-        if (canvas[0].drawerOpen && canvas[0].drawerClicked) {
+        if (canvas[0].drawerOpen && canvas[0].drawerClicked && event.clientX > 235 && event.clientX < 600) {
             setLeftMargin(val);
             let canvasVal = [
                 {
@@ -74,14 +74,16 @@ const CanvasDisplay: React.FC<Props> = props => {
                     drawerClicked: marginToggle
                 }
             ];
-            props.startSetCanvas(canvasVal);
+            props.SetCanvas(canvasVal);
+        } else {
+            setMarginToggle(false);
         }
     };
 
     const handleMarginClick = (): void => {
         if (marginToggle) {
             setMarginToggle(false);
-            props.startSetCanvas([
+            props.SetCanvas([
                 {
                     drawerOpen: canvas[0].drawerOpen,
                     drawerLeftMargin: leftMargin,
@@ -91,8 +93,7 @@ const CanvasDisplay: React.FC<Props> = props => {
             return;
         }
         setMarginToggle(true);
-        let val = [{ ...canvas[0], drawerClicked: true }];
-        props.startSetCanvas([
+        props.SetCanvas([
             {
                 drawerOpen: canvas[0].drawerOpen,
                 drawerLeftMargin: canvas[0].drawerLeftMargin,
@@ -105,18 +106,18 @@ const CanvasDisplay: React.FC<Props> = props => {
         if (canvas[0].drawerOpen === true) {
             return (
                 <>
-                    <div
-                        className={classes.canvasContainer + classes.topMargin}
-                        style={{ fontSize: defaultSize }}
-                    >
+                    <div className={classes.canvasContainer + classes.topMargin} style={{ fontSize: defaultSize }}>
                         <div
                             style={{
                                 marginTop: 64,
                                 minHeight: "100vh",
-                                zIndex: 1400
-                            }}
-                        >
-                            TEXT
+                                marginLeft: canvas[0].drawerLeftMargin,
+                                zIndex: 1400,
+                                maxWidth: "100vh",
+                                justifyContent: "center",
+                                alignContent: "center"
+                            }}>
+                            <Renderer />
                         </div>
                     </div>
                     <div
@@ -125,8 +126,7 @@ const CanvasDisplay: React.FC<Props> = props => {
                             [classes.toggleOn]: marginToggle
                         })}
                         onMouseMove={changeMargin}
-                        style={{ fontSize: defaultSize }}
-                    >
+                        style={{ fontSize: defaultSize }}>
                         <div
                             id="margin-resize"
                             className={classes.divider}
@@ -135,8 +135,7 @@ const CanvasDisplay: React.FC<Props> = props => {
                             }}
                             onMouseMove={changeMargin}
                             onMouseDown={handleMarginClick}
-                            onMouseUp={handleMarginClick}
-                        ></div>
+                            onMouseUp={handleMarginClick}></div>
                     </div>
                 </>
             );
@@ -145,10 +144,14 @@ const CanvasDisplay: React.FC<Props> = props => {
                 <>
                     <div
                         className={classes.canvasContainer + classes.topMargin}
-                        style={{ marginTop: 64, fontSize: defaultSize }}
-                    >
-                        <div style={{ minHeight: "100vh", zIndex: 1400 }}>
-                            TEXT
+                        style={{ marginTop: 64, fontSize: defaultSize }}>
+                        <div
+                            style={{
+                                paddingTop: 64,
+                                minHeight: "100vh",
+                                zIndex: 1400
+                            }}>
+                            <Renderer />
                         </div>
                     </div>
                 </>
@@ -159,25 +162,26 @@ const CanvasDisplay: React.FC<Props> = props => {
     return <>{renderMargin()}</>;
 };
 interface LinkStateProps {
+    components: Components[];
     canvas: Canvas[];
 }
 
-const mapStateToProps = (
-    state: AppState,
-    ownProps: CanvasProps
-): LinkStateProps => ({
+const mapStateToProps = (state: AppState, ownProps: CanvasProps): LinkStateProps => ({
+    components: state.components,
     canvas: state.canvas
 });
 
 interface LinkDispatchProps {
-    startSetCanvas: (canvas: Canvas[]) => void;
+    SetComponents: (components: Components[]) => void;
+    SetCanvas: (canvas: Canvas[]) => void;
 }
 
 const mapDispatchToProps = (
     dispatch: ThunkDispatch<any, any, AppActions>,
     ownProps: CanvasProps
 ): LinkDispatchProps => ({
-    startSetCanvas: bindActionCreators(startSetCanvas, dispatch)
+    SetComponents: bindActionCreators(SetComponents, dispatch),
+    SetCanvas: bindActionCreators(SetCanvas, dispatch)
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(CanvasDisplay);

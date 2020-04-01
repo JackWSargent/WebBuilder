@@ -3,15 +3,10 @@ import * as React from "react";
 import "../App.css";
 import Layer from "./layer";
 import CanvasDisplay from "./canvas";
-import {
-    makeStyles,
-    useTheme,
-    Theme,
-    createStyles
-} from "@material-ui/core/styles";
+import { makeStyles, useTheme, Theme, createStyles } from "@material-ui/core/styles";
 import { connect } from "react-redux";
-import { startSetComponents } from "../redux/actions/components";
-import { startSetCanvas } from "../redux/actions/canvas";
+import { SetComponents } from "../redux/actions/components";
+import { SetCanvas } from "../redux/actions/canvas";
 import { Components, Canvas } from "../redux/types/actions";
 import { AppState } from "../redux/store/storeConfiguration";
 import { Dispatch, bindActionCreators } from "redux";
@@ -21,7 +16,6 @@ import { ThunkDispatch } from "redux-thunk";
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         root: {
-            display: "flex",
             backgroundColor: "#282c34",
             color: "#fff"
         }
@@ -43,17 +37,17 @@ const Layout: React.FC<Props> = props => {
         if (canvas[0].drawerOpen === true) {
             // console.log("drawer open");
             return (
-                <>
-                    <Layer></Layer>
+                <div className={classes.root}>
+                    <Layer />
                     <CanvasDisplay />
-                </>
+                </div>
             );
         } else {
             return (
-                <>
+                <div className={classes.root}>
                     <CanvasDisplay />
                     <Layer></Layer>
-                </>
+                </div>
             );
         }
     };
@@ -67,25 +61,22 @@ interface LinkStateProps {
     canvas: Canvas[];
 }
 
-const mapStateToProps = (
-    state: AppState,
-    ownProps: LayoutProps
-): LinkStateProps => ({
+const mapStateToProps = (state: AppState, ownProps: LayoutProps): LinkStateProps => ({
     components: state.components,
     canvas: state.canvas
 });
 
 interface LinkDispatchProps {
-    startSetComponents: (components: Components[]) => void;
-    startSetCanvas: (canvas: Canvas[]) => void;
+    SetComponents: (components: Components[]) => void;
+    SetCanvas: (canvas: Canvas[]) => void;
 }
 
 const mapDispatchToProps = (
     dispatch: ThunkDispatch<any, any, AppActions>,
     ownProps: LayoutProps
 ): LinkDispatchProps => ({
-    startSetComponents: bindActionCreators(startSetComponents, dispatch),
-    startSetCanvas: bindActionCreators(startSetCanvas, dispatch)
+    SetComponents: bindActionCreators(SetComponents, dispatch),
+    SetCanvas: bindActionCreators(SetCanvas, dispatch)
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Layout);

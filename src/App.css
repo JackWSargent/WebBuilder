@@ -36,10 +36,6 @@
     color: #fff !important;
 }
 
-.makeStyles-content-11 {
-    /* padding: 0 !important; */
-}
-
 /* .marginEW {
   cursor: ew-resize !important;
   width: 1px;
@@ -56,4 +52,8 @@
     top: 0;
     left: 0;
     position: fixed;
+}
+
+.classhdis {
+    color: #111111;
 }

@@ -2,12 +2,7 @@ import * as React from "react";
 /* eslint-disable */
 import "../App.css";
 import clsx from "clsx";
-import {
-    makeStyles,
-    useTheme,
-    Theme,
-    createStyles
-} from "@material-ui/core/styles";
+import { makeStyles, useTheme, Theme, createStyles } from "@material-ui/core/styles";
 import Drawer from "@material-ui/core/Drawer";
 import Grid from "@material-ui/core/Grid";
 import CssBaseline from "@material-ui/core/CssBaseline";
@@ -24,8 +19,8 @@ import CheckBoxIcon from "@material-ui/icons/CheckBox";
 import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
 import CanvasStyle from "./canvasStyle";
 import { connect } from "react-redux";
-import { startSetComponents } from "../redux/actions/components";
-import { startSetCanvas } from "../redux/actions/canvas";
+import { SetComponents } from "../redux/actions/components";
+import { SetCanvas } from "../redux/actions/canvas";
 import { Components, Canvas } from "../redux/types/actions";
 import { AppState } from "../redux/store/storeConfiguration";
 import { bindActionCreators } from "redux";
@@ -131,7 +126,7 @@ const Layer: React.FC<Props> = props => {
     const { components, canvas } = props;
 
     const onSet = (components: Components[]) => {
-        props.startSetComponents(components);
+        props.SetComponents(components);
         // console.log(components);
     };
 
@@ -163,19 +158,9 @@ const Layer: React.FC<Props> = props => {
 
     const renderActive = (val, id) => {
         if (val === true) {
-            return (
-                <CheckBoxIcon
-                    style={{ color: "#fff" }}
-                    onClick={() => handleActiveChange(id)}
-                />
-            );
+            return <CheckBoxIcon style={{ color: "#fff" }} onClick={() => handleActiveChange(id)} />;
         } else {
-            return (
-                <CheckBoxOutlineBlankIcon
-                    onClick={() => handleActiveChange(id)}
-                    style={{ color: "#fff" }}
-                />
-            );
+            return <CheckBoxOutlineBlankIcon onClick={() => handleActiveChange(id)} style={{ color: "#fff" }} />;
         }
     };
 
@@ -247,29 +232,19 @@ const Layer: React.FC<Props> = props => {
                     // console.log("MoreChildren than 1");
                     //If children is greater than 1 meaning that there could be potentially more children to render start loop looking through to see if they are included inside the newArray already
                     for (let k = 1; k < currentNode.children.length; k++) {
-                        let currentChild = layersArray.filter(
-                            layer => currentNode.children[k] == layer.id
-                        );
+                        let currentChild = layersArray.filter(layer => currentNode.children[k] == layer.id);
                         currentChild = currentChild[0];
                         // console.log(currentChild);
                         if (!newArray.includes(currentChild)) {
                             // console.log("false : " + currentNode.children[k]);
-                            let child = layersArray.filter(
-                                layer => currentNode.children[k] == layer.id
-                            );
+                            let child = layersArray.filter(layer => currentNode.children[k] == layer.id);
                             child = child[0];
                             currentLayerIndex = layersArray.indexOf(child);
                             newArray.push(child);
                             // console.log(newArray);
                             // console.log(currentLayerIndex);
                             if (layersArray[currentLayerIndex].children) {
-                                runDownNestedLayers(
-                                    row,
-                                    currentLayerIndex,
-                                    layersArray,
-                                    newArray,
-                                    hasMoreChildren
-                                );
+                                runDownNestedLayers(row, currentLayerIndex, layersArray, newArray, hasMoreChildren);
                             }
                         } else {
                             // console.log("true");
@@ -295,9 +270,7 @@ const Layer: React.FC<Props> = props => {
             layersArray[currentLayerIndex].row == row
             // newArray.includes(layersArray[currentLayerIndex])
         ) {
-            let child = layersArray.filter(
-                layer => layersArray[currentLayerIndex].children[0] == layer.id
-            );
+            let child = layersArray.filter(layer => layersArray[currentLayerIndex].children[0] == layer.id);
             child = child[0];
             currentLayerIndex = layersArray.indexOf(child);
             // console.log("Pushing: ");
@@ -307,37 +280,19 @@ const Layer: React.FC<Props> = props => {
             // console.log("Could not find child to push");
         }
 
-        if (
-            layersArray[currentLayerIndex].children == null &&
-            layersArray.length !== newArray.length
-        ) {
+        if (layersArray[currentLayerIndex].children == null && layersArray.length !== newArray.length) {
             // found the bottom of the barrel
             // && layersArray.length == newArray.length
             // console.log(currentLayerIndex);
             hasMoreChildren = false;
-            checkForSiblings(
-                row,
-                currentLayerIndex,
-                layersArray,
-                newArray,
-                hasMoreChildren
-            );
-        } else if (
-            layersArray[currentLayerIndex].children == null &&
-            layersArray.length == newArray.length
-        ) {
+            checkForSiblings(row, currentLayerIndex, layersArray, newArray, hasMoreChildren);
+        } else if (layersArray[currentLayerIndex].children == null && layersArray.length == newArray.length) {
             // console.log("components");
             // console.log(components);
             return newArray;
         } else {
             hasMoreChildren = true;
-            runDownNestedLayers(
-                row,
-                currentLayerIndex,
-                layersArray,
-                newArray,
-                hasMoreChildren
-            );
+            runDownNestedLayers(row, currentLayerIndex, layersArray, newArray, hasMoreChildren);
         }
     };
 
@@ -350,21 +305,9 @@ const Layer: React.FC<Props> = props => {
                 return newArray;
             }
             let current = i;
-            if (
-                layersArray[i].row == i &&
-                !newArray.includes(layersArray[i]) &&
-                !layersArray.parent
-            ) {
+            if (layersArray[i].row == i && !newArray.includes(layersArray[i]) && !layersArray.parent) {
                 newArray.push(layersArray[i]);
-                newArray.concat(
-                    runDownNestedLayers(
-                        i,
-                        current,
-                        layersArray,
-                        newArray,
-                        hasMoreChildren
-                    )
-                );
+                newArray.concat(runDownNestedLayers(i, current, layersArray, newArray, hasMoreChildren));
             } else {
                 if (newArray.length == layersArray.length) {
                     areMoreComponents = false;
@@ -395,11 +338,8 @@ const Layer: React.FC<Props> = props => {
                         className={clsx(classes.layer, {
                             [classes.layerSelected]: selected.includes(layer.id)
                         })}
-                        divider={true}
-                    >
-                        <div
-                            style={{ marginLeft: 20 * layer.nestedLevel }}
-                        ></div>
+                        divider={true}>
+                        <div style={{ marginLeft: 20 * layer.nestedLevel }}></div>
                         {renderActive(layer.active, layer.id)}
                         <Typography
                             variant="subtitle2"
@@ -410,8 +350,7 @@ const Layer: React.FC<Props> = props => {
                                 marginTop: 0,
                                 fontSize: "1.15rem"
                             }}
-                            onClick={() => handleSelectedState(layer.id)}
-                        >
+                            onClick={() => handleSelectedState(layer.id)}>
                             {layer.name}-{layer.id}
                         </Typography>
                     </ListItem>
@@ -433,11 +372,11 @@ const Layer: React.FC<Props> = props => {
                 setCtrl(false);
             }
         });
-    }, [event, layers, selected, canvas]);
+    }, [event, layers, selected, canvas, open]);
 
     const handleDrawerOpen = () => {
         setOpen(true);
-        props.startSetCanvas([
+        props.SetCanvas([
             {
                 drawerClicked: canvas[0].drawerClicked,
                 drawerLeftMargin: canvas[0].drawerLeftMargin,
@@ -448,7 +387,7 @@ const Layer: React.FC<Props> = props => {
 
     const handleDrawerClose = () => {
         setOpen(false);
-        props.startSetCanvas([
+        props.SetCanvas([
             {
                 drawerClicked: canvas[0].drawerClicked,
                 drawerLeftMargin: canvas[0].drawerLeftMargin,
@@ -468,29 +407,21 @@ const Layer: React.FC<Props> = props => {
                     backgroundColor: "#282c34",
                     color: "#fff",
                     height: 64
-                }}
-            >
+                }}>
                 <CssBaseline />
                 <AppBar
                     position="fixed"
                     className={clsx(classes.appBar, {
                         [classes.appBarShift]: open
-                    })}
-                >
-                    <Toolbar
-                        style={{ backgroundColor: "#282c34", color: "#fff" }}
-                    >
+                    })}>
+                    <Toolbar style={{ backgroundColor: "#282c34", color: "#fff" }}>
                         <IconButton
                             color="inherit"
                             aria-label="open drawer"
                             onClick={handleDrawerOpen}
                             edge="start"
-                            className={clsx(
-                                classes.menuButton,
-                                open && classes.hide
-                            )}
-                            style={{ zIndex: 1300 }}
-                        >
+                            className={clsx(classes.menuButton, open && classes.hide)}
+                            style={{ zIndex: 1300 }}>
                             <MenuIcon />
                         </IconButton>
                     </Toolbar>
@@ -502,32 +433,17 @@ const Layer: React.FC<Props> = props => {
                     open={open}
                     classes={{
                         paper: classes.drawerPaper
-                    }}
-                >
-                    <Grid
-                        container
-                        style={{ width: canvas[0].drawerLeftMargin }}
-                    >
+                    }}>
+                    <Grid container style={{ width: canvas[0].drawerLeftMargin }}>
                         <Grid item xs={8}>
-                            <Typography
-                                variant="h6"
-                                noWrap
-                                style={{ lineHeight: "64px" }}
-                            >
+                            <Typography variant="h6" noWrap style={{ lineHeight: "64px" }}>
                                 Components
                             </Typography>
                         </Grid>
                         <Grid item xs={4}>
                             <div className={classes.drawerHeader}>
-                                <IconButton
-                                    className={classes.icon}
-                                    onClick={handleDrawerClose}
-                                >
-                                    {theme.direction === "ltr" ? (
-                                        <ChevronLeftIcon />
-                                    ) : (
-                                        <ChevronRightIcon />
-                                    )}
+                                <IconButton className={classes.icon} onClick={handleDrawerClose}>
+                                    {theme.direction === "ltr" ? <ChevronLeftIcon /> : <ChevronRightIcon />}
                                 </IconButton>
                             </div>
                         </Grid>
@@ -537,13 +453,13 @@ const Layer: React.FC<Props> = props => {
                     {renderLayers()}
                     <Divider className="Divider" />
                     <CanvasStyle />
+                    <Divider className="Divider" />
                 </Drawer>
 
                 <main
                     className={clsx(classes.content, {
                         [classes.contentShift]: open
-                    })}
-                >
+                    })}>
                     <div className={classes.drawerHeader} />
                 </main>
             </div>
@@ -556,25 +472,22 @@ interface LinkStateProps {
     canvas: Canvas[];
 }
 
-const mapStateToProps = (
-    state: AppState,
-    ownProps: LayerProps
-): LinkStateProps => ({
+const mapStateToProps = (state: AppState, ownProps: LayerProps): LinkStateProps => ({
     components: state.components,
     canvas: state.canvas
 });
 
 interface LinkDispatchProps {
-    startSetComponents: (components: Components[]) => void;
-    startSetCanvas: (canvas: Canvas[]) => void;
+    SetComponents: (components: Components[]) => void;
+    SetCanvas: (canvas: Canvas[]) => void;
 }
 
 const mapDispatchToProps = (
     dispatch: ThunkDispatch<any, any, AppActions>,
     ownProps: LayerProps
 ): LinkDispatchProps => ({
-    startSetComponents: bindActionCreators(startSetComponents, dispatch),
-    startSetCanvas: bindActionCreators(startSetCanvas, dispatch)
+    SetComponents: bindActionCreators(SetComponents, dispatch),
+    SetCanvas: bindActionCreators(SetCanvas, dispatch)
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Layer);
