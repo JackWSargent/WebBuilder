@@ -210,7 +210,7 @@ const Layer: React.FC<Props> = props => {
 
     let hasMoreChildren = false;
     // let hasMoreSiblings = true;
-    let currentLayerIndex = 0;
+    // let currentLayerIndex = 0;
 
     const checkForSiblings = (
         row: number,

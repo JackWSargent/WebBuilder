@@ -14,6 +14,7 @@ import { Grid } from "@material-ui/core";
 import { CanvasStyling } from "../redux/types/actions";
 import { SetCanvasStyling } from "../redux/actions/canvasStyling";
 import { convertColorToString } from "material-ui/utils/colorManipulator";
+import { copyFileSync } from "fs";
 
 interface RendererProps {}
 
@@ -21,7 +22,6 @@ const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         renderer: {
             minWidth: "100vh",
-            // boxSizing: "inherit",
             maxWidth: "100vh",
             width: 1000
         }
@@ -38,15 +38,13 @@ let defaultSize: number = 24;
 
 type Props = RendererProps & LinkStateProps & LinkDispatchProps;
 const Renderer: React.FC<Props> = props => {
-    const { canvas, components, canvasStyling } = props;
+    const { components, canvasStyling } = props;
     const classes = useStyles();
     const [renderedComponents, setRenderedComponents] = React.useState([]);
-    // const [idx, setIdx] = React.useState(0);
 
-    const returnComponent = (component): JSX.Element => {
+    const returnComponent = component => {
         let id: number = component.id;
         let name: string = component.name;
-        // console.log("made it to returning the component");
         let childrenVal: boolean = component.children !== null;
         if (component.active) {
             switch (component.type) {
@@ -92,27 +90,26 @@ const Renderer: React.FC<Props> = props => {
                     );
             }
         }
-        return <></>;
+        if (childrenVal) {
+            return <div key={id}>{returnChildren(component)}</div>;
+        }
+        return <div key={id}></div>;
     };
 
     const returnChildren = (component): Array<JSX.Element> => {
-        // console.log("returning children for: " + component.id);
+        if (!component.active) {
+            return [];
+        }
         let childrenArr: JSX.Element[] = [];
         for (let i = 1; i < component.children.length + 1; i++) {
             idx = idx + 1;
             let component = newComponents[idx];
             if (component == null || component.isRendered) {
-                // console.warn(component.id + " is rendered as child, exiting");
                 return;
             }
-            // console.log(idx);
-
             component.isRendered = true;
             childrenArr.push(returnComponent(component));
-            // console.warn("rendering components after rendering children");
-            // console.log(newComponents);
         }
-        // idx = idx + component.children.length;
         return childrenArr;
     };
 
@@ -126,61 +123,55 @@ const Renderer: React.FC<Props> = props => {
     */
 
     const reRenderComponents = (): void => {
+        //Check for times rendered
         renderTimes = renderTimes + 1;
+        //Check for style or properties changes and reset rendered elements
         if (canvasStyleChange) {
             setRenderedComponents([]);
+        } else if (componentChange) {
+            renderedComponents2 = [];
         }
-        // else if (componentChange) {
-        //     setRenderedComponents([]);
-        // }
-
+        //Reset is rendered on the elements
         newComponents = components.map(element => {
             let componentObject: Components = Object.assign({}, element);
             componentObject.isRendered = false;
             return componentObject;
         });
-        // console.error("re running reRenderComponents, should be not rendered");
         // console.log(newComponents);
+        // Init and check to see if there are any elements
         let component: Components = newComponents[idx];
-        if (component) {
-            if (component.isRendered) {
-                // console.warn("not rendering element: " + component.id);
+        if (component && component.active) {
+            // Check to make sure that it is not rendered already
+            if (component.isRendered || !component.active) {
+                console.warn("not rendering element: " + component.id);
                 return;
             }
-
+            // Init a new array to
             let newRenderedComponents: JSX.Element[] = [];
             setRenderedComponents([]);
+            renderedComponents2 = [];
             for (let i: number = 1; i < newComponents.length; i++) {
                 component = newComponents[idx];
-                // console.log(idx);
-                if (!component) {
-                    // console.error("component is undefined, current idx: " + idx);
+                if (!component || component.isRendered == true || component.parent !== null) {
+                    // console.error(idx);
                     return;
                 }
-                if (component.isRendered == true || component.parent !== null) {
-                    // console.warn("rendered supposedly already: " + component.id);
-                    // console.log(component);
-                    // console.error("exiting out of rendering function");
-                    return;
+                if (i == 1 && renderedComponents.length > 0) {
+                    newRenderedComponents = newRenderedComponents.concat(returnComponent(component));
+                } else {
+                    newRenderedComponents = renderedComponents.concat(returnComponent(component));
                 }
-
-                newRenderedComponents = renderedComponents.concat(returnComponent(component));
                 component.isRendered = true;
-
-                // console.log("rendering: " + component.id);
-                // console.log("reRenderComponents(): setting isRendered: " + component.id + " to true");
-
-                // console.log("current idx: " + idx + " setting idx to: " + (idx + 1));
 
                 idx = idx + 1;
                 setRenderedComponents(newRenderedComponents);
+                renderedComponents2 = newRenderedComponents;
             }
         } else {
-            // console.error("component is null");
+            renderedComponents2 = [];
             idx = 0;
             canvasStyleChange = false;
             componentChange = false;
-            // setRenderedComponents([]);
         }
     };
 
@@ -197,22 +188,18 @@ const Renderer: React.FC<Props> = props => {
     };
 
     const renderComponents = (): JSX.Element[] => {
-        return renderedComponents;
+        return renderedComponents2;
     };
 
     React.useEffect(() => {
         canvasStyleChange = true;
         reRenderComponents();
-        // console.log("triggered1");
     }, [canvasStyling]);
 
     React.useEffect(() => {
-        // componentChange = true;
         reRenderComponents();
-        // console.log("triggered2");
+        console.log(newComponents);
     }, [newComponents]);
-
-    // React.useEffect(() => {}, [renderedComponents]);
 
     return (
         <div
