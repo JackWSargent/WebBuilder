@@ -173,7 +173,7 @@ const Renderer: React.FC<Props> = (props) => {
                 //     idx += 1;
                 //     console.log("hit condition");
                 //     return;
-                // }
+                // }//
                 if (!component || component.isRendered == true || component.parent !== null) {
                     // console.error(idx);
                     return;
