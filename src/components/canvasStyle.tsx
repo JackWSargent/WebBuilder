@@ -21,35 +21,35 @@ const useStyles = makeStyles((theme: Theme) =>
             "& > *": {
                 margin: theme.spacing(1),
                 width: 200,
-                color: "#fff"
-            }
+                color: "#fff",
+            },
         },
         textField: {
-            color: "#fff"
-        }
+            color: "#fff",
+        },
     })
 );
 interface CanvasStylingProps {}
 
 type Props = CanvasStylingProps & LinkStateProps & LinkDispatchProps;
-const CanvasStyle: React.FC<Props> = props => {
+const CanvasStyle: React.FC<Props> = (props) => {
     const { canvasStyling } = props;
     const classes = useStyles();
     const [fontSize, setFontSize] = React.useState(canvasStyling[0].fontSize);
     const [boxSizing, setBoxSizing] = React.useState(canvasStyling[0].boxSizing);
-    const handleFontSizeChange = e => {
+    const handleFontSizeChange = (e) => {
         setFontSize(e.target.value);
     };
-    const handleBoxSizingChange = e => {
+    const handleBoxSizingChange = (e) => {
         setBoxSizing(e.target.value);
     };
 
-    const handleApplyChanges = e => {
+    const handleApplyChanges = (e) => {
         onSet([{ fontSize, boxSizing }]);
     };
     const onSet = (canvasStyling: CanvasStyling[]) => {
         props.SetCanvasStyling(canvasStyling);
-        console.log(canvasStyling);
+        // console.log(canvasStyling);
     };
     React.useEffect(() => {});
     return (
@@ -62,7 +62,7 @@ const CanvasStyle: React.FC<Props> = props => {
                         style={{
                             lineHeight: "64px",
                             alignContent: "center",
-                            justifyContent: "center"
+                            justifyContent: "center",
                         }}>
                         Canvas Styling
                     </Typography>
@@ -77,22 +77,22 @@ const CanvasStyle: React.FC<Props> = props => {
                         variant="outlined"
                         type="number"
                         defaultValue={fontSize}
-                        onChange={e => handleFontSizeChange(e)}
+                        onChange={(e) => handleFontSizeChange(e)}
                         inputProps={{
-                            style: { color: "#fff", borderColor: "#fff" }
+                            style: { color: "#fff", borderColor: "#fff" },
                         }}
                         className={classes.textField}
                         InputLabelProps={{
                             style: {
                                 color: "#fff !important",
-                                borderColor: "#fff"
-                            }
+                                borderColor: "#fff",
+                            },
                         }}
                         InputProps={{
                             style: {
                                 color: "#fff !important",
-                                borderColor: "#fff"
-                            }
+                                borderColor: "#fff",
+                            },
                         }}></TextField>
                 </Grid>
                 <Grid item xs={3}></Grid>
@@ -107,14 +107,14 @@ const CanvasStyle: React.FC<Props> = props => {
                 <Grid item xs={6}>
                     <Select
                         native
-                        onChange={e => handleBoxSizingChange(e)}
+                        onChange={(e) => handleBoxSizingChange(e)}
                         inputProps={{}}
                         defaultValue={"border-box"}
                         style={{
                             justifyContent: "center",
                             alignContent: "center",
                             marginTop: 15,
-                            marginLeft: 10
+                            marginLeft: 10,
                         }}>
                         <option value={"border-box"}>Border-Box</option>
                         <option value={"content-box"}>Content-Box</option>
@@ -134,7 +134,7 @@ const CanvasStyle: React.FC<Props> = props => {
                             marginBottom: 50,
                             fontSize: 20,
                             color: "#fff",
-                            backgroundColor: "#111111"
+                            backgroundColor: "#111111",
                         }}>
                         Apply
                     </Button>
@@ -149,7 +149,7 @@ interface LinkStateProps {
 }
 
 const mapStateToProps = (state: AppState, ownProps: CanvasStylingProps): LinkStateProps => ({
-    canvasStyling: state.canvasStyling
+    canvasStyling: state.canvasStyling,
 });
 
 interface LinkDispatchProps {
@@ -160,7 +160,7 @@ const mapDispatchToProps = (
     dispatch: ThunkDispatch<any, any, AppActions>,
     ownProps: CanvasStylingProps
 ): LinkDispatchProps => ({
-    SetCanvasStyling: bindActionCreators(SetCanvasStyling, dispatch)
+    SetCanvasStyling: bindActionCreators(SetCanvasStyling, dispatch),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(CanvasStyle);

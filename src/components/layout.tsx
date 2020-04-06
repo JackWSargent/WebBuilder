@@ -17,21 +17,23 @@ const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         root: {
             backgroundColor: "#282c34",
-            color: "#fff"
-        }
+            color: "#fff",
+        },
     })
 );
 interface LayoutProps {}
 
 type Props = LayoutProps & LinkStateProps & LinkDispatchProps;
 
-const Layout: React.FC<Props> = props => {
+const Layout: React.FC<Props> = (props) => {
     const { components, canvas } = props;
 
     const classes = useStyles();
     const theme = useTheme();
 
-    React.useEffect(() => {}, [canvas[0].drawerOpen]);
+    React.useEffect(() => {
+        // console.log("useEffect running");
+    }, [canvas[0].drawerOpen]);
 
     const renderComponents = () => {
         if (canvas[0].drawerOpen === true) {
@@ -63,7 +65,7 @@ interface LinkStateProps {
 
 const mapStateToProps = (state: AppState, ownProps: LayoutProps): LinkStateProps => ({
     components: state.components,
-    canvas: state.canvas
+    canvas: state.canvas,
 });
 
 interface LinkDispatchProps {
@@ -76,7 +78,7 @@ const mapDispatchToProps = (
     ownProps: LayoutProps
 ): LinkDispatchProps => ({
     SetComponents: bindActionCreators(SetComponents, dispatch),
-    SetCanvas: bindActionCreators(SetCanvas, dispatch)
+    SetCanvas: bindActionCreators(SetCanvas, dispatch),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Layout);

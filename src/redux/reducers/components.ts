@@ -12,7 +12,7 @@ const componentsReducerDefaultState: Components[] = [
         children: [200],
         parent: null,
         nestedLevel: 0,
-        row: 0
+        row: 0,
     },
     {
         id: 200,
@@ -24,7 +24,7 @@ const componentsReducerDefaultState: Components[] = [
         children: [300, 400, 500],
         parent: 100,
         nestedLevel: 1,
-        row: 0
+        row: 0,
     },
     {
         id: 300,
@@ -36,7 +36,7 @@ const componentsReducerDefaultState: Components[] = [
         children: null,
         parent: 200,
         nestedLevel: 2,
-        row: 0
+        row: 0,
     },
     {
         id: 400,
@@ -48,7 +48,7 @@ const componentsReducerDefaultState: Components[] = [
         children: null,
         parent: 200,
         nestedLevel: 2,
-        row: 0
+        row: 0,
     },
     {
         id: 500,
@@ -60,8 +60,8 @@ const componentsReducerDefaultState: Components[] = [
         children: null,
         parent: 200,
         nestedLevel: 2,
-        row: 0
-    }
+        row: 0,
+    },
     // {
     //   id: 600,
     //   name: "Container",
@@ -126,6 +126,7 @@ const componentsReducer = (state = componentsReducerDefaultState, action: Compon
         //     }
         //   });
         case SET_COMPONENTS:
+            // console.log("setting component");
             return action.components;
         default:
             return state;
