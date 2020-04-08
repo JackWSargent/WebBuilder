@@ -157,7 +157,7 @@ const Renderer: React.FC<Props> = (props) => {
             }
             // Init a new array to
             let newRenderedComponents: JSX.Element[] = [];
-            setRenderedComponents([]);
+            // setRenderedComponents([]); ----------------------
             renderedComponentsArr = [];
             if (components.length === 1) {
                 renderedComponentsArr = [returnComponent(newComponents[idx])];
@@ -186,7 +186,7 @@ const Renderer: React.FC<Props> = (props) => {
                 component.isRendered = true;
 
                 idx = idx + 1;
-                setRenderedComponents(newRenderedComponents);
+                // setRenderedComponents(newRenderedComponents); -------------------------------
                 renderedComponentsArr = newRenderedComponents;
             }
         } else {

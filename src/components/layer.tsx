@@ -131,7 +131,6 @@ const Layer: React.FC<Props> = (props) => {
 
     const onSet = (components: Components[]) => {
         props.SetComponents(components);
-        // console.log(components);
     };
 
     const classes = useStyles();
@@ -318,8 +317,6 @@ const Layer: React.FC<Props> = (props) => {
     };
 
     let hasMoreChildren = false;
-    // let hasMoreSiblings = true;
-    // let currentLayerIndex = 0;
 
     const checkForSiblings = (
         row: number,
@@ -328,36 +325,23 @@ const Layer: React.FC<Props> = (props) => {
         newArray: Array<any>,
         hasMoreChildren: boolean
     ) => {
-        // console.log("Checking for siblings.");
         for (let i = newArray.length - 2; i > -1; i--) {
             //Run backwards through the newArray and look at the parent starting from the bottom
             let currentNode = newArray[i];
-            // console.log(currentNode);
             if (currentNode.children) {
-                // console.log("Children");
                 if (currentNode.children.length > 1) {
-                    // console.log("MoreChildren than 1");
                     //If children is greater than 1 meaning that there could be potentially more children to render start loop looking through to see if they are included inside the newArray already
                     for (let k = 1; k < currentNode.children.length; k++) {
                         let currentChild = layersArray.filter((layer) => currentNode.children[k] == layer.id);
-                        // console.log("K: " + k);
                         currentChild = currentChild[0];
-                        // console.log(currentChild);
                         if (!newArray.includes(currentChild)) {
-                            // console.log("false : " + currentNode.children[k]);
                             currentLayerIndex = layersArray.indexOf(currentChild);
                             newArray.push(currentChild);
-                            // console.log(newArray);
-                            // console.log(currentLayerIndex);
-                            // console.log(layersArray[currentLayerIndex]);
                             if (layersArray[currentLayerIndex].children) {
                                 runDownNestedLayers(row, currentLayerIndex, layersArray, newArray, hasMoreChildren);
                             }
-                        } else {
-                            // console.log("true");
                         }
                     }
-                    // hasMoreSiblings = false;
                 }
             }
         }
@@ -370,34 +354,16 @@ const Layer: React.FC<Props> = (props) => {
         newArray: Array<any>,
         hasMoreChildren: boolean
     ): Array<any> => {
-        // console.log("CurrentLayerIndex: ");
-        // console.log("run down layers");
-        if (
-            layersArray[currentLayerIndex].children &&
-            layersArray[currentLayerIndex].row == row
-            // newArray.includes(layersArray[currentLayerIndex])
-        ) {
+        if (layersArray[currentLayerIndex].children && layersArray[currentLayerIndex].row == row) {
             let child = layersArray.filter((layer) => layersArray[currentLayerIndex].children[0] == layer.id);
-            // console.log(child[0]);
             child = child[0];
             currentLayerIndex = layersArray.indexOf(child);
-            // console.log("Pushing: ");
-            // console.log(child);
             newArray.push(child);
-        } else {
-            // console.log("Could not find child to push");
         }
-        // console.log(layersArray[currentLayerIndex]);
-        // console.log(currentLayerIndex);
         if (layersArray[currentLayerIndex].children == null && layersArray.length !== newArray.length) {
-            // found the bottom of the barrel
-            // && layersArray.length == newArray.length
-            // console.log(currentLayerIndex);
             hasMoreChildren = false;
             checkForSiblings(row, currentLayerIndex, layersArray, newArray, hasMoreChildren);
         } else if (layersArray[currentLayerIndex].children == null && layersArray.length == newArray.length) {
-            // console.log("components");
-            // console.log(components);
             return newArray;
         } else {
             hasMoreChildren = true;
@@ -406,7 +372,6 @@ const Layer: React.FC<Props> = (props) => {
     };
 
     const buildLayerOrder = (layersArray) => {
-        // console.log("building layers");
         let areMoreComponents = true;
         let newArray = [];
         for (let i = 0; areMoreComponents; i++) {
@@ -432,15 +397,12 @@ const Layer: React.FC<Props> = (props) => {
             return layer;
         });
         onSet(layers);
-        // console.log("creating layers");
         return layersArray;
     };
 
     const renderLayers = () => {
-        // console.log("render layer");
         let layersArray = createLayers(layers);
-        layersArray = buildLayerOrder(layersArray);
-        sortedLayers = layersArray;
+        // layersArray = buildLayerOrder(layersArray);
         if (layersArray) {
             return layersArray.map((layer) => {
                 return (
@@ -485,16 +447,10 @@ const Layer: React.FC<Props> = (props) => {
                 setCtrl(false);
             }
         });
-        // console.log(layers);
-        // setTimeout(function() {
-        //     console.log(layers);
-        // }, 1000);
         changed = false;
-        // console.log("layer useEffect triggered");
     }, [event, changed, selected, canvas, open]);
 
     const handleDrawerOpen = () => {
-        // console.log("changing canvas");
         setOpen(true);
         props.SetCanvas([
             {
@@ -507,7 +463,6 @@ const Layer: React.FC<Props> = (props) => {
     };
 
     const handleDrawerClose = () => {
-        // console.log("changing canvas");
         setOpen(false);
         props.SetCanvas([
             {
