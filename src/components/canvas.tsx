@@ -2,14 +2,14 @@ import * as React from "react";
 /* eslint-disable */
 import { connect } from "react-redux";
 import { SetCanvas } from "../redux/actions/canvas";
-import { Components, Canvas } from "../redux/types/actions";
+import { Component, Canvas } from "../redux/types/actions";
 import { AppState } from "../redux/store/storeConfiguration";
 import { bindActionCreators } from "redux";
 import { AppActions } from "../redux/types/actions";
 import { ThunkDispatch } from "redux-thunk";
 import clsx from "clsx";
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
-import { SetComponents } from "../redux/actions/components";
+import { SetComponent } from "../redux/actions/component";
 import Renderer from "./renderer";
 import { copyFileSync } from "fs";
 interface CanvasProps {}
@@ -47,7 +47,7 @@ const useStyles = makeStyles((theme: Theme) =>
             width: "100%",
             minHeight: "100vh",
             fontSize: defaultSize,
-            backgroundColor: "#282c34",
+            backgroundColor: "#666666",
         },
         topMargin: {
             marginTop: 64,
@@ -165,17 +165,17 @@ const CanvasDisplay: React.FC<Props> = (props) => {
     return <>{renderMargin()}</>;
 };
 interface LinkStateProps {
-    components: Components[];
+    component: Component[];
     canvas: Canvas[];
 }
 
 const mapStateToProps = (state: AppState, ownProps: CanvasProps): LinkStateProps => ({
-    components: state.components,
+    component: state.component,
     canvas: state.canvas,
 });
 
 interface LinkDispatchProps {
-    SetComponents: (components: Components[]) => void;
+    SetComponent: (component: Component[]) => void;
     SetCanvas: (canvas: Canvas[]) => void;
 }
 
@@ -183,7 +183,7 @@ const mapDispatchToProps = (
     dispatch: ThunkDispatch<any, any, AppActions>,
     ownProps: CanvasProps
 ): LinkDispatchProps => ({
-    SetComponents: bindActionCreators(SetComponents, dispatch),
+    SetComponent: bindActionCreators(SetComponent, dispatch),
     SetCanvas: bindActionCreators(SetCanvas, dispatch),
 });
 

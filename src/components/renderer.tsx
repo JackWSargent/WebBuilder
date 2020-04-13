@@ -2,14 +2,13 @@ import * as React from "react";
 /* eslint-disable */
 import { connect } from "react-redux";
 import { SetCanvas } from "../redux/actions/canvas";
-import { Components, Canvas } from "../redux/types/actions";
+import { Component, Canvas } from "../redux/types/actions";
 import { AppState } from "../redux/store/storeConfiguration";
 import { bindActionCreators } from "redux";
 import { AppActions } from "../redux/types/actions";
 import { ThunkDispatch } from "redux-thunk";
-// import clsx from "clsx";
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
-import { SetComponents } from "../redux/actions/components";
+import { SetComponent } from "../redux/actions/component";
 import { Grid } from "@material-ui/core";
 import { CanvasStyling } from "../redux/types/actions";
 
@@ -31,26 +30,25 @@ let newComponents = [];
 let canvasStyleChange: boolean = false;
 let componentChange: boolean = false;
 let renderedComponentsArr: JSX.Element[] = [];
-// let defaultSize: number = 24;
 
 type Props = RendererProps & LinkStateProps & LinkDispatchProps;
 const Renderer: React.FC<Props> = (props) => {
-    const { components, canvasStyling, canvas } = props;
+    const { component, canvasStyling, canvas } = props;
     const classes = useStyles();
     const [renderedComponents, setRenderedComponents] = React.useState([]);
 
-    const returnComponent = (component) => {
-        console.log("returning component");
-        let id: number = component.id;
-        let name: string = component.name;
-        let childrenVal: boolean = component.children !== null;
-        // if (component.active) {
-        switch (component.type) {
+    const returnComponent = (layer) => {
+        // console.log("returning layer");
+        let id: number = layer.id;
+        let name: string = layer.name;
+        let childrenVal: boolean = layer.children !== null;
+        // if (layer.active) {
+        switch (layer.type) {
             case "gridContainer":
                 if (childrenVal) {
                     return (
                         <Grid container id={name} key={id}>
-                            {id + " " + name} . {returnChildren(component)}
+                            {id + " " + name} . {returnChildren(layer)}
                         </Grid>
                     );
                 }
@@ -63,7 +61,7 @@ const Renderer: React.FC<Props> = (props) => {
                 if (childrenVal) {
                     return (
                         <Grid item id={name} key={id}>
-                            {id + " " + name} .. {returnChildren(component)}
+                            {id + " " + name} .. {returnChildren(layer)}
                         </Grid>
                     );
                 }
@@ -77,7 +75,7 @@ const Renderer: React.FC<Props> = (props) => {
                     return (
                         <div id={name} key={id}>
                             {id} {name}
-                            {returnChildren(component)}
+                            {returnChildren(layer)}
                         </div>
                     );
                 }
@@ -89,25 +87,25 @@ const Renderer: React.FC<Props> = (props) => {
         }
         // }
         // if (childrenVal) {
-        //     return <div key={id}>{returnChildren(component)}</div>;
+        //     return <div key={id}>{returnChildren(layer)}</div>;
         // }
         // return <div key={id}></div>;
     };
 
-    const returnChildren = (component): Array<JSX.Element> => {
-        // if (!component.active) {
+    const returnChildren = (layer): Array<JSX.Element> => {
+        // if (!layer.active) {
         //     return [];
         // }
-        console.log("returning children");
+        // console.log("returning children");
         let childrenArr: JSX.Element[] = [];
-        for (let i = 1; i < component.children.length + 1; i++) {
+        for (let i = 1; i < layer.children.length + 1; i++) {
             idx = idx + 1;
-            let component = newComponents[idx];
-            if (component == null || component.isRendered) {
+            let layer = newComponents[idx];
+            if (layer == null || layer.isRendered) {
                 return;
             }
-            component.isRendered = true;
-            childrenArr.push(returnComponent(component));
+            layer.isRendered = true;
+            childrenArr.push(returnComponent(layer));
         }
         return childrenArr;
     };
@@ -138,20 +136,21 @@ const Renderer: React.FC<Props> = (props) => {
         //     return el;
         // });
         if (newComponents.length === 1 && newComponents[0].isRendered == true) {
+            console.log("rendered the first component");
             return;
         }
-        newComponents = components.map((element) => {
-            let componentObject: Components = Object.assign({}, element);
+        newComponents = component.map((element) => {
+            let componentObject: Component = Object.assign({}, element);
             componentObject.isRendered = false;
             return componentObject;
         });
 
         // console.log(newComponents);
         // Init and check to see if there are any elements
-        let component: Components = newComponents[idx];
-        if (component) {
+        let layer: Component = newComponents[idx];
+        if (layer) {
             // Check to make sure that it is not rendered already
-            if (component.isRendered) {
+            if (layer.isRendered) {
                 // console.warn("not rendering element: " + component.id);
                 return;
             }
@@ -159,13 +158,14 @@ const Renderer: React.FC<Props> = (props) => {
             let newRenderedComponents: JSX.Element[] = [];
             // setRenderedComponents([]); ----------------------
             renderedComponentsArr = [];
-            if (components.length === 1) {
+            if (component.length === 1) {
                 renderedComponentsArr = [returnComponent(newComponents[idx])];
+                setRenderedComponents([returnComponent(newComponents[idx])]);
                 idx = idx + 1;
                 return;
             }
             for (let i: number = 1; i < newComponents.length; i++) {
-                component = newComponents[idx];
+                layer = newComponents[idx];
                 // ----------------------------------------
                 // Built for when active was part of the UX design
                 // ----------------------------------------
@@ -174,19 +174,19 @@ const Renderer: React.FC<Props> = (props) => {
                 //     console.log("hit condition");
                 //     return;
                 // }//
-                if (!component || component.isRendered == true || component.parent !== null) {
+                if (!layer || layer.isRendered == true || layer.parent !== null) {
                     // console.error(idx);
                     return;
                 }
                 if (i == 1 && renderedComponents.length > 0) {
-                    newRenderedComponents = newRenderedComponents.concat(returnComponent(component));
+                    newRenderedComponents = newRenderedComponents.concat(returnComponent(layer));
                 } else {
-                    newRenderedComponents = renderedComponents.concat(returnComponent(component));
+                    newRenderedComponents = renderedComponents.concat(returnComponent(layer));
                 }
-                component.isRendered = true;
+                layer.isRendered = true;
 
                 idx = idx + 1;
-                // setRenderedComponents(newRenderedComponents); -------------------------------
+                setRenderedComponents(newRenderedComponents);
                 renderedComponentsArr = newRenderedComponents;
             }
         } else {
@@ -216,13 +216,11 @@ const Renderer: React.FC<Props> = (props) => {
     React.useEffect(() => {
         canvasStyleChange = true;
         reRenderComponents();
-        // console.log("Triggered");
     }, [canvasStyling]);
 
     React.useEffect(() => {
         reRenderComponents();
-        console.log("triggered components");
-    }, [newComponents]);
+    }, [component, newComponents, renderedComponentsArr]);
 
     return (
         <div
@@ -237,19 +235,19 @@ const Renderer: React.FC<Props> = (props) => {
     );
 };
 interface LinkStateProps {
-    components: Components[];
+    component: Component[];
     canvas: Canvas[];
     canvasStyling: CanvasStyling[];
 }
 
 const mapStateToProps = (state: AppState, ownProps: RendererProps): LinkStateProps => ({
-    components: state.components,
+    component: state.component,
     canvas: state.canvas,
     canvasStyling: state.canvasStyling,
 });
 
 interface LinkDispatchProps {
-    SetComponents: (components: Components[]) => void;
+    SetComponent: (component: Component[]) => void;
     SetCanvas: (canvas: Canvas[]) => void;
 }
 
@@ -257,7 +255,7 @@ const mapDispatchToProps = (
     dispatch: ThunkDispatch<any, any, AppActions>,
     ownProps: RendererProps
 ): LinkDispatchProps => ({
-    SetComponents: bindActionCreators(SetComponents, dispatch),
+    SetComponent: bindActionCreators(SetComponent, dispatch),
     SetCanvas: bindActionCreators(SetCanvas, dispatch),
 });
 

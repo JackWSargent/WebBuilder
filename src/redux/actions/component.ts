@@ -1,12 +1,5 @@
-// import uuid from "uuid";
-import { Components } from "../types/actions";
-import {
-    // ADD_EXPENSE,
-    AppActions,
-    // REMOVE_EXPENSE,
-    // EDIT_COMPONENTS,
-    SET_COMPONENTS
-} from "../types/actions";
+import { Component } from "../types/actions";
+import { AppActions, SET_COMPONENT } from "../types/actions";
 import { Dispatch } from "redux";
 import { AppState } from "../store/storeConfiguration";
 
@@ -20,14 +13,14 @@ import { AppState } from "../store/storeConfiguration";
 //   id
 // });
 
-// export const editComponents = (component: Components): AppActions => ({
-//   type: EDIT_COMPONENTS,
+// export const editComponent = (component: Component): AppActions => ({
+//   type: EDIT_COMPONENT,
 //   component
 // });
 
-export const setComponents = (components: Components[]): AppActions => ({
-    type: SET_COMPONENTS,
-    components
+export const setComponent = (component: Component[]): AppActions => ({
+    type: SET_COMPONENT,
+    component,
 });
 
 // export const startAddExpense = (expenseData: {
@@ -62,14 +55,14 @@ export const setComponents = (components: Components[]): AppActions => ({
 //   };
 // };
 
-// export const startEditExpense = (components: Components) => {
+// export const startEditExpense = (component: Component) => {
 //   return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
-//     dispatch(editComponents(components));
+//     dispatch(editComponent(component));
 //   };
 // };
 
-export const SetComponents = (components: Components[]) => {
+export const SetComponent = (component: Component[]) => {
     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
-        dispatch(setComponents(components));
+        dispatch(setComponent(component));
     };
 };

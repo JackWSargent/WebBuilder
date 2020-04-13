@@ -1,15 +1,15 @@
-import { Components } from "../types/actions";
-import { ComponentsActionTypes, SET_COMPONENTS } from "../types/actions";
+import { Component } from "../types/actions";
+import { ComponentActionTypes, SET_COMPONENT } from "../types/actions";
 
-const componentsReducerDefaultState: Components[] = [
+const componentReducerDefaultState: Component[] = [
     {
         id: 100,
         isRendered: false,
-        name: "Container",
-        type: "gridContainer",
+        name: "Canvas",
+        type: "canvas",
         selected: false,
         active: true,
-        children: [200],
+        children: [200, 600],
         parent: null,
         nestedLevel: 0,
         row: 0,
@@ -60,6 +60,18 @@ const componentsReducerDefaultState: Components[] = [
         children: null,
         parent: 200,
         nestedLevel: 2,
+        row: 0,
+    },
+    {
+        id: 600,
+        isRendered: false,
+        name: "Container",
+        type: "div",
+        selected: false,
+        active: true,
+        children: null,
+        parent: 100,
+        nestedLevel: 1,
         row: 0,
     },
 ];
@@ -120,6 +132,7 @@ const runDownNestedLayers = (
 };
 
 const buildLayerOrder = (layersArray) => {
+    // console.log("Building layer order");
     let areMoreComponents = true;
     let newArray = [];
     for (let i = 0; areMoreComponents; i++) {
@@ -129,7 +142,6 @@ const buildLayerOrder = (layersArray) => {
         }
         let current = i;
         if (layersArray[i].row === i && !newArray.includes(layersArray[i]) && !layersArray.parent) {
-            //
             newArray.push(layersArray[i]);
             newArray.concat(runDownNestedLayers(i, current, layersArray, newArray, hasMoreChildren));
         } else {
@@ -138,17 +150,17 @@ const buildLayerOrder = (layersArray) => {
             }
         }
     }
-    console.log(newArray);
+    // console.log(newArray);
     return newArray;
 };
 
-const componentsReducer = (state = componentsReducerDefaultState, action: ComponentsActionTypes): Components[] => {
+const componentReducer = (state = componentReducerDefaultState, action: ComponentActionTypes) => {
     switch (action.type) {
-        case SET_COMPONENTS:
-            return action.components;
+        case SET_COMPONENT:
+            return buildLayerOrder(action.component);
         default:
             return state;
     }
 };
 
-export { componentsReducer };
+export { componentReducer };

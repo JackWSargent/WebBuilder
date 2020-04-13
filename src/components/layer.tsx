@@ -15,32 +15,31 @@ import MenuIcon from "@material-ui/icons/Menu";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import ListItem from "@material-ui/core/ListItem";
-import CheckBoxIcon from "@material-ui/icons/CheckBox";
-import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
+// import CheckBoxIcon from "@material-ui/icons/CheckBox";
+// import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
 import CanvasStyle from "./canvasStyle";
 import { connect } from "react-redux";
-import { SetComponents } from "../redux/actions/components";
+import { SetComponent } from "../redux/actions/component";
 import { SetCanvas } from "../redux/actions/canvas";
-import { Components, Canvas } from "../redux/types/actions";
+import { Component, Canvas } from "../redux/types/actions";
 import { AppState } from "../redux/store/storeConfiguration";
 import { bindActionCreators } from "redux";
 import { AppActions } from "../redux/types/actions";
 import { ThunkDispatch } from "redux-thunk";
 import ClearIcon from "@material-ui/icons/Clear";
-import { copyFileSync } from "fs";
+import WebIcon from "@material-ui/icons/Web";
 
-let sortedLayers = [];
 let drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         rootClosed: {
             display: "flex",
-            backgroundColor: "#282c34",
+            backgroundColor: "#666666",
             color: "#fff",
         },
         rootOpen: {
             display: "flex",
-            backgroundColor: "#282c34",
+            backgroundColor: "#666666",
             color: "#fff",
         },
         appBar: {
@@ -69,7 +68,7 @@ const useStyles = makeStyles((theme: Theme) =>
         },
         drawerPaper: {
             // width: drawerWidth,
-            backgroundColor: "#282c34",
+            backgroundColor: "#666666",
             color: "#fff",
         },
         drawerHeader: {
@@ -127,16 +126,16 @@ type Props = LayerProps & LinkStateProps & LinkDispatchProps;
 let changed: boolean = true;
 
 const Layer: React.FC<Props> = (props) => {
-    const { components, canvas } = props;
+    const { component, canvas } = props;
 
-    const onSet = (components: Components[]) => {
-        props.SetComponents(components);
+    const onSet = (component: Component[]) => {
+        props.SetComponent(component);
     };
 
     const classes = useStyles();
     const theme = useTheme();
     const [selected, setSelected] = React.useState([]);
-    const [layers, setLayers] = React.useState(components);
+    const [layers, setLayers] = React.useState(component);
     const [open, setOpen] = React.useState(true);
     const [ctrl, setCtrl] = React.useState(false);
 
@@ -189,12 +188,23 @@ const Layer: React.FC<Props> = (props) => {
     //     }
     // };
 
-    const renderDelete = (parent, id, children) => {
-        // console.log("rendering delete");
-        return <ClearIcon style={{ color: "#fff" }} onClick={() => handleDeleteChange(parent, id, children)} />;
+    const renderDelete = (parent, id, children, type) => {
+        if (type === "canvas") {
+            return;
+        }
+        return <ClearIcon style={{ color: "#fff" }} onClick={() => handleDeleteChange(parent, id, children, type)} />;
     };
 
-    const handleDeleteChange = (parent, id, children) => {
+    const renderCanvasIcon = (type) => {
+        if (type === "canvas") {
+            return <WebIcon style={{ color: "#fff" }} fontSize="small" />;
+        }
+    };
+
+    const handleDeleteChange = (parent, id, children, type) => {
+        if (type === "canvas") {
+            return;
+        }
         console.log("changing deleted");
         changed = true;
         let newLayers = layers.map((layer) => {
@@ -207,19 +217,15 @@ const Layer: React.FC<Props> = (props) => {
             return;
         }
 
-        // console.log("current index: " + idx);
         let parentIdx = newLayers.findIndex((layer) => layer.id == parent);
         if (newLayers.length == 1 || idx === 0) {
-            // console.log("condition met");
             newLayers = [];
             console.log(newLayers);
             setLayers(newLayers);
-            props.SetComponents(newLayers);
+            props.SetComponent(newLayers);
         }
         //Delete parent reference to child
         if (parent !== null) {
-            // console.log("parent: " + parent);
-            // console.log("parentIdx: " + parentIdx);
             let childIdx = newLayers[parentIdx].children.indexOf(id);
             console.log(newLayers);
             if (newLayers[parentIdx].children.length == 1) {
@@ -234,10 +240,6 @@ const Layer: React.FC<Props> = (props) => {
                     return layer;
                 });
                 // newLayers[parentIdx].children === null;
-                // console.log(newLayers[parentIdx]);
-                // console.log("setting to null: " + parentIdx);
-                // console.log(newLayers);
-
                 // newLayers[parentIdx].children.splice(childIdx, 1);
             } else {
                 newLayers[parentIdx].children.splice(childIdx, 1);
@@ -248,7 +250,7 @@ const Layer: React.FC<Props> = (props) => {
         if (children !== null) {
             let numChildren = children.length;
             // console.log("num of children: " + numChildren + " starting idx: " + idx);
-            // newLayers.splice(idx + 1, numChildren);
+            newLayers.splice(idx + 1, numChildren);
         }
         // if (newLayers.length == 1) {
         //     newLayers = [];
@@ -264,7 +266,7 @@ const Layer: React.FC<Props> = (props) => {
         // }
         if (layers !== newLayers) {
             setLayers(newLayers);
-            props.SetComponents(newLayers);
+            props.SetComponent(newLayers);
             // console.log("setting components");
         }
         // onSet(newLayers);
@@ -316,119 +318,45 @@ const Layer: React.FC<Props> = (props) => {
         setLayers(newLayers);
     };
 
-    let hasMoreChildren = false;
-
-    const checkForSiblings = (
-        row: number,
-        currentLayerIndex: number,
-        layersArray: Array<any>,
-        newArray: Array<any>,
-        hasMoreChildren: boolean
-    ) => {
-        for (let i = newArray.length - 2; i > -1; i--) {
-            //Run backwards through the newArray and look at the parent starting from the bottom
-            let currentNode = newArray[i];
-            if (currentNode.children) {
-                if (currentNode.children.length > 1) {
-                    //If children is greater than 1 meaning that there could be potentially more children to render start loop looking through to see if they are included inside the newArray already
-                    for (let k = 1; k < currentNode.children.length; k++) {
-                        let currentChild = layersArray.filter((layer) => currentNode.children[k] == layer.id);
-                        currentChild = currentChild[0];
-                        if (!newArray.includes(currentChild)) {
-                            currentLayerIndex = layersArray.indexOf(currentChild);
-                            newArray.push(currentChild);
-                            if (layersArray[currentLayerIndex].children) {
-                                runDownNestedLayers(row, currentLayerIndex, layersArray, newArray, hasMoreChildren);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    };
-
-    const runDownNestedLayers = (
-        row: number,
-        currentLayerIndex: number,
-        layersArray: Array<any>,
-        newArray: Array<any>,
-        hasMoreChildren: boolean
-    ): Array<any> => {
-        if (layersArray[currentLayerIndex].children && layersArray[currentLayerIndex].row == row) {
-            let child = layersArray.filter((layer) => layersArray[currentLayerIndex].children[0] == layer.id);
-            child = child[0];
-            currentLayerIndex = layersArray.indexOf(child);
-            newArray.push(child);
-        }
-        if (layersArray[currentLayerIndex].children == null && layersArray.length !== newArray.length) {
-            hasMoreChildren = false;
-            checkForSiblings(row, currentLayerIndex, layersArray, newArray, hasMoreChildren);
-        } else if (layersArray[currentLayerIndex].children == null && layersArray.length == newArray.length) {
-            return newArray;
-        } else {
-            hasMoreChildren = true;
-            runDownNestedLayers(row, currentLayerIndex, layersArray, newArray, hasMoreChildren);
-        }
-    };
-
-    const buildLayerOrder = (layersArray) => {
-        let areMoreComponents = true;
-        let newArray = [];
-        for (let i = 0; areMoreComponents; i++) {
-            if (!layersArray[i]) {
-                areMoreComponents = false;
-                return newArray;
-            }
-            let current = i;
-            if (layersArray[i].row == i && !newArray.includes(layersArray[i]) && !layersArray.parent) {
-                newArray.push(layersArray[i]);
-                newArray.concat(runDownNestedLayers(i, current, layersArray, newArray, hasMoreChildren));
-            } else {
-                if (newArray.length == layersArray.length) {
-                    areMoreComponents = false;
-                }
-            }
-        }
-        return newArray;
-    };
-
     const createLayers = (layers) => {
         let layersArray = layers.map((layer) => {
             return layer;
         });
-        onSet(layers);
+        // onSet(layers);
         return layersArray;
     };
 
     const renderLayers = () => {
         let layersArray = createLayers(layers);
-        // layersArray = buildLayerOrder(layersArray);
         if (layersArray) {
             return layersArray.map((layer) => {
                 return (
-                    <ListItem
-                        button
-                        key={layer.id}
-                        className={clsx(classes.layer, {
-                            [classes.layerSelected]: selected.includes(layer.id),
-                        })}
-                        divider={true}>
-                        <div style={{ marginLeft: 20 * layer.nestedLevel }}></div>
-                        {/* {renderActive(layer.active, layer.id)} */}
-                        <Typography
-                            variant="subtitle2"
-                            component="div"
-                            align="center"
-                            style={{
-                                color: "#fff",
-                                marginTop: 0,
-                                fontSize: "1.15rem",
-                            }}
-                            onClick={() => handleSelectedState(layer.id)}>
-                            {layer.name}-{layer.id}
-                        </Typography>
-                        {renderDelete(layer.parent, layer.id, layer.children)}
-                    </ListItem>
+                    <div key={layer.id}>
+                        <Grid container>
+                            <ListItem
+                                button
+                                className={clsx(classes.layer, {
+                                    [classes.layerSelected]: selected.includes(layer.id),
+                                })}
+                                divider={true}>
+                                <div style={{ marginLeft: 20 * layer.nestedLevel }}></div>
+                                {/* {renderActive(layer.active, layer.id)} */}
+                                <Typography
+                                    variant="subtitle2"
+                                    component="div"
+                                    align="center"
+                                    style={{
+                                        color: "#fff",
+                                        fontSize: "1.15rem",
+                                    }}
+                                    onClick={() => handleSelectedState(layer.id)}>
+                                    {layer.name}-{layer.id}
+                                </Typography>
+                                {renderCanvasIcon(layer.type)}
+                                {renderDelete(layer.parent, layer.id, layer.children, layer.type)}
+                            </ListItem>
+                        </Grid>
+                    </div>
                 );
             });
         } else {
@@ -482,7 +410,7 @@ const Layer: React.FC<Props> = (props) => {
                     [classes.rootOpen]: open,
                 })}
                 style={{
-                    backgroundColor: "#282c34",
+                    backgroundColor: "#666666",
                     color: "#fff",
                     height: 64,
                 }}>
@@ -492,7 +420,7 @@ const Layer: React.FC<Props> = (props) => {
                     className={clsx(classes.appBar, {
                         [classes.appBarShift]: open,
                     })}>
-                    <Toolbar style={{ backgroundColor: "#282c34", color: "#fff" }}>
+                    <Toolbar style={{ backgroundColor: "#666666", color: "#fff" }}>
                         <IconButton
                             color="inherit"
                             aria-label="open drawer"
@@ -546,17 +474,17 @@ const Layer: React.FC<Props> = (props) => {
 };
 
 interface LinkStateProps {
-    components: Components[];
+    component: Component[];
     canvas: Canvas[];
 }
 
 const mapStateToProps = (state: AppState, ownProps: LayerProps): LinkStateProps => ({
-    components: state.components,
+    component: state.component,
     canvas: state.canvas,
 });
 
 interface LinkDispatchProps {
-    SetComponents: (components: Components[]) => void;
+    SetComponent: (component: Component[]) => void;
     SetCanvas: (canvas: Canvas[]) => void;
 }
 
@@ -564,7 +492,7 @@ const mapDispatchToProps = (
     dispatch: ThunkDispatch<any, any, AppActions>,
     ownProps: LayerProps
 ): LinkDispatchProps => ({
-    SetComponents: bindActionCreators(SetComponents, dispatch),
+    SetComponent: bindActionCreators(SetComponent, dispatch),
     SetCanvas: bindActionCreators(SetCanvas, dispatch),
 });
 
