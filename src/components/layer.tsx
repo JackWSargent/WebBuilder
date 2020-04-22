@@ -115,7 +115,6 @@ const useStyles = makeStyles((theme: Theme) =>
             marginTop: "100%",
             width: 400,
             height: "100%",
-
             backgroundColor: "#fff",
             zIndex: 1000,
         },
@@ -132,65 +131,12 @@ let changed: boolean = true;
 const Layer: React.FC<Props> = (props) => {
     const { components, canvas } = props;
 
-    const onSet = (components: Component[]) => {
-        props.SetComponents(components);
-    };
-
     const classes = useStyles();
     const theme = useTheme();
     // const [selected, setSelected] = React.useState([]);
     const [layers, setLayers] = React.useState(components);
     const [open, setOpen] = React.useState(true);
     const [ctrl, setCtrl] = React.useState(false);
-
-    // const handleActiveChange = (id) => {
-    //     console.log("changing active");
-    //     // console.log("changing: " + id);
-    //     const newLayers = layers.map((layer) => {
-    //         // if this is the id we care about, change the last entry
-    //         // if (layer.id === id) {
-    //         //     // spread everything in layer and just change its active state
-    //         //     return {
-    //         //         ...layer,
-    //         //         active: !layer.active
-    //         //     };
-    //         // } else {
-    //         //     // otherwise, return the unaltered layer
-    //         return layer;
-    //         // }
-    //     });
-    //     // let indexesToIgnore = [];
-    //     // for (let i = 0; i < newLayers.length; i++) {
-    //     //     if (newLayers[i].id == id) {
-    //     //         let layer = newLayers[i];
-    //     //         if (layer.children !== null && layer.children.length > 0) {
-    //     //             for (let k = 0; k < layer.children.length; k++) {
-    //     //                 indexesToIgnore.push(layers.indexOf(layers[k + i]));
-    //     //             }
-    //     //             let canvasProperties = [
-    //     //                 {
-    //     //                     drawerClicked: canvas[0].drawerClicked,
-    //     //                     drawerLeftMargin: canvas[0].drawerLeftMargin,
-    //     //                     drawerOpen: canvas[0].drawerOpen,
-    //     //                     idxIgnore: indexesToIgnore
-    //     //                 }
-    //     //             ];
-    //     //             props.SetCanvas(canvasProperties);
-    //     //             console.log(canvasProperties);
-    //     //         }
-    //     //     }
-    //     // }
-
-    //     setLayers(newLayers);
-    // };
-
-    // const renderActive = (val, id) => {
-    //     if (val === true) {
-    //         return <CheckBoxIcon style={{ color: "#fff" }} onClick={() => handleActiveChange(id)} />;
-    //     } else {
-    //         return <CheckBoxOutlineBlankIcon onClick={() => handleActiveChange(id)} style={{ color: "#fff" }} />;
-    //     }
-    // };
 
     const renderDelete = (deletedComponent) => {
         if (deletedComponent.type === "canvas") {
@@ -209,71 +155,8 @@ const Layer: React.FC<Props> = (props) => {
         if (deletedComponent.type === "canvas") {
             return;
         }
-        // console.log("changing deleted");
         changed = true;
-        let newLayers = layers.map((layer) => {
-            return layer;
-        });
-
-        let idx = newLayers.findIndex((layer) => layer.id == deletedComponent.id);
-        if (idx < 0) {
-            console.log("idx doesnt exist");
-            return;
-        }
-
-        let parentIdx = newLayers.findIndex((layer) => layer.id == deletedComponent.parent);
-        if (newLayers.length == 1 || idx === 0) {
-            newLayers = [];
-            console.log(newLayers);
-            setLayers(newLayers);
-            props.SetComponents(newLayers);
-        }
-        //Delete parent reference to child
-        if (parent !== null) {
-            let childIdx = newLayers[parentIdx].children.indexOf(deletedComponent.id);
-            console.log(newLayers);
-            if (newLayers[parentIdx].children.length == 1) {
-                newLayers = newLayers.map((layer) => {
-                    if (layer.id === deletedComponent.parent) {
-                        // console.log("setting children null");
-                        return {
-                            ...layer,
-                            children: null,
-                        };
-                    }
-                    return layer;
-                });
-                // newLayers[parentIdx].children === null;
-                // newLayers[parentIdx].children.splice(childIdx, 1);
-            } else {
-                newLayers[parentIdx].children.splice(childIdx, 1);
-                // console.log("parent has more than 1 child");
-                // console.log(newLayers);
-            }
-        }
-        if (deletedComponent.children !== null) {
-            let numChildren = deletedComponent.children.length;
-            // console.log("num of children: " + numChildren + " starting idx: " + idx);
-            newLayers.splice(idx + 1, numChildren);
-        }
-        // if (newLayers.length == 1) {
-        //     newLayers = [];
-        // } else {
-        newLayers.splice(idx, 1);
-        // }
-
-        console.log(deletedComponent.id);
-        console.log(newLayers);
-
-        // if (newLayers !== null && newLayers.length > 0) {
-        //     console.log(newLayers);
-        // }
-        if (layers !== newLayers) {
-            setLayers(newLayers);
-            props.SetComponents(newLayers);
-            // console.log("setting components");
-        }
-        // props.SetComponent(newLayers);
+        props.DeleteComponent(deletedComponent);
     };
 
     const handleSelectedState = (id) => {
@@ -498,6 +381,7 @@ interface LinkStateProps {
 }
 
 interface LinkDispatchProps {
+    DeleteComponent: (component: Component) => void;
     SetComponents: (components: Component[]) => void;
     SetCanvas: (canvas: Canvas[]) => void;
 }
@@ -511,6 +395,7 @@ const mapDispatchToProps = (
     dispatch: ThunkDispatch<any, any, AppActions>,
     ownProps: LayerProps
 ): LinkDispatchProps => ({
+    DeleteComponent: bindActionCreators(DeleteComponent, dispatch),
     SetComponents: bindActionCreators(SetComponents, dispatch),
     SetCanvas: bindActionCreators(SetCanvas, dispatch),
 });

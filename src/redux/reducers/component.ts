@@ -153,6 +153,7 @@ const buildLayerOrder = (layersArray) => {
 const deleteComponent = (component, state) => {
     let id = component.id;
     let children = component.children;
+    let parent = component.parent;
 
     let newLayers = state.map((layer) => {
         return layer;
