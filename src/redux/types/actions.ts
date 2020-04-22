@@ -24,13 +24,19 @@ export interface Canvas {
     idxIgnore?: Array<number>;
 }
 
-export const SET_COMPONENT = "SET_COMPONENT";
+export const SET_COMPONENTS = "SET_COMPONENTS";
+export const DELETE_COMPONENT = "DELETE_COMPONENT";
 export const SET_CANVAS_STYLING = "SET_CANVAS_STYLING";
 export const SET_CANVAS = "SET_CANVAS";
 
 export interface SetComponentAction {
-    type: typeof SET_COMPONENT;
-    component: Component[];
+    type: typeof SET_COMPONENTS;
+    components: Component[];
+}
+
+export interface DeleteComponentAction {
+    type: typeof DELETE_COMPONENT;
+    component: Component;
 }
 
 export interface SetCanvasStylingAction {
@@ -43,7 +49,7 @@ export interface SetCanvasAction {
     canvas: Canvas[];
 }
 
-export type ComponentActionTypes = SetComponentAction;
+export type ComponentActionTypes = SetComponentAction | DeleteComponentAction;
 export type CanvasStylingActionTypes = SetCanvasStylingAction;
 export type CanvasActionTypes = SetCanvasAction;
 export type AppActions = ComponentActionTypes | CanvasStylingActionTypes | CanvasActionTypes;

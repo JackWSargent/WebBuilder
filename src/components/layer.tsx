@@ -18,8 +18,10 @@ import ListItem from "@material-ui/core/ListItem";
 // import CheckBoxIcon from "@material-ui/icons/CheckBox";
 // import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
 import CanvasStyle from "./canvasStyle";
+import NewComponent from "./newComponent";
 import { connect } from "react-redux";
-import { SetComponent } from "../redux/actions/component";
+import { SetComponents, DeleteComponent } from "../redux/actions/components";
+// import { DeleteComponent } from "../redux/actions/component";
 import { SetCanvas } from "../redux/actions/canvas";
 import { Component, Canvas } from "../redux/types/actions";
 import { AppState } from "../redux/store/storeConfiguration";
@@ -121,64 +123,66 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 interface LayerProps {}
 
+let selected: Array<number> = [];
+
 type Props = LayerProps & LinkStateProps & LinkDispatchProps;
 
 let changed: boolean = true;
 
 const Layer: React.FC<Props> = (props) => {
-    const { component, canvas } = props;
+    const { components, canvas } = props;
 
-    const onSet = (component: Component[]) => {
-        props.SetComponent(component);
+    const onSet = (components: Component[]) => {
+        props.SetComponents(components);
     };
 
     const classes = useStyles();
     const theme = useTheme();
-    const [selected, setSelected] = React.useState([]);
-    const [layers, setLayers] = React.useState(component);
+    // const [selected, setSelected] = React.useState([]);
+    const [layers, setLayers] = React.useState(components);
     const [open, setOpen] = React.useState(true);
     const [ctrl, setCtrl] = React.useState(false);
 
-    const handleActiveChange = (id) => {
-        console.log("changing active");
-        // console.log("changing: " + id);
-        const newLayers = layers.map((layer) => {
-            // if this is the id we care about, change the last entry
-            // if (layer.id === id) {
-            //     // spread everything in layer and just change its active state
-            //     return {
-            //         ...layer,
-            //         active: !layer.active
-            //     };
-            // } else {
-            //     // otherwise, return the unaltered layer
-            return layer;
-            // }
-        });
-        // let indexesToIgnore = [];
-        // for (let i = 0; i < newLayers.length; i++) {
-        //     if (newLayers[i].id == id) {
-        //         let layer = newLayers[i];
-        //         if (layer.children !== null && layer.children.length > 0) {
-        //             for (let k = 0; k < layer.children.length; k++) {
-        //                 indexesToIgnore.push(layers.indexOf(layers[k + i]));
-        //             }
-        //             let canvasProperties = [
-        //                 {
-        //                     drawerClicked: canvas[0].drawerClicked,
-        //                     drawerLeftMargin: canvas[0].drawerLeftMargin,
-        //                     drawerOpen: canvas[0].drawerOpen,
-        //                     idxIgnore: indexesToIgnore
-        //                 }
-        //             ];
-        //             props.SetCanvas(canvasProperties);
-        //             console.log(canvasProperties);
-        //         }
-        //     }
-        // }
+    // const handleActiveChange = (id) => {
+    //     console.log("changing active");
+    //     // console.log("changing: " + id);
+    //     const newLayers = layers.map((layer) => {
+    //         // if this is the id we care about, change the last entry
+    //         // if (layer.id === id) {
+    //         //     // spread everything in layer and just change its active state
+    //         //     return {
+    //         //         ...layer,
+    //         //         active: !layer.active
+    //         //     };
+    //         // } else {
+    //         //     // otherwise, return the unaltered layer
+    //         return layer;
+    //         // }
+    //     });
+    //     // let indexesToIgnore = [];
+    //     // for (let i = 0; i < newLayers.length; i++) {
+    //     //     if (newLayers[i].id == id) {
+    //     //         let layer = newLayers[i];
+    //     //         if (layer.children !== null && layer.children.length > 0) {
+    //     //             for (let k = 0; k < layer.children.length; k++) {
+    //     //                 indexesToIgnore.push(layers.indexOf(layers[k + i]));
+    //     //             }
+    //     //             let canvasProperties = [
+    //     //                 {
+    //     //                     drawerClicked: canvas[0].drawerClicked,
+    //     //                     drawerLeftMargin: canvas[0].drawerLeftMargin,
+    //     //                     drawerOpen: canvas[0].drawerOpen,
+    //     //                     idxIgnore: indexesToIgnore
+    //     //                 }
+    //     //             ];
+    //     //             props.SetCanvas(canvasProperties);
+    //     //             console.log(canvasProperties);
+    //     //         }
+    //     //     }
+    //     // }
 
-        setLayers(newLayers);
-    };
+    //     setLayers(newLayers);
+    // };
 
     // const renderActive = (val, id) => {
     //     if (val === true) {
@@ -188,11 +192,11 @@ const Layer: React.FC<Props> = (props) => {
     //     }
     // };
 
-    const renderDelete = (parent, id, children, type) => {
-        if (type === "canvas") {
+    const renderDelete = (deletedComponent) => {
+        if (deletedComponent.type === "canvas") {
             return;
         }
-        return <ClearIcon style={{ color: "#fff" }} onClick={() => handleDeleteChange(parent, id, children, type)} />;
+        return <ClearIcon style={{ color: "#fff" }} onClick={() => handleDeleteChange(deletedComponent)} />;
     };
 
     const renderCanvasIcon = (type) => {
@@ -201,36 +205,36 @@ const Layer: React.FC<Props> = (props) => {
         }
     };
 
-    const handleDeleteChange = (parent, id, children, type) => {
-        if (type === "canvas") {
+    const handleDeleteChange = (deletedComponent) => {
+        if (deletedComponent.type === "canvas") {
             return;
         }
-        console.log("changing deleted");
+        // console.log("changing deleted");
         changed = true;
         let newLayers = layers.map((layer) => {
             return layer;
         });
 
-        let idx = newLayers.findIndex((layer) => layer.id == id);
+        let idx = newLayers.findIndex((layer) => layer.id == deletedComponent.id);
         if (idx < 0) {
             console.log("idx doesnt exist");
             return;
         }
 
-        let parentIdx = newLayers.findIndex((layer) => layer.id == parent);
+        let parentIdx = newLayers.findIndex((layer) => layer.id == deletedComponent.parent);
         if (newLayers.length == 1 || idx === 0) {
             newLayers = [];
             console.log(newLayers);
             setLayers(newLayers);
-            props.SetComponent(newLayers);
+            props.SetComponents(newLayers);
         }
         //Delete parent reference to child
         if (parent !== null) {
-            let childIdx = newLayers[parentIdx].children.indexOf(id);
+            let childIdx = newLayers[parentIdx].children.indexOf(deletedComponent.id);
             console.log(newLayers);
             if (newLayers[parentIdx].children.length == 1) {
                 newLayers = newLayers.map((layer) => {
-                    if (layer.id === parent) {
+                    if (layer.id === deletedComponent.parent) {
                         // console.log("setting children null");
                         return {
                             ...layer,
@@ -247,8 +251,8 @@ const Layer: React.FC<Props> = (props) => {
                 // console.log(newLayers);
             }
         }
-        if (children !== null) {
-            let numChildren = children.length;
+        if (deletedComponent.children !== null) {
+            let numChildren = deletedComponent.children.length;
             // console.log("num of children: " + numChildren + " starting idx: " + idx);
             newLayers.splice(idx + 1, numChildren);
         }
@@ -258,7 +262,7 @@ const Layer: React.FC<Props> = (props) => {
         newLayers.splice(idx, 1);
         // }
 
-        console.log(id);
+        console.log(deletedComponent.id);
         console.log(newLayers);
 
         // if (newLayers !== null && newLayers.length > 0) {
@@ -266,10 +270,10 @@ const Layer: React.FC<Props> = (props) => {
         // }
         if (layers !== newLayers) {
             setLayers(newLayers);
-            props.SetComponent(newLayers);
+            props.SetComponents(newLayers);
             // console.log("setting components");
         }
-        // onSet(newLayers);
+        // props.SetComponent(newLayers);
     };
 
     const handleSelectedState = (id) => {
@@ -284,38 +288,45 @@ const Layer: React.FC<Props> = (props) => {
                     if (ctrl) {
                         let newSelected = [layer.id];
                         newSelected = newSelected.concat(selected);
-                        setSelected(newSelected);
+                        selected = newSelected;
+                        console.log("ctrl");
                     } else {
-                        let newSelected = [];
-                        newSelected = newSelected.concat(layer.id);
-                        setSelected(newSelected);
+                        let newSelected: Array<number> = [];
+                        newSelected.push(layer.id);
+                        selected = newSelected;
+                        console.log("reg");
+                        console.log(selected);
                     }
+                    return {
+                        ...layer,
+                        selected: true,
+                    };
                 } else if (layer.selected) {
                     //Already selected
                     if (ctrl) {
                         let idx = selected.indexOf(id);
                         let newSelected = selected;
                         newSelected.splice(idx, 1);
-                        setSelected(newSelected);
+                        selected = newSelected;
+                        console.log("splice ctrl");
                     } else if (selected.includes(selected.indexOf(id))) {
+                        console.log("splice reg");
                         let idx = selected.indexOf(id);
                         let newSelected = selected;
                         newSelected.splice(idx, 1);
-                        setSelected(newSelected);
+                        console.log(selected);
+                        selected = newSelected;
                     } //
+                    return {
+                        ...layer,
+                        selected: false,
+                    };
                 }
-
-                return {
-                    ...layer,
-                    selected: !layer.selected,
-                };
-            } else {
-                // otherwise, return the unaltered layer
-                // console.log("Returning unaltered layer");
-                return layer;
             }
+            return { ...layer, selected: false };
         });
         setLayers(newLayers);
+        props.SetComponents(newLayers);
     };
 
     const createLayers = (layers) => {
@@ -350,10 +361,10 @@ const Layer: React.FC<Props> = (props) => {
                                         fontSize: "1.15rem",
                                     }}
                                     onClick={() => handleSelectedState(layer.id)}>
-                                    {layer.name}-{layer.id}
+                                    {layer.name}
                                 </Typography>
                                 {renderCanvasIcon(layer.type)}
-                                {renderDelete(layer.parent, layer.id, layer.children, layer.type)}
+                                {renderDelete(layer)}
                             </ListItem>
                         </Grid>
                     </div>
@@ -377,6 +388,12 @@ const Layer: React.FC<Props> = (props) => {
         });
         changed = false;
     }, [event, changed, selected, canvas, open]);
+
+    React.useEffect(() => {
+        if (layers.length !== components.length) {
+            setLayers(components);
+        }
+    }, [components]);
 
     const handleDrawerOpen = () => {
         setOpen(true);
@@ -460,6 +477,8 @@ const Layer: React.FC<Props> = (props) => {
                     <Divider className="Divider" />
                     <CanvasStyle />
                     <Divider className="Divider" />
+                    <NewComponent />
+                    <Divider className="Divider" />
                 </Drawer>
 
                 <main
@@ -474,25 +493,25 @@ const Layer: React.FC<Props> = (props) => {
 };
 
 interface LinkStateProps {
-    component: Component[];
+    components: Component[];
     canvas: Canvas[];
 }
 
-const mapStateToProps = (state: AppState, ownProps: LayerProps): LinkStateProps => ({
-    component: state.component,
-    canvas: state.canvas,
-});
-
 interface LinkDispatchProps {
-    SetComponent: (component: Component[]) => void;
+    SetComponents: (components: Component[]) => void;
     SetCanvas: (canvas: Canvas[]) => void;
 }
+
+const mapStateToProps = (state: AppState, ownProps: LayerProps): LinkStateProps => ({
+    components: state.components,
+    canvas: state.canvas,
+});
 
 const mapDispatchToProps = (
     dispatch: ThunkDispatch<any, any, AppActions>,
     ownProps: LayerProps
 ): LinkDispatchProps => ({
-    SetComponent: bindActionCreators(SetComponent, dispatch),
+    SetComponents: bindActionCreators(SetComponents, dispatch),
     SetCanvas: bindActionCreators(SetCanvas, dispatch),
 });
 

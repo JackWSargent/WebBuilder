@@ -1,5 +1,5 @@
 import { Component } from "../types/actions";
-import { AppActions, SET_COMPONENT } from "../types/actions";
+import { AppActions, SET_COMPONENTS, DELETE_COMPONENT } from "../types/actions";
 import { Dispatch } from "redux";
 import { AppState } from "../store/storeConfiguration";
 
@@ -18,8 +18,13 @@ import { AppState } from "../store/storeConfiguration";
 //   component
 // });
 
-export const setComponent = (component: Component[]): AppActions => ({
-    type: SET_COMPONENT,
+export const setComponents = (components: Component[]): AppActions => ({
+    type: SET_COMPONENTS,
+    components,
+});
+
+export const deleteComponent = (component: Component): AppActions => ({
+    type: DELETE_COMPONENT,
     component,
 });
 
@@ -61,8 +66,14 @@ export const setComponent = (component: Component[]): AppActions => ({
 //   };
 // };
 
-export const SetComponent = (component: Component[]) => {
+export const SetComponents = (components: Component[]) => {
     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
-        dispatch(setComponent(component));
+        dispatch(setComponents(components));
+    };
+};
+
+export const DeleteComponent = (component: Component) => {
+    return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
+        dispatch(deleteComponent(component));
     };
 };

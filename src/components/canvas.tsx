@@ -9,9 +9,8 @@ import { AppActions } from "../redux/types/actions";
 import { ThunkDispatch } from "redux-thunk";
 import clsx from "clsx";
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
-import { SetComponent } from "../redux/actions/component";
+import { SetComponents } from "../redux/actions/components";
 import Renderer from "./renderer";
-import { copyFileSync } from "fs";
 interface CanvasProps {}
 let defaultSize: number = 24;
 const useStyles = makeStyles((theme: Theme) =>
@@ -165,17 +164,17 @@ const CanvasDisplay: React.FC<Props> = (props) => {
     return <>{renderMargin()}</>;
 };
 interface LinkStateProps {
-    component: Component[];
+    components: Component[];
     canvas: Canvas[];
 }
 
 const mapStateToProps = (state: AppState, ownProps: CanvasProps): LinkStateProps => ({
-    component: state.component,
+    components: state.components,
     canvas: state.canvas,
 });
 
 interface LinkDispatchProps {
-    SetComponent: (component: Component[]) => void;
+    SetComponents: (components: Component[]) => void;
     SetCanvas: (canvas: Canvas[]) => void;
 }
 
@@ -183,7 +182,7 @@ const mapDispatchToProps = (
     dispatch: ThunkDispatch<any, any, AppActions>,
     ownProps: CanvasProps
 ): LinkDispatchProps => ({
-    SetComponent: bindActionCreators(SetComponent, dispatch),
+    SetComponents: bindActionCreators(SetComponents, dispatch),
     SetCanvas: bindActionCreators(SetCanvas, dispatch),
 });
 

@@ -8,7 +8,7 @@ import { bindActionCreators } from "redux";
 import { AppActions } from "../redux/types/actions";
 import { ThunkDispatch } from "redux-thunk";
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
-import { SetComponent } from "../redux/actions/component";
+import { SetComponents } from "../redux/actions/components";
 import { Grid } from "@material-ui/core";
 import { CanvasStyling } from "../redux/types/actions";
 
@@ -17,8 +17,7 @@ interface RendererProps {}
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         renderer: {
-            minWidth: "100vh",
-            maxWidth: "100vh",
+            minWidth: "150%",
             width: 1000,
         },
     })
@@ -33,7 +32,7 @@ let renderedComponentsArr: JSX.Element[] = [];
 
 type Props = RendererProps & LinkStateProps & LinkDispatchProps;
 const Renderer: React.FC<Props> = (props) => {
-    const { component, canvasStyling, canvas } = props;
+    const { components, canvasStyling, canvas } = props;
     const classes = useStyles();
     const [renderedComponents, setRenderedComponents] = React.useState([]);
 
@@ -139,7 +138,7 @@ const Renderer: React.FC<Props> = (props) => {
             console.log("rendered the first component");
             return;
         }
-        newComponents = component.map((element) => {
+        newComponents = components.map((element) => {
             let componentObject: Component = Object.assign({}, element);
             componentObject.isRendered = false;
             return componentObject;
@@ -158,7 +157,7 @@ const Renderer: React.FC<Props> = (props) => {
             let newRenderedComponents: JSX.Element[] = [];
             // setRenderedComponents([]); ----------------------
             renderedComponentsArr = [];
-            if (component.length === 1) {
+            if (components.length === 1) {
                 renderedComponentsArr = [returnComponent(newComponents[idx])];
                 setRenderedComponents([returnComponent(newComponents[idx])]);
                 idx = idx + 1;
@@ -220,7 +219,7 @@ const Renderer: React.FC<Props> = (props) => {
 
     React.useEffect(() => {
         reRenderComponents();
-    }, [component, newComponents, renderedComponentsArr]);
+    }, [components, newComponents, renderedComponentsArr]);
 
     return (
         <div
@@ -235,19 +234,19 @@ const Renderer: React.FC<Props> = (props) => {
     );
 };
 interface LinkStateProps {
-    component: Component[];
+    components: Component[];
     canvas: Canvas[];
     canvasStyling: CanvasStyling[];
 }
 
 const mapStateToProps = (state: AppState, ownProps: RendererProps): LinkStateProps => ({
-    component: state.component,
+    components: state.components,
     canvas: state.canvas,
     canvasStyling: state.canvasStyling,
 });
 
 interface LinkDispatchProps {
-    SetComponent: (component: Component[]) => void;
+    SetComponents: (components: Component[]) => void;
     SetCanvas: (canvas: Canvas[]) => void;
 }
 
@@ -255,7 +254,7 @@ const mapDispatchToProps = (
     dispatch: ThunkDispatch<any, any, AppActions>,
     ownProps: RendererProps
 ): LinkDispatchProps => ({
-    SetComponent: bindActionCreators(SetComponent, dispatch),
+    SetComponents: bindActionCreators(SetComponents, dispatch),
     SetCanvas: bindActionCreators(SetCanvas, dispatch),
 });
 

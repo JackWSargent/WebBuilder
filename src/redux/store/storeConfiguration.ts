@@ -8,7 +8,7 @@ import { canvasReducer } from "../reducers/canvas";
 // import { composeWithDevTools } from "redux-devtools-extension";
 
 export const rootReducer = combineReducers({
-    component: componentReducer,
+    components: componentReducer,
     canvasStyling: canvasStylingReducer,
     canvas: canvasReducer,
 });

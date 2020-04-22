@@ -1,7 +1,7 @@
 import { Component } from "../types/actions";
-import { ComponentActionTypes, SET_COMPONENT } from "../types/actions";
+import { ComponentActionTypes, SET_COMPONENTS, DELETE_COMPONENT } from "../types/actions";
 
-const componentReducerDefaultState: Component[] = [
+const componentsReducerDefaultState: Component[] = [
     {
         id: 100,
         isRendered: false,
@@ -86,11 +86,9 @@ const checkForSiblings = (
     hasMoreChildren: boolean
 ) => {
     for (let i = newArray.length - 2; i > -1; i--) {
-        //Run backwards through the newArray and look at the parent starting from the bottom
         let currentNode = newArray[i];
         if (currentNode.children) {
             if (currentNode.children.length > 1) {
-                //If children is greater than 1 meaning that there could be potentially more children to render start loop looking through to see if they are included inside the newArray already
                 for (let k = 1; k < currentNode.children.length; k++) {
                     let currentChild = layersArray.filter((layer) => currentNode.children[k] === layer.id);
                     currentChild = currentChild[0];
@@ -132,7 +130,6 @@ const runDownNestedLayers = (
 };
 
 const buildLayerOrder = (layersArray) => {
-    // console.log("Building layer order");
     let areMoreComponents = true;
     let newArray = [];
     for (let i = 0; areMoreComponents; i++) {
@@ -150,14 +147,62 @@ const buildLayerOrder = (layersArray) => {
             }
         }
     }
-    // console.log(newArray);
     return newArray;
 };
 
-const componentReducer = (state = componentReducerDefaultState, action: ComponentActionTypes) => {
+const deleteComponent = (component, state) => {
+    let id = component.id;
+    let children = component.children;
+
+    let newLayers = state.map((layer) => {
+        return layer;
+    });
+
+    let idx = newLayers.findIndex((layer) => layer.id == id);
+    if (idx < 0) {
+        console.log("idx doesnt exist");
+        return;
+    }
+
+    let parentIdx = newLayers.findIndex((layer) => layer.id == parent);
+    if (newLayers.length == 1 || idx === 0) {
+        newLayers = [];
+        console.log(newLayers);
+    }
+    //Delete parent reference to child
+    if (parent !== null) {
+        let childIdx = newLayers[parentIdx].children.indexOf(id);
+        console.log(newLayers);
+        if (newLayers[parentIdx].children.length == 1) {
+            newLayers = newLayers.map((layer) => {
+                if (layer.id === parent) {
+                    return {
+                        ...layer,
+                        children: null,
+                    };
+                }
+                return layer;
+            });
+        } else {
+            newLayers[parentIdx].children.splice(childIdx, 1);
+        }
+    }
+    if (children !== null) {
+        let numChildren = children.length;
+        newLayers.splice(idx + 1, numChildren);
+    }
+
+    newLayers.splice(idx, 1);
+
+    return newLayers;
+};
+
+const componentReducer = (state = componentsReducerDefaultState, action: ComponentActionTypes) => {
     switch (action.type) {
-        case SET_COMPONENT:
-            return buildLayerOrder(action.component);
+        case DELETE_COMPONENT:
+            return deleteComponent(action.component, state);
+        case SET_COMPONENTS:
+            return buildLayerOrder(action.components);
         default:
             return state;
     }
