@@ -127,6 +127,7 @@ let selected: Array<number> = [];
 type Props = LayerProps & LinkStateProps & LinkDispatchProps;
 
 let changed: boolean = true;
+let ctrl: boolean = false;
 
 const Layer: React.FC<Props> = (props) => {
     const { components, canvas } = props;
@@ -136,7 +137,7 @@ const Layer: React.FC<Props> = (props) => {
     // const [selected, setSelected] = React.useState([]);
     const [layers, setLayers] = React.useState(components);
     const [open, setOpen] = React.useState(true);
-    const [ctrl, setCtrl] = React.useState(false);
+    // const [ctrl, setCtrl] = React.useState(false);
 
     const renderDelete = (deletedComponent) => {
         if (deletedComponent.type === "canvas") {
@@ -160,51 +161,49 @@ const Layer: React.FC<Props> = (props) => {
     };
 
     const handleSelectedState = (id) => {
-        // console.log("changing selected");
         changed = true;
+        console.log("selected at beginning");
+        console.log(selected);
         let newLayers = layers.map((layer) => {
             // if this is the id we care about, change the last entry
             if (layer.id === id) {
                 // spread everything in layer and just change its selected state
-                if (!layer.selected) {
-                    // Not Selected
+                if (!layer.selected && !selected.includes(layer.id)) {
                     if (ctrl) {
-                        let newSelected = [layer.id];
-                        newSelected = newSelected.concat(selected);
-                        selected = newSelected;
-                        console.log("ctrl");
+                        let newSelected = layer.id;
+                        selected.push(newSelected);
                     } else {
-                        let newSelected: Array<number> = [];
-                        newSelected.push(layer.id);
-                        selected = newSelected;
-                        console.log("reg");
-                        console.log(selected);
+                        selected.splice(0, selected.length);
+                        selected.push(id);
                     }
                     return {
                         ...layer,
                         selected: true,
                     };
-                } else if (layer.selected) {
-                    //Already selected
+                } else if (selected.includes(layer.id) || layer.selected) {
                     if (ctrl) {
+                        let idx = selected.indexOf(layer.id);
+                        selected.splice(idx, 1);
+                    } else {
                         let idx = selected.indexOf(id);
-                        let newSelected = selected;
-                        newSelected.splice(idx, 1);
-                        selected = newSelected;
-                        console.log("splice ctrl");
-                    } else if (selected.includes(selected.indexOf(id))) {
-                        console.log("splice reg");
-                        let idx = selected.indexOf(id);
-                        let newSelected = selected;
-                        newSelected.splice(idx, 1);
-                        console.log(selected);
-                        selected = newSelected;
-                    } //
+                        selected.splice(idx, 1);
+                    }
+
                     return {
                         ...layer,
                         selected: false,
                     };
+                } else {
+                    let idx = selected.indexOf(id);
+                    selected.splice(idx, 1);
+                    return { ...layer, selected: false };
                 }
+            }
+            if (ctrl) {
+                return layer;
+            }
+            if (selected.includes(layer.id) && !ctrl) {
+                return { ...layer, selected: false };
             }
             return { ...layer, selected: false };
         });
@@ -216,7 +215,6 @@ const Layer: React.FC<Props> = (props) => {
         let layersArray = layers.map((layer) => {
             return layer;
         });
-        // onSet(layers);
         return layersArray;
     };
 
@@ -226,15 +224,16 @@ const Layer: React.FC<Props> = (props) => {
             return layersArray.map((layer) => {
                 return (
                     <div key={layer.id}>
-                        <Grid container>
+                        <Grid container onClick={() => handleSelectedState(layer.id)}>
                             <ListItem
                                 button
                                 className={clsx(classes.layer, {
                                     [classes.layerSelected]: selected.includes(layer.id),
                                 })}
                                 divider={true}>
-                                <div style={{ marginLeft: 20 * layer.nestedLevel }}></div>
+                                <div style={{ marginLeft: 10 * layer.nestedLevel }}></div>
                                 {/* {renderActive(layer.active, layer.id)} */}
+                                {/* {layer.id} */}
                                 <Typography
                                     variant="subtitle2"
                                     component="div"
@@ -243,9 +242,11 @@ const Layer: React.FC<Props> = (props) => {
                                         color: "#fff",
                                         fontSize: "1.15rem",
                                     }}
-                                    onClick={() => handleSelectedState(layer.id)}>
+                                    // onClick={() => handleSelectedState(layer.id)}
+                                >
                                     {layer.name}
                                 </Typography>
+
                                 {renderCanvasIcon(layer.type)}
                                 {renderDelete(layer)}
                             </ListItem>
@@ -260,17 +261,17 @@ const Layer: React.FC<Props> = (props) => {
     React.useEffect(() => {
         window.addEventListener("keydown", (event) => {
             if (event.keyCode === 17) {
-                setCtrl(true);
+                ctrl = true;
                 // console.log(true);
             }
         });
         window.addEventListener("keyup", (event) => {
             if (event.keyCode === 17) {
-                setCtrl(false);
+                ctrl = false;
             }
         });
         changed = false;
-    }, [event, changed, selected, canvas, open]);
+    }, [event, changed, selected, canvas, open, layers]);
 
     React.useEffect(() => {
         if (layers.length !== components.length) {
@@ -285,7 +286,6 @@ const Layer: React.FC<Props> = (props) => {
                 drawerClicked: canvas[0].drawerClicked,
                 drawerLeftMargin: canvas[0].drawerLeftMargin,
                 drawerOpen: true,
-                idxIgnore: canvas[0].idxIgnore,
             },
         ]);
     };
@@ -297,7 +297,6 @@ const Layer: React.FC<Props> = (props) => {
                 drawerClicked: canvas[0].drawerClicked,
                 drawerLeftMargin: canvas[0].drawerLeftMargin,
                 drawerOpen: false,
-                idxIgnore: canvas[0].idxIgnore,
             },
         ]);
     };

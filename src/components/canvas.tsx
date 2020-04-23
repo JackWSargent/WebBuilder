@@ -108,7 +108,7 @@ const CanvasDisplay: React.FC<Props> = (props) => {
         if (canvas[0].drawerOpen === true) {
             return (
                 <>
-                    <div className={classes.canvasContainer + classes.topMargin} style={{ fontSize: defaultSize }}>
+                    <div className={classes.canvasContainer} style={{ fontSize: defaultSize }}>
                         <div
                             style={{
                                 marginTop: 64,
@@ -124,12 +124,13 @@ const CanvasDisplay: React.FC<Props> = (props) => {
                     </div>
                     <div
                         id="mouse-detection"
-                        className={clsx(classes.toggleOff, {
-                            [classes.toggleOn]: marginToggle,
-                        })}
+                        className={classes.canvasContainer}
+                        // className={clsx(classes.toggleOff, {
+                        //     [classes.toggleOn]: marginToggle,
+                        // })}
                         onMouseMove={changeMargin}
                         style={{ fontSize: defaultSize }}>
-                        <div
+                        {/* <div
                             id="margin-resize"
                             className={classes.divider}
                             style={{
@@ -137,7 +138,7 @@ const CanvasDisplay: React.FC<Props> = (props) => {
                             }}
                             onMouseMove={changeMargin}
                             onMouseDown={handleMarginClick}
-                            onMouseUp={handleMarginClick}></div>
+                            onMouseUp={handleMarginClick}></div> */}
                     </div>
                 </>
             );

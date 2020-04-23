@@ -6,7 +6,6 @@ const canvasReducerDefaultState: Canvas[] = [
         drawerOpen: true,
         drawerLeftMargin: 240,
         drawerClicked: false,
-        idxIgnore: [],
     },
 ];
 

@@ -36,8 +36,8 @@ const NewComponent: React.FC<Props> = (props) => {
         if (selectedComponents.length === 1) {
             return selectedComponents[0];
         }
-        console.log(selectedComponents);
-        console.log("false");
+        // console.log(selectedComponents);
+        // console.log("false");
         return false;
     };
 
@@ -57,7 +57,7 @@ const NewComponent: React.FC<Props> = (props) => {
 
     const handleNewComponent = () => {
         if (!hasSelectedLayer) {
-            console.log("does not have selected Component");
+            // console.log("does not have selected Component");
             return;
         }
         let parentLayer = hasSelectedLayer();
@@ -77,22 +77,22 @@ const NewComponent: React.FC<Props> = (props) => {
             if (obj.id === parentLayer.id) {
                 if (parentLayer.children === null) {
                     let newChild = [newComponentObj.id];
-                    console.log(newChild);
+                    // console.log(newChild);
                     return { ...obj, children: newChild };
                 } else {
                     let newChildren = parentLayer.children.map((el) => {
                         return el;
                     });
                     newChildren.push(newComponentObj.id);
-                    console.log(newChildren);
+                    // console.log(newChildren);
                     return { ...obj, children: newChildren };
                 }
             }
-            console.log(obj);
+            // console.log(obj);
             return obj;
         });
 
-        console.log(newComponentArr);
+        // console.log(newComponentArr);
         newComponentArr.push(newComponentObj);
         props.SetComponents(newComponentArr);
     };

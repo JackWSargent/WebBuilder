@@ -11,14 +11,22 @@ import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 import { SetComponents } from "../redux/actions/components";
 import { Grid } from "@material-ui/core";
 import { CanvasStyling } from "../redux/types/actions";
+import clsx from "clsx";
+import canvasStyle from "./canvasStyle";
 
 interface RendererProps {}
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         renderer: {
-            minWidth: "150%",
-            width: 1000,
+            minWidth: "100%",
+            width: "100%",
+        },
+        layer: {},
+        layerSelected: {
+            borderStyle: "dashed",
+            borderWidth: "1px",
+            borderColor: "#668ace",
         },
     })
 );
@@ -59,27 +67,49 @@ const Renderer: React.FC<Props> = (props) => {
             case "gridItem":
                 if (childrenVal) {
                     return (
-                        <Grid item id={name} key={id}>
+                        <Grid
+                            item
+                            id={name}
+                            key={id}
+                            className={clsx(classes.layer, {
+                                [classes.layerSelected]: layer.selected,
+                            })}>
                             {id + " " + name} .. {returnChildren(layer)}
                         </Grid>
                     );
                 }
                 return (
-                    <Grid item id={name} key={id}>
+                    <Grid
+                        item
+                        id={name}
+                        key={id}
+                        className={clsx(classes.layer, {
+                            [classes.layerSelected]: layer.selected,
+                        })}>
                         {id + " " + name}...
                     </Grid>
                 );
             default:
                 if (childrenVal) {
                     return (
-                        <div id={name} key={id}>
+                        <div
+                            id={name}
+                            key={id}
+                            className={clsx(classes.layer, {
+                                [classes.layerSelected]: layer.selected,
+                            })}>
                             {id} {name}
                             {returnChildren(layer)}
                         </div>
                     );
                 }
                 return (
-                    <div id={name} key={id}>
+                    <div
+                        id={name}
+                        key={id}
+                        className={clsx(classes.layer, {
+                            [classes.layerSelected]: layer.selected,
+                        })}>
                         {id}
                     </div>
                 );
@@ -165,16 +195,7 @@ const Renderer: React.FC<Props> = (props) => {
             }
             for (let i: number = 1; i < newComponents.length; i++) {
                 layer = newComponents[idx];
-                // ----------------------------------------
-                // Built for when active was part of the UX design
-                // ----------------------------------------
-                // if (canvas[0].idxIgnore.includes(idx)) {
-                //     idx += 1;
-                //     console.log("hit condition");
-                //     return;
-                // }//
                 if (!layer || layer.isRendered == true || layer.parent !== null) {
-                    // console.error(idx);
                     return;
                 }
                 if (i == 1 && renderedComponents.length > 0) {
@@ -228,6 +249,7 @@ const Renderer: React.FC<Props> = (props) => {
             style={{
                 fontSize: getFontSizing(),
                 boxSizing: getSizing(),
+                marginLeft: canvas[0].drawerOpen ? canvas[0].drawerLeftMargin : 0,
             }}>
             {renderComponents()}
         </div>

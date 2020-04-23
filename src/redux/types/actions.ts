@@ -21,7 +21,6 @@ export interface Canvas {
     drawerOpen?: boolean;
     drawerLeftMargin?: number;
     drawerClicked?: boolean;
-    idxIgnore?: Array<number>;
 }
 
 export const SET_COMPONENTS = "SET_COMPONENTS";

@@ -170,7 +170,6 @@ const deleteComponent = (component, state) => {
         newLayers = [];
         console.log(newLayers);
     }
-    //Delete parent reference to child
     if (parent !== null) {
         let childIdx = newLayers[parentIdx].children.indexOf(id);
         console.log(newLayers);
@@ -189,12 +188,21 @@ const deleteComponent = (component, state) => {
         }
     }
     if (children !== null) {
-        let numChildren = children.length;
+        let numChildren = 0;
+        let childrenFound = false;
+        for (let i = idx; i < newLayers.length - 1 || !childrenFound; i++) {
+            if (newLayers[i].nestedLevel <= component.nestedLevel) {
+                numChildren = i - idx - 1;
+                childrenFound = true;
+            }
+        }
         newLayers.splice(idx + 1, numChildren);
+        console.log(numChildren);
+        console.log(newLayers);
     }
 
     newLayers.splice(idx, 1);
-
+    console.log(newLayers);
     return newLayers;
 };
 
