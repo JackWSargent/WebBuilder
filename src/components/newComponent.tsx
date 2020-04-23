@@ -9,7 +9,7 @@ import { bindActionCreators } from "redux";
 import { AppActions } from "../redux/types/actions";
 import { ThunkDispatch } from "redux-thunk";
 // import clsx from "clsx";
-import { SetComponents } from "../redux/actions/components";
+import { SetComponents, AddComponent } from "../redux/actions/components";
 import { Grid } from "@material-ui/core";
 import Select from "@material-ui/core/Select";
 import Button from "@material-ui/core/Button";
@@ -67,34 +67,33 @@ const NewComponent: React.FC<Props> = (props) => {
             name: "New Component",
             type: newComponentType,
             selected: false,
-            active: true,
             children: null,
             parent: parentLayer.id,
             nestedLevel: parentLayer.nestedLevel + 1,
-            row: 0,
         };
-        let newComponentArr = components.map((obj) => {
-            if (obj.id === parentLayer.id) {
-                if (parentLayer.children === null) {
-                    let newChild = [newComponentObj.id];
-                    // console.log(newChild);
-                    return { ...obj, children: newChild };
-                } else {
-                    let newChildren = parentLayer.children.map((el) => {
-                        return el;
-                    });
-                    newChildren.push(newComponentObj.id);
-                    // console.log(newChildren);
-                    return { ...obj, children: newChildren };
-                }
-            }
-            // console.log(obj);
-            return obj;
-        });
+        // let newComponentArr = components.map((obj) => {
+        //     if (obj.id === parentLayer.id) {
+        //         if (parentLayer.children === null) {
+        //             let newChild = [newComponentObj.id];
+        //             // console.log(newChild);
+        //             return { ...obj, children: newChild };
+        //         } else {
+        //             let newChildren = parentLayer.children.map((el) => {
+        //                 return el;
+        //             });
+        //             newChildren.push(newComponentObj.id);
+        //             // console.log(newChildren);
+        //             return { ...obj, children: newChildren };
+        //         }
+        //     }
+        //     // console.log(obj);
+        //     return obj;
+        // });
 
-        // console.log(newComponentArr);
-        newComponentArr.push(newComponentObj);
-        props.SetComponents(newComponentArr);
+        console.log(newComponentObj);
+        // newComponentArr.push(newComponentObj);
+        // props.SetComponents(newComponentArr);
+        props.AddComponent(newComponentObj);
     };
 
     return (
@@ -171,6 +170,7 @@ const mapStateToProps = (state: AppState, ownProps: NewComponentProps): LinkStat
 
 interface LinkDispatchProps {
     SetComponents: (components: Component[]) => void;
+    AddComponent: (component: Component) => void;
 }
 
 const mapDispatchToProps = (
@@ -178,6 +178,7 @@ const mapDispatchToProps = (
     ownProps: NewComponentProps
 ): LinkDispatchProps => ({
     SetComponents: bindActionCreators(SetComponents, dispatch),
+    AddComponent: bindActionCreators(AddComponent, dispatch),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(NewComponent);

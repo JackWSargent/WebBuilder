@@ -12,7 +12,10 @@ export const rootReducer = combineReducers({
     canvasStyling: canvasStylingReducer,
     canvas: canvasReducer,
 });
-const composeEnhancers = (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+const composeEnhancers =
+    ((window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ &&
+        (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({ trace: true, traceLimit: 25 })) ||
+    compose;
 export type AppState = ReturnType<typeof rootReducer>;
 
 export const store = createStore(

@@ -3,8 +3,6 @@ export interface Component {
     id: number;
     name: string;
     type: string;
-    row: number;
-    active: boolean;
     nestedLevel: number;
     parent?: number;
     children?: number[];
@@ -25,6 +23,7 @@ export interface Canvas {
 
 export const SET_COMPONENTS = "SET_COMPONENTS";
 export const DELETE_COMPONENT = "DELETE_COMPONENT";
+export const ADD_COMPONENT = "ADD_COMPONENT";
 export const SET_CANVAS_STYLING = "SET_CANVAS_STYLING";
 export const SET_CANVAS = "SET_CANVAS";
 
@@ -38,6 +37,11 @@ export interface DeleteComponentAction {
     component: Component;
 }
 
+export interface AddComponentAction {
+    type: typeof ADD_COMPONENT;
+    component: Component;
+}
+
 export interface SetCanvasStylingAction {
     type: typeof SET_CANVAS_STYLING;
     canvasStyling: CanvasStyling[];
@@ -48,7 +52,7 @@ export interface SetCanvasAction {
     canvas: Canvas[];
 }
 
-export type ComponentActionTypes = SetComponentAction | DeleteComponentAction;
+export type ComponentActionTypes = SetComponentAction | DeleteComponentAction | AddComponentAction;
 export type CanvasStylingActionTypes = SetCanvasStylingAction;
 export type CanvasActionTypes = SetCanvasAction;
 export type AppActions = ComponentActionTypes | CanvasStylingActionTypes | CanvasActionTypes;

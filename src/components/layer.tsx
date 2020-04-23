@@ -123,6 +123,7 @@ const useStyles = makeStyles((theme: Theme) =>
 interface LayerProps {}
 
 let selected: Array<number> = [];
+let deleteChange: boolean = false;
 
 type Props = LayerProps & LinkStateProps & LinkDispatchProps;
 
@@ -156,14 +157,15 @@ const Layer: React.FC<Props> = (props) => {
         if (deletedComponent.type === "canvas") {
             return;
         }
+        deleteChange = true;
         changed = true;
         props.DeleteComponent(deletedComponent);
     };
 
     const handleSelectedState = (id) => {
         changed = true;
-        console.log("selected at beginning");
-        console.log(selected);
+        // console.log("selected at beginning");
+        // console.log(selected);
         let newLayers = layers.map((layer) => {
             // if this is the id we care about, change the last entry
             if (layer.id === id) {
@@ -207,8 +209,10 @@ const Layer: React.FC<Props> = (props) => {
             }
             return { ...layer, selected: false };
         });
-        setLayers(newLayers);
-        props.SetComponents(newLayers);
+        if (!deleteChange) {
+            props.SetComponents(newLayers);
+            setLayers(newLayers);
+        }
     };
 
     const createLayers = (layers) => {
@@ -232,7 +236,7 @@ const Layer: React.FC<Props> = (props) => {
                                 })}
                                 divider={true}>
                                 <div style={{ marginLeft: 10 * layer.nestedLevel }}></div>
-                                {/* {renderActive(layer.active, layer.id)} */}
+
                                 {/* {layer.id} */}
                                 <Typography
                                     variant="subtitle2"
@@ -271,6 +275,7 @@ const Layer: React.FC<Props> = (props) => {
             }
         });
         changed = false;
+        deleteChange = false;
     }, [event, changed, selected, canvas, open, layers]);
 
     React.useEffect(() => {

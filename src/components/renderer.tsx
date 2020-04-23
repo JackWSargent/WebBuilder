@@ -28,6 +28,16 @@ const useStyles = makeStyles((theme: Theme) =>
             borderWidth: "1px",
             borderColor: "#668ace",
         },
+        layerSelectedContainer: {
+            borderStyle: "dashed",
+            borderWidth: "2px",
+            borderColor: "#668ace",
+        },
+        layerSelectedCanvas: {
+            borderStyle: "dashed",
+            borderWidth: "3px",
+            borderColor: "#668ace",
+        },
     })
 );
 
@@ -49,19 +59,30 @@ const Renderer: React.FC<Props> = (props) => {
         let id: number = layer.id;
         let name: string = layer.name;
         let childrenVal: boolean = layer.children !== null;
-        // if (layer.active) {
         switch (layer.type) {
             case "gridContainer":
                 if (childrenVal) {
                     return (
-                        <Grid container id={name} key={id}>
-                            {id + " " + name} . {returnChildren(layer)}
+                        <Grid
+                            container
+                            id={name}
+                            key={id}
+                            className={clsx(classes.layer, {
+                                [classes.layerSelectedContainer]: layer.selected,
+                            })}>
+                            {id} . {name} {returnChildren(layer)}
                         </Grid>
                     );
                 }
                 return (
-                    <Grid container id={name} key={id}>
-                        {id + " " + name}.........
+                    <Grid
+                        container
+                        id={name}
+                        key={id}
+                        className={clsx(classes.layer, {
+                            [classes.layerSelectedContainer]: layer.selected,
+                        })}>
+                        {id} .. {name}
                     </Grid>
                 );
             case "gridItem":
@@ -74,7 +95,7 @@ const Renderer: React.FC<Props> = (props) => {
                             className={clsx(classes.layer, {
                                 [classes.layerSelected]: layer.selected,
                             })}>
-                            {id + " " + name} .. {returnChildren(layer)}
+                            {id} . {name} {returnChildren(layer)}
                         </Grid>
                     );
                 }
@@ -86,8 +107,32 @@ const Renderer: React.FC<Props> = (props) => {
                         className={clsx(classes.layer, {
                             [classes.layerSelected]: layer.selected,
                         })}>
-                        {id + " " + name}...
+                        {id} .. {name}
                     </Grid>
+                );
+            case "canvas":
+                if (childrenVal) {
+                    return (
+                        <div
+                            id={name}
+                            key={id}
+                            className={clsx(classes.layer, {
+                                [classes.layerSelectedCanvas]: layer.selected,
+                            })}>
+                            {id} . {name}
+                            {returnChildren(layer)}
+                        </div>
+                    );
+                }
+                return (
+                    <div
+                        id={name}
+                        key={id}
+                        className={clsx(classes.layer, {
+                            [classes.layerSelectedCanvas]: layer.selected,
+                        })}>
+                        {id} .. {name}
+                    </div>
                 );
             default:
                 if (childrenVal) {
@@ -98,7 +143,7 @@ const Renderer: React.FC<Props> = (props) => {
                             className={clsx(classes.layer, {
                                 [classes.layerSelected]: layer.selected,
                             })}>
-                            {id} {name}
+                            {id} . {name}
                             {returnChildren(layer)}
                         </div>
                     );
@@ -110,7 +155,7 @@ const Renderer: React.FC<Props> = (props) => {
                         className={clsx(classes.layer, {
                             [classes.layerSelected]: layer.selected,
                         })}>
-                        {id}
+                        {id} .. {name}
                     </div>
                 );
         }
@@ -122,10 +167,6 @@ const Renderer: React.FC<Props> = (props) => {
     };
 
     const returnChildren = (layer): Array<JSX.Element> => {
-        // if (!layer.active) {
-        //     return [];
-        // }
-        // console.log("returning children");
         let childrenArr: JSX.Element[] = [];
         for (let i = 1; i < layer.children.length + 1; i++) {
             idx = idx + 1;
@@ -140,7 +181,7 @@ const Renderer: React.FC<Props> = (props) => {
     };
 
     /*
-    First start while loop and look at the first idx, it will be a root of one of the rows.
+    First start while loop and look at the first idx, it will be a root
     Send it to the render function where it first checks if there are children.
     If not the component will be sent to the returnComponent function
     If there are children then it will be sent to the returnComponent function and also have to trigger the function nested inside it to render the children/child.

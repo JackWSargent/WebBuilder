@@ -1,5 +1,6 @@
 import { Component } from "../types/actions";
-import { ComponentActionTypes, SET_COMPONENTS, DELETE_COMPONENT } from "../types/actions";
+import { ComponentActionTypes, SET_COMPONENTS, DELETE_COMPONENT, ADD_COMPONENT } from "../types/actions";
+/* eslint-disable */
 
 const componentsReducerDefaultState: Component[] = [
     {
@@ -8,11 +9,9 @@ const componentsReducerDefaultState: Component[] = [
         name: "Canvas",
         type: "canvas",
         selected: false,
-        active: true,
         children: [200, 600],
         parent: null,
         nestedLevel: 0,
-        row: 0,
     },
     {
         id: 200,
@@ -20,11 +19,9 @@ const componentsReducerDefaultState: Component[] = [
         name: "Item",
         type: "gridItem",
         selected: false,
-        active: true,
         children: [300, 400, 500],
         parent: 100,
         nestedLevel: 1,
-        row: 0,
     },
     {
         id: 300,
@@ -32,11 +29,9 @@ const componentsReducerDefaultState: Component[] = [
         name: "Item2",
         type: "gridItem",
         selected: false,
-        active: true,
         children: null,
         parent: 200,
         nestedLevel: 2,
-        row: 0,
     },
     {
         id: 400,
@@ -44,42 +39,35 @@ const componentsReducerDefaultState: Component[] = [
         name: "Item3",
         type: "gridItem",
         selected: false,
-        active: true,
         children: null,
         parent: 200,
         nestedLevel: 2,
-        row: 0,
     },
     {
         id: 500,
         isRendered: false,
         name: "Container",
-        type: "div",
+        type: "gridContainer",
         selected: false,
-        active: true,
         children: null,
         parent: 200,
         nestedLevel: 2,
-        row: 0,
     },
     {
         id: 600,
         isRendered: false,
         name: "Container",
-        type: "div",
+        type: "gridContainer",
         selected: false,
-        active: true,
         children: null,
         parent: 100,
         nestedLevel: 1,
-        row: 0,
     },
 ];
 
 let hasMoreChildren: boolean = false;
 
 const checkForSiblings = (
-    row: number,
     currentLayerIndex: number,
     layersArray: Array<any>,
     newArray: Array<any>,
@@ -96,7 +84,7 @@ const checkForSiblings = (
                         currentLayerIndex = layersArray.indexOf(currentChild);
                         newArray.push(currentChild);
                         if (layersArray[currentLayerIndex].children) {
-                            runDownNestedLayers(row, currentLayerIndex, layersArray, newArray, hasMoreChildren);
+                            runDownNestedLayers(currentLayerIndex, layersArray, newArray, hasMoreChildren);
                         }
                     }
                 }
@@ -106,48 +94,94 @@ const checkForSiblings = (
 };
 
 const runDownNestedLayers = (
-    row: number,
     currentLayerIndex: number,
     layersArray: Array<any>,
     newArray: Array<any>,
     hasMoreChildren: boolean
 ): Array<any> => {
-    if (layersArray[currentLayerIndex].children && layersArray[currentLayerIndex].row === row) {
+    if (layersArray[currentLayerIndex].children) {
         let child = layersArray.filter((layer) => layersArray[currentLayerIndex].children[0] === layer.id);
         child = child[0];
         currentLayerIndex = layersArray.indexOf(child);
         newArray.push(child);
+        // console.log(child);
     }
     if (layersArray[currentLayerIndex].children === null && layersArray.length !== newArray.length) {
         hasMoreChildren = false;
-        checkForSiblings(row, currentLayerIndex, layersArray, newArray, hasMoreChildren);
+        checkForSiblings(currentLayerIndex, layersArray, newArray, hasMoreChildren);
     } else if (layersArray[currentLayerIndex].children === null && layersArray.length === newArray.length) {
         return newArray;
     } else {
         hasMoreChildren = true;
-        runDownNestedLayers(row, currentLayerIndex, layersArray, newArray, hasMoreChildren);
+        runDownNestedLayers(currentLayerIndex, layersArray, newArray, hasMoreChildren);
     }
 };
 
-const buildLayerOrder = (layersArray) => {
+function buildLayerOrder(layersArray) {
     let areMoreComponents = true;
     let newArray = [];
     for (let i = 0; areMoreComponents; i++) {
         if (!layersArray[i]) {
             areMoreComponents = false;
+            console.log("exit at: " + i);
+            console.log("input arr length: " + layersArray.length);
+            console.log("output arr length: " + newArray.length);
             return newArray;
         }
         let current = i;
-        if (layersArray[i].row === i && !newArray.includes(layersArray[i]) && !layersArray.parent) {
+        if (!newArray.includes(layersArray[i]) && !layersArray.parent) {
             newArray.push(layersArray[i]);
-            newArray.concat(runDownNestedLayers(i, current, layersArray, newArray, hasMoreChildren));
+            newArray.concat(runDownNestedLayers(current, layersArray, newArray, hasMoreChildren));
         } else {
             if (newArray.length === layersArray.length) {
+                console.log("Arrays before ending");
+                console.log(newArray);
+                console.log(layersArray);
                 areMoreComponents = false;
+                return newArray;
             }
         }
     }
     return newArray;
+}
+
+const addComponent = (components) => {
+    let selectedComponents = [];
+    let parentLayer = null;
+    let newComponentArr = [];
+    components.map((layer) => {
+        if (layer.selected === true) {
+            selectedComponents.push(layer);
+        }
+    });
+    if (selectedComponents.length === 1) {
+        parentLayer = selectedComponents[0];
+        // console.log(selectedComponents[0]);
+        let newComponentObj = components[components.length - 1];
+        // console.log(components);
+        newComponentArr = components.map((obj) => {
+            // console.log(obj);
+            // console.log(parentLayer);
+            if (obj.id === parentLayer.id) {
+                if (parentLayer.children === null) {
+                    let newChild = [newComponentObj.id];
+                    // console.log(newChild);
+                    return { ...obj, children: newChild };
+                } else {
+                    let newChildren = parentLayer.children.map((el) => {
+                        return el;
+                    });
+                    newChildren.push(newComponentObj.id);
+                    // console.log(newChildren);
+                    return { ...obj, children: newChildren };
+                }
+            }
+            // console.log(obj);
+            return obj;
+        });
+    }
+
+    return newComponentArr;
 };
 
 const deleteComponent = (component, state) => {
@@ -167,11 +201,12 @@ const deleteComponent = (component, state) => {
 
     let parentIdx = newLayers.findIndex((layer) => layer.id == parent);
     if (newLayers.length == 1 || idx === 0) {
-        newLayers = [];
+        // newLayers = [];
         console.log(newLayers);
     }
     if (parent !== null) {
         let childIdx = newLayers[parentIdx].children.indexOf(id);
+        console.log(childIdx);
         console.log(newLayers);
         if (newLayers[parentIdx].children.length == 1) {
             newLayers = newLayers.map((layer) => {
@@ -190,10 +225,13 @@ const deleteComponent = (component, state) => {
     if (children !== null) {
         let numChildren = 0;
         let childrenFound = false;
-        for (let i = idx; i < newLayers.length - 1 || !childrenFound; i++) {
+        for (let i = idx + 1; i < newLayers.length - 1 || !childrenFound; i++) {
             if (newLayers[i].nestedLevel <= component.nestedLevel) {
+                console.log(i);
+                console.log(idx);
                 numChildren = i - idx - 1;
                 childrenFound = true;
+                console.log("children found");
             }
         }
         newLayers.splice(idx + 1, numChildren);
@@ -208,6 +246,10 @@ const deleteComponent = (component, state) => {
 
 const componentReducer = (state = componentsReducerDefaultState, action: ComponentActionTypes) => {
     switch (action.type) {
+        case ADD_COMPONENT:
+            let newComponents = [...state, action.component];
+            newComponents = addComponent(newComponents);
+            return buildLayerOrder(newComponents);
         case DELETE_COMPONENT:
             return deleteComponent(action.component, state);
         case SET_COMPONENTS:
