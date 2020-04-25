@@ -188,7 +188,7 @@ const Layer: React.FC<Props> = (props) => {
                         selected.splice(idx, 1);
                     } else {
                         let idx = selected.indexOf(id);
-                        selected.splice(idx, 1);
+                        selected.splice(0, selected.length);
                     }
 
                     return {
@@ -203,12 +203,14 @@ const Layer: React.FC<Props> = (props) => {
             }
             if (ctrl) {
                 return layer;
-            }
-            if (selected.includes(layer.id) && !ctrl) {
+            } else if (selected.includes(layer.id) && !ctrl) {
+                console.log(layer.id);
                 return { ...layer, selected: false };
             }
+
             return { ...layer, selected: false };
         });
+        console.log(newLayers);
         if (!deleteChange) {
             props.SetComponents(newLayers);
             setLayers(newLayers);
