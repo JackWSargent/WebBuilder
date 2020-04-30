@@ -1,6 +1,5 @@
 import * as React from "react";
 /* eslint-disable */
-
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
 import Select from "@material-ui/core/Select";
@@ -14,7 +13,10 @@ import { AppActions } from "../redux/types/actions";
 import { ThunkDispatch } from "redux-thunk";
 import { TextField } from "@material-ui/core";
 import { SetCanvasStyling } from "../redux/actions/canvasStyling";
-
+import ExpansionPanel from "@material-ui/core/ExpansionPanel";
+import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
+import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         root: {
@@ -27,6 +29,13 @@ const useStyles = makeStyles((theme: Theme) =>
         textField: {
             color: "#fff",
         },
+        heading: {
+            fontSize: theme.typography.pxToRem(15),
+            fontWeight: 600,
+        },
+        details: {
+            padding: 0,
+        },
     })
 );
 interface CanvasStylingProps {}
@@ -37,6 +46,7 @@ const CanvasStyle: React.FC<Props> = (props) => {
     const classes = useStyles();
     const [fontSize, setFontSize] = React.useState(canvasStyling[0].fontSize);
     const [boxSizing, setBoxSizing] = React.useState(canvasStyling[0].boxSizing);
+    const [open, setOpen] = React.useState(true);
     const handleFontSizeChange = (e) => {
         setFontSize(e.target.value);
     };
@@ -49,98 +59,99 @@ const CanvasStyle: React.FC<Props> = (props) => {
     };
     const onSet = (canvasStyling: CanvasStyling[]) => {
         props.SetCanvasStyling(canvasStyling);
-        // console.log(canvasStyling);
     };
-    React.useEffect(() => {});
-    return (
-        <div className="app">
-            <Grid container>
-                <Grid item xs={12}>
-                    <Typography
-                        variant="h6"
-                        noWrap
-                        style={{
-                            lineHeight: "64px",
-                            alignContent: "center",
-                            justifyContent: "center",
-                        }}>
-                        Canvas Styling
-                    </Typography>
-                </Grid>
-            </Grid>
-            <Grid container>
-                <Grid item xs={1}></Grid>
-                <Grid item xs={8}>
-                    <TextField
-                        id="fontSizeControl"
-                        label="Font Size(px)"
-                        variant="outlined"
-                        type="number"
-                        defaultValue={fontSize}
-                        onChange={(e) => handleFontSizeChange(e)}
-                        inputProps={{
-                            style: { color: "#fff", borderColor: "#fff" },
-                        }}
-                        className={classes.textField}
-                        InputLabelProps={{
-                            style: {
-                                color: "#fff !important",
-                                borderColor: "#fff",
-                            },
-                        }}
-                        InputProps={{
-                            style: {
-                                color: "#fff !important",
-                                borderColor: "#fff",
-                            },
-                        }}></TextField>
-                </Grid>
-                <Grid item xs={3}></Grid>
-            </Grid>
-            <Grid container>
-                <Grid item xs={1}></Grid>
-                <Grid item xs={4}>
-                    <Typography variant="subtitle1" noWrap style={{ lineHeight: "64px" }}>
-                        Box Sizing
-                    </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                    <Select
-                        native
-                        onChange={(e) => handleBoxSizingChange(e)}
-                        inputProps={{}}
-                        defaultValue={"border-box"}
-                        style={{
-                            justifyContent: "center",
-                            alignContent: "center",
-                            marginTop: 15,
-                            marginLeft: 10,
-                        }}>
-                        <option value={"border-box"}>Border-Box</option>
-                        <option value={"content-box"}>Content-Box</option>
-                    </Select>
-                </Grid>
-            </Grid>
 
-            <Grid container>
-                <Grid item xs={1}></Grid>
-                <Grid item xs={10}>
-                    <Button
-                        variant="contained"
-                        fullWidth
-                        size="small"
-                        onClick={handleApplyChanges}
-                        style={{
-                            marginBottom: 50,
-                            fontSize: 20,
-                            color: "#fff",
-                            backgroundColor: "#111111",
-                        }}>
-                        Apply
-                    </Button>
-                </Grid>
-                <Grid item xs={1}></Grid>
-            </Grid>
+    const handleExpand = () => {
+        setOpen(!open);
+    };
+
+    React.useEffect(() => {}, [open]);
+    return (
+        <div style={{ maxWidth: "240px" }}>
+            <ExpansionPanel expanded={open} style={{ borderTop: "1px solid rgba(255, 255, 255, 0.12)" }}>
+                <ExpansionPanelSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="panel1a-content"
+                    id="panel1a-header"
+                    style={{ backgroundColor: "#2e2e2e" }}
+                    onClick={handleExpand}>
+                    <Typography className={classes.heading}>Canvas Styling</Typography>
+                </ExpansionPanelSummary>
+
+                <ExpansionPanelDetails className={classes.details}>
+                    <Grid container style={{ marginTop: 20 }}>
+                        <Grid item xs={1}></Grid>
+                        <Grid item xs={8}>
+                            <TextField
+                                id="fontSizeControl"
+                                label="Font Size(px)"
+                                variant="outlined"
+                                type="number"
+                                defaultValue={fontSize}
+                                onChange={(e) => handleFontSizeChange(e)}
+                                inputProps={{
+                                    style: { color: "#fff", borderColor: "#fff" },
+                                }}
+                                className={classes.textField}
+                                InputLabelProps={{
+                                    style: {
+                                        color: "#fff !important",
+                                        borderColor: "#fff",
+                                    },
+                                }}
+                                InputProps={{
+                                    style: {
+                                        color: "#fff !important",
+                                        borderColor: "#fff",
+                                    },
+                                }}></TextField>
+                        </Grid>
+                        <Grid item xs={3}></Grid>
+                    </Grid>
+                </ExpansionPanelDetails>
+
+                <ExpansionPanelDetails className={classes.details}>
+                    <Grid container>
+                        <Grid item xs={5}>
+                            <Typography variant="subtitle1" noWrap style={{ lineHeight: "64px" }}>
+                                Box Sizing
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={6}>
+                            <Select
+                                native
+                                onChange={(e) => handleBoxSizingChange(e)}
+                                defaultValue={"border-box"}
+                                style={{
+                                    justifyContent: "center",
+                                    alignContent: "center",
+                                    marginTop: 15,
+                                }}>
+                                <option value={"border-box"}>Border-Box</option>
+                                <option value={"content-box"}>Content-Box</option>
+                            </Select>
+                        </Grid>
+                    </Grid>
+                </ExpansionPanelDetails>
+                <ExpansionPanelDetails className={classes.details}>
+                    <Grid container>
+                        <Grid item xs={12}>
+                            <Button
+                                variant="contained"
+                                fullWidth
+                                size="small"
+                                onClick={handleApplyChanges}
+                                style={{
+                                    fontSize: 20,
+                                    color: "#fff",
+                                    backgroundColor: "#2e2e2e",
+                                }}>
+                                Apply
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </ExpansionPanelDetails>
+            </ExpansionPanel>
         </div>
     );
 };

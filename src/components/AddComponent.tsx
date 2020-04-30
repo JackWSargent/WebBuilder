@@ -1,6 +1,6 @@
 import * as React from "react";
 import "../App.css";
-import clsx from "clsx";
+/* eslint-disable */
 import { makeStyles, useTheme, Theme, createStyles } from "@material-ui/core/styles";
 import { connect } from "react-redux";
 import { Component } from "../redux/types/actions";
@@ -8,13 +8,23 @@ import { AppState } from "../redux/store/storeConfiguration";
 import { bindActionCreators } from "redux";
 import { AppActions } from "../redux/types/actions";
 import { ThunkDispatch } from "redux-thunk";
-// import clsx from "clsx";
 import { SetComponents, AddComponent } from "../redux/actions/components";
 import { Grid } from "@material-ui/core";
 import Select from "@material-ui/core/Select";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
-const useStyles = makeStyles((theme: Theme) => createStyles({}));
+import ExpansionPanel from "@material-ui/core/ExpansionPanel";
+import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
+import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+const useStyles = makeStyles((theme: Theme) =>
+    createStyles({
+        heading: {
+            fontSize: theme.typography.pxToRem(15),
+            fontWeight: 600,
+        },
+    })
+);
 
 interface NewComponentProps {}
 
@@ -23,8 +33,14 @@ type Props = NewComponentProps & LinkStateProps & LinkDispatchProps;
 const NewComponent: React.FC<Props> = (props) => {
     const { components } = props;
     const classes = useStyles();
-
+    const [open, setOpen] = React.useState(true);
     const [newComponentType, setNewComponentType] = React.useState("gridContainer");
+
+    React.useEffect(() => {}, [open]);
+
+    const handleExpand = () => {
+        setOpen(!open);
+    };
 
     const hasSelectedLayer = () => {
         let selectedComponents = [];
@@ -71,91 +87,64 @@ const NewComponent: React.FC<Props> = (props) => {
             parent: parentLayer.id,
             nestedLevel: parentLayer.nestedLevel + 1,
         };
-        // let newComponentArr = components.map((obj) => {
-        //     if (obj.id === parentLayer.id) {
-        //         if (parentLayer.children === null) {
-        //             let newChild = [newComponentObj.id];
-        //             // console.log(newChild);
-        //             return { ...obj, children: newChild };
-        //         } else {
-        //             let newChildren = parentLayer.children.map((el) => {
-        //                 return el;
-        //             });
-        //             newChildren.push(newComponentObj.id);
-        //             // console.log(newChildren);
-        //             return { ...obj, children: newChildren };
-        //         }
-        //     }
-        //     // console.log(obj);
-        //     return obj;
-        // });
 
         console.log(newComponentObj);
-        // newComponentArr.push(newComponentObj);
-        // props.SetComponents(newComponentArr);
         props.AddComponent(newComponentObj);
     };
 
     return (
         <div>
-            <Grid container>
-                <Grid item xs={12}>
-                    <Typography
-                        variant="h6"
-                        noWrap
-                        style={{
-                            lineHeight: "64px",
-                            alignContent: "center",
-                            justifyContent: "center",
-                        }}>
-                        Insert
-                    </Typography>
+            <ExpansionPanel
+                expanded={open}
+                style={{ marginTop: 0, marginBottom: 0, borderTop: "1px solid rgba(255, 255, 255, 0.12)" }}>
+                <ExpansionPanelSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="panel1a-content"
+                    id="panel1a-header"
+                    style={{ backgroundColor: "#2e2e2e" }}
+                    onClick={handleExpand}>
+                    <Typography className={classes.heading}>New Component</Typography>
+                </ExpansionPanelSummary>
+                <Grid container>
+                    <Grid item xs={3}>
+                        <Typography variant="subtitle1" noWrap style={{ lineHeight: "64px", marginLeft: "20px" }}>
+                            Type
+                        </Typography>
+                    </Grid>
+                    <Grid item xs={9}>
+                        <Select
+                            native
+                            onChange={(e) => setComponentProps(e)}
+                            inputProps={{}}
+                            defaultValue={"gridContainer"}
+                            style={{
+                                justifyContent: "center",
+                                alignContent: "center",
+                                marginTop: 15,
+                            }}>
+                            <option value={"gridContainer"}>Grid Container</option>
+                            <option value={"gridItem"}>Grid Item</option>
+                        </Select>
+                    </Grid>
                 </Grid>
-            </Grid>
-            <Grid container>
-                <Grid item xs={1}></Grid>
-                <Grid item xs={4}>
-                    <Typography variant="subtitle1" noWrap style={{ lineHeight: "64px" }}>
-                        Type
-                    </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                    <Select
-                        native
-                        onChange={(e) => setComponentProps(e)}
-                        inputProps={{}}
-                        defaultValue={"gridContainer"}
-                        style={{
-                            justifyContent: "center",
-                            alignContent: "center",
-                            marginTop: 15,
-                            marginLeft: 10,
-                        }}>
-                        <option value={"gridContainer"}>Grid Container</option>
-                        <option value={"gridItem"}>Grid Item</option>
-                    </Select>
-                </Grid>
-            </Grid>
 
-            <Grid container>
-                <Grid item xs={1}></Grid>
-                <Grid item xs={10}>
-                    <Button
-                        variant="contained"
-                        fullWidth
-                        size="small"
-                        onClick={handleNewComponent}
-                        style={{
-                            marginBottom: 50,
-                            fontSize: 20,
-                            color: "#fff",
-                            backgroundColor: "#111111",
-                        }}>
-                        Insert
-                    </Button>
+                <Grid container>
+                    <Grid item xs={12}>
+                        <Button
+                            variant="contained"
+                            fullWidth
+                            size="small"
+                            onClick={handleNewComponent}
+                            style={{
+                                fontSize: 20,
+                                color: "#fff",
+                                backgroundColor: "#2e2e2e",
+                            }}>
+                            Add
+                        </Button>
+                    </Grid>
                 </Grid>
-                <Grid item xs={1}></Grid>
-            </Grid>
+            </ExpansionPanel>
         </div>
     );
 };

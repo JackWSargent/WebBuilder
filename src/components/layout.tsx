@@ -1,8 +1,8 @@
 import * as React from "react";
 /* eslint-disable */
 import "../App.css";
-import Layer from "./layer";
-import CanvasDisplay from "./canvas";
+import Layer from "./Layer";
+import CanvasDisplay from "./Canvas";
 import { makeStyles, useTheme, Theme, createStyles } from "@material-ui/core/styles";
 import { connect } from "react-redux";
 import { SetCanvas } from "../redux/actions/canvas";
@@ -30,27 +30,15 @@ const Layout: React.FC<Props> = (props) => {
     const classes = useStyles();
     const theme = useTheme();
 
-    React.useEffect(() => {
-        // console.log("useEffect running");
-    }, [canvas[0].drawerOpen]);
+    React.useEffect(() => {}, [canvas[0].drawerOpen]);
 
     const renderComponents = () => {
-        if (canvas[0].drawerOpen === true) {
-            // console.log("drawer open");
-            return (
-                <div className={classes.root}>
-                    <Layer />
-                    <CanvasDisplay />
-                </div>
-            );
-        } else {
-            return (
-                <div className={classes.root}>
-                    <CanvasDisplay />
-                    <Layer></Layer>
-                </div>
-            );
-        }
+        return (
+            <div className={classes.root}>
+                <Layer />
+                <CanvasDisplay />
+            </div>
+        );
     };
 
     /* eslint-enable */

@@ -12,7 +12,6 @@ import { SetComponents } from "../redux/actions/components";
 import { Grid } from "@material-ui/core";
 import { CanvasStyling } from "../redux/types/actions";
 import clsx from "clsx";
-import canvasStyle from "./canvasStyle";
 
 interface RendererProps {}
 
@@ -55,7 +54,6 @@ const Renderer: React.FC<Props> = (props) => {
     const [renderedComponents, setRenderedComponents] = React.useState([]);
 
     const returnComponent = (layer) => {
-        // console.log("returning layer");
         let id: number = layer.id;
         let name: string = layer.name;
         let childrenVal: boolean = layer.children !== null;
@@ -290,7 +288,8 @@ const Renderer: React.FC<Props> = (props) => {
             style={{
                 fontSize: getFontSizing(),
                 boxSizing: getSizing(),
-                marginLeft: canvas[0].drawerOpen ? canvas[0].drawerLeftMargin : 0,
+                // marginLeft: canvas[0].drawerOpen ? canvas[0].drawerLeftMargin : 0,
+                // marginRight: canvas[0].drawerOpen ? canvas[0].drawerLeftMargin : 0,
             }}>
             {renderComponents()}
         </div>

@@ -10,7 +10,7 @@ import { ThunkDispatch } from "redux-thunk";
 import clsx from "clsx";
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 import { SetComponents } from "../redux/actions/components";
-import Renderer from "./renderer";
+import Renderer from "./Renderer";
 interface CanvasProps {}
 let defaultSize: number = 24;
 const useStyles = makeStyles((theme: Theme) =>
@@ -114,8 +114,9 @@ const CanvasDisplay: React.FC<Props> = (props) => {
                                 marginTop: 64,
                                 minHeight: "100vh",
                                 marginLeft: canvas[0].drawerLeftMargin,
+                                marginRight: canvas[0].drawerLeftMargin,
                                 zIndex: 1400,
-                                maxWidth: "100vh",
+                                // maxWidth: "100vh",
                                 justifyContent: "center",
                                 alignContent: "center",
                             }}>

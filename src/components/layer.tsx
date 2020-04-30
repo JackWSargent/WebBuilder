@@ -17,8 +17,9 @@ import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import ListItem from "@material-ui/core/ListItem";
 // import CheckBoxIcon from "@material-ui/icons/CheckBox";
 // import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
-import CanvasStyle from "./canvasStyle";
-import NewComponent from "./newComponent";
+import CanvasStyle from "./CanvasStyle";
+import NewComponent from "./AddComponent";
+import EditComponent from "./EditComponent";
 import { connect } from "react-redux";
 import { SetComponents, DeleteComponent } from "../redux/actions/components";
 // import { DeleteComponent } from "../redux/actions/component";
@@ -30,6 +31,11 @@ import { AppActions } from "../redux/types/actions";
 import { ThunkDispatch } from "redux-thunk";
 import ClearIcon from "@material-ui/icons/Clear";
 import WebIcon from "@material-ui/icons/Web";
+
+import ExpansionPanel from "@material-ui/core/ExpansionPanel";
+import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
+import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 
 let drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
@@ -118,6 +124,13 @@ const useStyles = makeStyles((theme: Theme) =>
             backgroundColor: "#fff",
             zIndex: 1000,
         },
+        heading: {
+            fontSize: theme.typography.pxToRem(15),
+            fontWeight: 600,
+        },
+        details: {
+            padding: 0,
+        },
     })
 );
 interface LayerProps {}
@@ -130,15 +143,15 @@ type Props = LayerProps & LinkStateProps & LinkDispatchProps;
 let changed: boolean = true;
 let ctrl: boolean = false;
 
+let open: boolean = true;
+
 const Layer: React.FC<Props> = (props) => {
     const { components, canvas } = props;
 
     const classes = useStyles();
     const theme = useTheme();
-    // const [selected, setSelected] = React.useState([]);
     const [layers, setLayers] = React.useState(components);
-    const [open, setOpen] = React.useState(true);
-    // const [ctrl, setCtrl] = React.useState(false);
+    const [layersOpen, setLayersOpen] = React.useState(true);
 
     const renderDelete = (deletedComponent) => {
         if (deletedComponent.type === "canvas") {
@@ -164,12 +177,8 @@ const Layer: React.FC<Props> = (props) => {
 
     const handleSelectedState = (id) => {
         changed = true;
-        // console.log("selected at beginning");
-        // console.log(selected);
         let newLayers = layers.map((layer) => {
-            // if this is the id we care about, change the last entry
             if (layer.id === id) {
-                // spread everything in layer and just change its selected state
                 if (!layer.selected && !selected.includes(layer.id)) {
                     if (ctrl) {
                         let newSelected = layer.id;
@@ -239,7 +248,6 @@ const Layer: React.FC<Props> = (props) => {
                                 divider={true}>
                                 <div style={{ marginLeft: 10 * layer.nestedLevel }}></div>
 
-                                {/* {layer.id} */}
                                 <Typography
                                     variant="subtitle2"
                                     component="div"
@@ -247,9 +255,7 @@ const Layer: React.FC<Props> = (props) => {
                                     style={{
                                         color: "#fff",
                                         fontSize: "1.15rem",
-                                    }}
-                                    // onClick={() => handleSelectedState(layer.id)}
-                                >
+                                    }}>
                                     {layer.name}
                                 </Typography>
 
@@ -268,7 +274,6 @@ const Layer: React.FC<Props> = (props) => {
         window.addEventListener("keydown", (event) => {
             if (event.keyCode === 17) {
                 ctrl = true;
-                // console.log(true);
             }
         });
         window.addEventListener("keyup", (event) => {
@@ -284,10 +289,14 @@ const Layer: React.FC<Props> = (props) => {
         if (layers.length !== components.length) {
             setLayers(components);
         }
-    }, [components]);
+    }, [components, layersOpen]);
+
+    const handleExpand = () => {
+        setLayersOpen(!layersOpen);
+    };
 
     const handleDrawerOpen = () => {
-        setOpen(true);
+        open = true;
         props.SetCanvas([
             {
                 drawerClicked: canvas[0].drawerClicked,
@@ -298,7 +307,7 @@ const Layer: React.FC<Props> = (props) => {
     };
 
     const handleDrawerClose = () => {
-        setOpen(false);
+        open = false;
         props.SetCanvas([
             {
                 drawerClicked: canvas[0].drawerClicked,
@@ -347,11 +356,7 @@ const Layer: React.FC<Props> = (props) => {
                         paper: classes.drawerPaper,
                     }}>
                     <Grid container style={{ width: canvas[0].drawerLeftMargin }}>
-                        <Grid item xs={8}>
-                            <Typography variant="h6" noWrap style={{ lineHeight: "64px" }}>
-                                Components
-                            </Typography>
-                        </Grid>
+                        <Grid item xs={8}></Grid>
                         <Grid item xs={4}>
                             <div className={classes.drawerHeader}>
                                 <IconButton className={classes.icon} onClick={handleDrawerClose}>
@@ -361,13 +366,47 @@ const Layer: React.FC<Props> = (props) => {
                         </Grid>
                     </Grid>
 
-                    <Divider className="Divider" />
-                    {renderLayers()}
-                    <Divider className="Divider" />
+                    <ExpansionPanel
+                        expanded={layersOpen}
+                        style={{ marginTop: 0, marginBottom: 0, borderTop: "1px solid rgba(255, 255, 255, 0.12)" }}>
+                        <ExpansionPanelSummary
+                            expandIcon={<ExpandMoreIcon />}
+                            aria-controls="panel1a-content"
+                            id="panel1a-header"
+                            style={{ backgroundColor: "#2e2e2e" }}
+                            onClick={handleExpand}>
+                            <Typography className={classes.heading}>Explorer</Typography>
+                        </ExpansionPanelSummary>
+                        {renderLayers()}
+                    </ExpansionPanel>
+
                     <CanvasStyle />
-                    <Divider className="Divider" />
                     <NewComponent />
-                    <Divider className="Divider" />
+                </Drawer>
+
+                <Drawer
+                    className={classes.drawer}
+                    variant="persistent"
+                    anchor="right"
+                    open={open}
+                    classes={{
+                        paper: classes.drawerPaper,
+                    }}>
+                    <Grid container style={{ width: canvas[0].drawerLeftMargin }}>
+                        <Grid item xs={8}>
+                            <Typography variant="h6" noWrap style={{ lineHeight: "64px" }}>
+                                Properties
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={4}>
+                            <div className={classes.drawerHeader}>
+                                <IconButton className={classes.icon} onClick={handleDrawerClose}>
+                                    {theme.direction === "ltr" ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+                                </IconButton>
+                            </div>
+                        </Grid>
+                    </Grid>
+                    <EditComponent />
                 </Drawer>
 
                 <main
