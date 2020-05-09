@@ -1,5 +1,11 @@
 import { Component } from "../types/actions";
-import { ComponentActionTypes, SET_COMPONENTS, DELETE_COMPONENT, ADD_COMPONENT } from "../types/actions";
+import {
+    ComponentActionTypes,
+    SET_COMPONENTS,
+    DELETE_COMPONENT,
+    ADD_COMPONENT,
+    EDIT_COMPONENT,
+} from "../types/actions";
 /* eslint-disable */
 
 const componentsReducerDefaultState: Component[] = [
@@ -134,9 +140,9 @@ function buildLayerOrder(layersArray) {
             newArray.concat(runDownNestedLayers(current, layersArray, newArray, hasMoreChildren));
         } else {
             if (newArray.length === layersArray.length) {
-                console.log("Arrays before ending");
-                console.log(newArray);
-                console.log(layersArray);
+                // console.log("Arrays before ending");
+                // console.log(newArray);
+                // console.log(layersArray);
                 areMoreComponents = false;
                 return newArray;
             }
@@ -250,6 +256,13 @@ const componentReducer = (state = componentsReducerDefaultState, action: Compone
             let newComponents = [...state, action.component];
             newComponents = addComponent(newComponents);
             return buildLayerOrder(newComponents);
+        case EDIT_COMPONENT:
+            return state.map((component) => {
+                if (component.id === action.component.id) {
+                    return { ...component, ...action.component };
+                }
+                return component;
+            });
         case DELETE_COMPONENT:
             return deleteComponent(action.component, state);
         case SET_COMPONENTS:

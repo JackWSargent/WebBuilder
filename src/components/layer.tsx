@@ -19,9 +19,9 @@ import ListItem from "@material-ui/core/ListItem";
 // import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
 import CanvasStyle from "./CanvasStyle";
 import NewComponent from "./AddComponent";
-import EditComponent from "./EditComponent";
+import EditComponentTab from "./EditComponent";
 import { connect } from "react-redux";
-import { SetComponents, DeleteComponent } from "../redux/actions/components";
+import { SetComponents, DeleteComponent, EditComponent } from "../redux/actions/components";
 // import { DeleteComponent } from "../redux/actions/component";
 import { SetCanvas } from "../redux/actions/canvas";
 import { Component, Canvas } from "../redux/types/actions";
@@ -219,7 +219,7 @@ const Layer: React.FC<Props> = (props) => {
 
             return { ...layer, selected: false };
         });
-        console.log(newLayers);
+        // console.log(newLayers);
         if (!deleteChange) {
             props.SetComponents(newLayers);
             setLayers(newLayers);
@@ -270,6 +270,7 @@ const Layer: React.FC<Props> = (props) => {
             console.log("missing layers");
         }
     };
+
     React.useEffect(() => {
         window.addEventListener("keydown", (event) => {
             if (event.keyCode === 17) {
@@ -286,7 +287,7 @@ const Layer: React.FC<Props> = (props) => {
     }, [event, changed, selected, canvas, open, layers]);
 
     React.useEffect(() => {
-        if (layers.length !== components.length) {
+        if (layers.length !== components.length || layers !== components) {
             setLayers(components);
         }
     }, [components, layersOpen]);
@@ -406,7 +407,7 @@ const Layer: React.FC<Props> = (props) => {
                             </div>
                         </Grid>
                     </Grid>
-                    <EditComponent />
+                    <EditComponentTab />
                 </Drawer>
 
                 <main
@@ -429,6 +430,7 @@ interface LinkDispatchProps {
     DeleteComponent: (component: Component) => void;
     SetComponents: (components: Component[]) => void;
     SetCanvas: (canvas: Canvas[]) => void;
+    EditComponent: (component: Component) => void;
 }
 
 const mapStateToProps = (state: AppState, ownProps: LayerProps): LinkStateProps => ({
@@ -443,6 +445,7 @@ const mapDispatchToProps = (
     DeleteComponent: bindActionCreators(DeleteComponent, dispatch),
     SetComponents: bindActionCreators(SetComponents, dispatch),
     SetCanvas: bindActionCreators(SetCanvas, dispatch),
+    EditComponent: bindActionCreators(EditComponent, dispatch),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Layer);

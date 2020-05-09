@@ -56,6 +56,7 @@ const Renderer: React.FC<Props> = (props) => {
     const returnComponent = (layer) => {
         let id: number = layer.id;
         let name: string = layer.name;
+        let innerText: string = layer.innerText;
         let childrenVal: boolean = layer.children !== null;
         switch (layer.type) {
             case "gridContainer":
@@ -68,7 +69,8 @@ const Renderer: React.FC<Props> = (props) => {
                             className={clsx(classes.layer, {
                                 [classes.layerSelectedContainer]: layer.selected,
                             })}>
-                            {id} . {name} {returnChildren(layer)}
+                            {innerText}
+                            {returnChildren(layer)}
                         </Grid>
                     );
                 }
@@ -80,7 +82,7 @@ const Renderer: React.FC<Props> = (props) => {
                         className={clsx(classes.layer, {
                             [classes.layerSelectedContainer]: layer.selected,
                         })}>
-                        {id} .. {name}
+                        {innerText}
                     </Grid>
                 );
             case "gridItem":
@@ -93,7 +95,8 @@ const Renderer: React.FC<Props> = (props) => {
                             className={clsx(classes.layer, {
                                 [classes.layerSelected]: layer.selected,
                             })}>
-                            {id} . {name} {returnChildren(layer)}
+                            {innerText}
+                            {returnChildren(layer)}
                         </Grid>
                     );
                 }
@@ -105,7 +108,7 @@ const Renderer: React.FC<Props> = (props) => {
                         className={clsx(classes.layer, {
                             [classes.layerSelected]: layer.selected,
                         })}>
-                        {id} .. {name}
+                        {innerText}
                     </Grid>
                 );
             case "canvas":
@@ -117,7 +120,7 @@ const Renderer: React.FC<Props> = (props) => {
                             className={clsx(classes.layer, {
                                 [classes.layerSelectedCanvas]: layer.selected,
                             })}>
-                            {id} . {name}
+                            {innerText}
                             {returnChildren(layer)}
                         </div>
                     );
@@ -129,7 +132,7 @@ const Renderer: React.FC<Props> = (props) => {
                         className={clsx(classes.layer, {
                             [classes.layerSelectedCanvas]: layer.selected,
                         })}>
-                        {id} .. {name}
+                        {innerText}
                     </div>
                 );
             default:
@@ -141,7 +144,7 @@ const Renderer: React.FC<Props> = (props) => {
                             className={clsx(classes.layer, {
                                 [classes.layerSelected]: layer.selected,
                             })}>
-                            {id} . {name}
+                            {innerText}
                             {returnChildren(layer)}
                         </div>
                     );
@@ -153,7 +156,7 @@ const Renderer: React.FC<Props> = (props) => {
                         className={clsx(classes.layer, {
                             [classes.layerSelected]: layer.selected,
                         })}>
-                        {id} .. {name}
+                        {innerText}
                     </div>
                 );
         }
@@ -288,8 +291,6 @@ const Renderer: React.FC<Props> = (props) => {
             style={{
                 fontSize: getFontSizing(),
                 boxSizing: getSizing(),
-                // marginLeft: canvas[0].drawerOpen ? canvas[0].drawerLeftMargin : 0,
-                // marginRight: canvas[0].drawerOpen ? canvas[0].drawerLeftMargin : 0,
             }}>
             {renderComponents()}
         </div>

@@ -1,5 +1,5 @@
 import { Component } from "../types/actions";
-import { AppActions, SET_COMPONENTS, DELETE_COMPONENT, ADD_COMPONENT } from "../types/actions";
+import { AppActions, SET_COMPONENTS, DELETE_COMPONENT, ADD_COMPONENT, EDIT_COMPONENT } from "../types/actions";
 import { Dispatch } from "redux";
 import { AppState } from "../store/storeConfiguration";
 
@@ -30,6 +30,11 @@ export const deleteComponent = (component: Component): AppActions => ({
 
 export const addComponent = (component: Component): AppActions => ({
     type: ADD_COMPONENT,
+    component,
+});
+
+export const editComponent = (component: Component): AppActions => ({
+    type: EDIT_COMPONENT,
     component,
 });
 
@@ -86,5 +91,11 @@ export const DeleteComponent = (component: Component) => {
 export const AddComponent = (component: Component) => {
     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
         dispatch(addComponent(component));
+    };
+};
+
+export const EditComponent = (component: Component) => {
+    return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
+        dispatch(editComponent(component));
     };
 };

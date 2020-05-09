@@ -8,7 +8,7 @@ import { AppState } from "../redux/store/storeConfiguration";
 import { bindActionCreators } from "redux";
 import { AppActions } from "../redux/types/actions";
 import { ThunkDispatch } from "redux-thunk";
-import { SetComponents, AddComponent } from "../redux/actions/components";
+import { SetComponents, AddComponent, EditComponent } from "../redux/actions/components";
 import { Grid } from "@material-ui/core";
 import Select from "@material-ui/core/Select";
 import Button from "@material-ui/core/Button";
@@ -17,6 +17,8 @@ import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import { TextField } from "@material-ui/core";
+
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         heading: {
@@ -30,74 +32,161 @@ interface EditComponentProps {}
 
 type Props = EditComponentProps & LinkStateProps & LinkDispatchProps;
 
-const EditComponent: React.FC<Props> = (props) => {
+const EditComponentTab: React.FC<Props> = (props) => {
     const { components } = props;
     const classes = useStyles();
     const [open, setOpen] = React.useState(true);
-    const [newComponentType, setNewComponentType] = React.useState("gridContainer");
 
-    React.useEffect(() => {}, [open]);
+    let selected = components.filter((component) => component.selected === true);
+
+    React.useEffect(() => {
+        selected = components.filter((component) => component.selected === true);
+    }, [open, components]);
 
     const handleExpand = () => {
         setOpen(!open);
     };
 
     const hasSelectedLayer = () => {
-        let selectedComponents = [];
-        components.map((layer) => {
-            if (layer.selected === true) {
-                selectedComponents.push(layer);
-            }
-        });
-        if (selectedComponents.length === 1) {
-            return selectedComponents[0];
+        if (selected.length === 1 && selected[0].id !== 100) {
+            return true;
         }
-        // console.log(selectedComponents);
-        // console.log("false");
         return false;
     };
 
-    const getId = (): number => {
-        let highestId = 0;
-        components.forEach((component) => {
-            if (component.id > highestId) {
-                highestId = component.id;
-            }
-        });
-        return highestId + 100;
-    };
-
-    const setComponentProps = (e) => {
-        setNewComponentType(e.target.value);
-    };
-
-    const handleNewComponent = () => {
-        if (!hasSelectedLayer) {
-            // console.log("does not have selected Component");
-            return;
-        }
-        let parentLayer = hasSelectedLayer();
-        let newComponentObj: Component = {
-            id: getId(),
-            isRendered: false,
-            name: "New Component",
-            type: newComponentType,
-            selected: false,
-            children: null,
-            parent: parentLayer.id,
-            nestedLevel: parentLayer.nestedLevel + 1,
+    const setComponentProps = (e, prop) => {
+        let newComponent = {
+            id: componentId,
+            type: null,
+            name: null,
+            innerText: null,
         };
-
-        console.log(newComponentObj);
-        props.AddComponent(newComponentObj);
+        switch (prop) {
+            case "type": {
+                newComponentType = e.target.value;
+            }
+            case "name": {
+                newComponentName = e.target.value;
+            }
+            case "innerText": {
+                newComponentInnerText = e.target.value;
+            }
+        }
+        newComponent = {
+            id: componentId,
+            type: newComponentType,
+            name: newComponentName,
+            innerText: newComponentInnerText,
+        };
+        if (newComponent.name && newComponent.id) {
+            props.EditComponent(newComponent);
+        }
     };
 
     const getSelectedName = () => {
-        const selected = components.filter((el) => el.selected === true);
-        if (selected.length === 1) {
+        if (hasSelectedLayer()) {
             return selected[0].name;
         }
+        return "";
     };
+
+    const getSelectedType = () => {
+        if (hasSelectedLayer()) {
+            return selected[0].type;
+        }
+        return "";
+    };
+
+    const getSelectedId = () => {
+        if (hasSelectedLayer()) {
+            return selected[0].id;
+        }
+        return 0;
+    };
+
+    const getSelectedInnerText = () => {
+        if (hasSelectedLayer()) {
+            return selected[0].innerText;
+        }
+        return "";
+    };
+
+    let componentId = getSelectedId();
+    let newComponentType = getSelectedType();
+    let newComponentName = getSelectedName();
+    let newComponentInnerText = getSelectedInnerText();
+
+    const renderElementName = () => {
+        if (!hasSelectedLayer) {
+            return;
+        }
+        if (selected.length === 1) {
+            return selected.map((component) => (
+                <TextField
+                    id="nameControl"
+                    label="Name"
+                    variant="outlined"
+                    type="string"
+                    key={component.id}
+                    defaultValue={component.name}
+                    onChange={(e) => setComponentProps(e, "name")}
+                    disabled={!hasSelectedLayer()}
+                />
+            ));
+        }
+    };
+
+    const renderElementInnerText = () => {
+        if (!hasSelectedLayer) {
+            return;
+        }
+        if (selected.length === 1) {
+            return selected.map((component) => (
+                <TextField
+                    id="innerTextControl"
+                    label="Inner Text"
+                    variant="outlined"
+                    type="string"
+                    multiline
+                    key={component.id}
+                    defaultValue={component.innerText}
+                    onChange={(e) => setComponentProps(e, "innerText")}
+                    disabled={!hasSelectedLayer()}
+                />
+            ));
+        }
+    };
+
+    const renderElementType = () => {
+        if (!hasSelectedLayer) return;
+        if (newComponentName.length > -1 && selected.length === 1) {
+            return (
+                <Select
+                    native
+                    onChange={(e) => setComponentProps(e, "type")}
+                    defaultValue={newComponentType}
+                    disableUnderline
+                    style={{}}>
+                    <option value={"gridContainer"}>Grid Container</option>
+                    <option value={"gridItem"}>Grid Item</option>
+                </Select>
+            );
+        }
+    };
+
+    // const handleNewComponent = () => {
+    //     if (!hasSelectedLayer) {
+    //         // console.log("does not have selected Component");
+    //         return;
+    //     }
+    //     let componentObj = {
+    //         name: newComponentName,
+    //         type: newComponentType,
+    //     };
+    //     if (componentObj.type && componentObj.name) {
+    //         props.AddComponent(componentObj);
+    //     }
+    // };
 
     return (
         <div>
@@ -112,27 +201,40 @@ const EditComponent: React.FC<Props> = (props) => {
                     onClick={handleExpand}>
                     <Typography className={classes.heading}>{getSelectedName()}</Typography>
                 </ExpansionPanelSummary>
-                <Grid container>
+                <Grid container style={{ marginTop: "10px" }}>
                     <Grid item xs={3}>
-                        <Typography variant="subtitle1" noWrap style={{ lineHeight: "64px", marginLeft: "20px" }}>
-                            ...
+                        <Typography
+                            variant="subtitle1"
+                            style={{ lineHeight: "64px", marginLeft: "10px", marginRight: "20px" }}>
+                            Name
                         </Typography>
                     </Grid>
-                    {/* <Grid item xs={9}>
-                        <Select
-                            native
-                            onChange={(e) => setComponentProps(e)}
-                            inputProps={{}}
-                            defaultValue={"gridContainer"}
-                            style={{
-                                justifyContent: "center",
-                                alignContent: "center",
-                                marginTop: 15,
-                            }}>
-                            <option value={"gridContainer"}>Grid Container</option>
-                            <option value={"gridItem"}>Grid Item</option>
-                        </Select>
-                    </Grid> */}
+                    <Grid item xs={8}>
+                        {renderElementName()}
+                        <Grid item />
+                    </Grid>
+                </Grid>
+                <Grid container>
+                    <Typography
+                        variant="subtitle1"
+                        style={{ lineHeight: "64px", marginLeft: "20px", marginRight: "20px" }}>
+                        Type
+                    </Typography>
+                    {renderElementType()}
+                </Grid>
+
+                <Grid container>
+                    <Grid item xs={3}>
+                        <Typography
+                            variant="subtitle1"
+                            style={{ lineHeight: "64px", marginLeft: "10px", marginRight: "40px" }}>
+                            InnerText
+                        </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                        {renderElementInnerText()}
+                        <Grid item />
+                    </Grid>
                 </Grid>
 
                 {/* <Grid container>
@@ -167,6 +269,7 @@ const mapStateToProps = (state: AppState, ownProps: EditComponentProps): LinkSta
 interface LinkDispatchProps {
     SetComponents: (components: Component[]) => void;
     AddComponent: (component: Component) => void;
+    EditComponent: (component: Component) => void;
 }
 
 const mapDispatchToProps = (
@@ -175,6 +278,7 @@ const mapDispatchToProps = (
 ): LinkDispatchProps => ({
     SetComponents: bindActionCreators(SetComponents, dispatch),
     AddComponent: bindActionCreators(AddComponent, dispatch),
+    EditComponent: bindActionCreators(EditComponent, dispatch),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(EditComponent);
+export default connect(mapStateToProps, mapDispatchToProps)(EditComponentTab);

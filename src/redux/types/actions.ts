@@ -1,13 +1,13 @@
 export interface Component {
     isRendered?: boolean;
-    id: number;
-    name: string;
-    type: string;
-    nestedLevel: number;
+    id?: number;
+    name?: string;
+    type?: string;
+    nestedLevel?: number;
     parent?: number;
     children?: number[];
-    selected: boolean;
-    content?: string;
+    selected?: boolean;
+    innerText?: string;
 }
 
 export interface CanvasStyling {
@@ -22,6 +22,7 @@ export interface Canvas {
 }
 
 export const SET_COMPONENTS = "SET_COMPONENTS";
+export const EDIT_COMPONENT = "EDIT_COMPONENT";
 export const DELETE_COMPONENT = "DELETE_COMPONENT";
 export const ADD_COMPONENT = "ADD_COMPONENT";
 export const SET_CANVAS_STYLING = "SET_CANVAS_STYLING";
@@ -42,6 +43,11 @@ export interface AddComponentAction {
     component: Component;
 }
 
+export interface EditComponentAction {
+    type: typeof EDIT_COMPONENT;
+    component: Component;
+}
+
 export interface SetCanvasStylingAction {
     type: typeof SET_CANVAS_STYLING;
     canvasStyling: CanvasStyling[];
@@ -52,7 +58,11 @@ export interface SetCanvasAction {
     canvas: Canvas[];
 }
 
-export type ComponentActionTypes = SetComponentAction | DeleteComponentAction | AddComponentAction;
+export type ComponentActionTypes =
+    | SetComponentAction
+    | DeleteComponentAction
+    | AddComponentAction
+    | EditComponentAction;
 export type CanvasStylingActionTypes = SetCanvasStylingAction;
 export type CanvasActionTypes = SetCanvasAction;
 export type AppActions = ComponentActionTypes | CanvasStylingActionTypes | CanvasActionTypes;
