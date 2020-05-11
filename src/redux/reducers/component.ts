@@ -5,7 +5,9 @@ import {
     DELETE_COMPONENT,
     ADD_COMPONENT,
     EDIT_COMPONENT,
+    EDIT_COMPONENTS,
 } from "../types/actions";
+import { ActionSchedule } from "material-ui/svg-icons";
 /* eslint-disable */
 
 const componentsReducerDefaultState: Component[] = [
@@ -263,6 +265,13 @@ const componentReducer = (state = componentsReducerDefaultState, action: Compone
                 }
                 return component;
             });
+        case EDIT_COMPONENTS: {
+            return buildLayerOrder(
+                state.map((comp) => {
+                    return comp;
+                })
+            );
+        }
         case DELETE_COMPONENT:
             return deleteComponent(action.component, state);
         case SET_COMPONENTS:

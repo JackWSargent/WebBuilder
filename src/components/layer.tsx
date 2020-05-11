@@ -23,7 +23,7 @@ import EditComponentTab from "./EditComponent";
 import { connect } from "react-redux";
 import { SetComponents, DeleteComponent, EditComponent } from "../redux/actions/components";
 // import { DeleteComponent } from "../redux/actions/component";
-import { SetCanvas } from "../redux/actions/canvas";
+import { SetCanvas, EditCanvas } from "../redux/actions/canvas";
 import { Component, Canvas } from "../redux/types/actions";
 import { AppState } from "../redux/store/storeConfiguration";
 import { bindActionCreators } from "redux";
@@ -298,24 +298,16 @@ const Layer: React.FC<Props> = (props) => {
 
     const handleDrawerOpen = () => {
         open = true;
-        props.SetCanvas([
-            {
-                drawerClicked: canvas[0].drawerClicked,
-                drawerLeftMargin: canvas[0].drawerLeftMargin,
-                drawerOpen: true,
-            },
-        ]);
+        props.EditCanvas({
+            drawerOpen: true,
+        });
     };
 
     const handleDrawerClose = () => {
         open = false;
-        props.SetCanvas([
-            {
-                drawerClicked: canvas[0].drawerClicked,
-                drawerLeftMargin: canvas[0].drawerLeftMargin,
-                drawerOpen: false,
-            },
-        ]);
+        props.EditCanvas({
+            drawerOpen: false,
+        });
     };
 
     /* eslint-enable */
@@ -356,7 +348,7 @@ const Layer: React.FC<Props> = (props) => {
                     classes={{
                         paper: classes.drawerPaper,
                     }}>
-                    <Grid container style={{ width: canvas[0].drawerLeftMargin }}>
+                    <Grid container style={{ width: canvas.drawerLeftMargin }}>
                         <Grid item xs={8}></Grid>
                         <Grid item xs={4}>
                             <div className={classes.drawerHeader}>
@@ -393,7 +385,7 @@ const Layer: React.FC<Props> = (props) => {
                     classes={{
                         paper: classes.drawerPaper,
                     }}>
-                    <Grid container style={{ width: canvas[0].drawerLeftMargin }}>
+                    <Grid container style={{ width: canvas.drawerLeftMargin }}>
                         <Grid item xs={8}>
                             <Typography variant="h6" noWrap style={{ lineHeight: "64px" }}>
                                 Properties
@@ -423,14 +415,15 @@ const Layer: React.FC<Props> = (props) => {
 
 interface LinkStateProps {
     components: Component[];
-    canvas: Canvas[];
+    canvas: Canvas;
 }
 
 interface LinkDispatchProps {
     DeleteComponent: (component: Component) => void;
     SetComponents: (components: Component[]) => void;
-    SetCanvas: (canvas: Canvas[]) => void;
+    SetCanvas: (canvas: Canvas) => void;
     EditComponent: (component: Component) => void;
+    EditCanvas: (canvas: Canvas) => void;
 }
 
 const mapStateToProps = (state: AppState, ownProps: LayerProps): LinkStateProps => ({
@@ -446,6 +439,7 @@ const mapDispatchToProps = (
     SetComponents: bindActionCreators(SetComponents, dispatch),
     SetCanvas: bindActionCreators(SetCanvas, dispatch),
     EditComponent: bindActionCreators(EditComponent, dispatch),
+    EditCanvas: bindActionCreators(EditCanvas, dispatch),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Layer);

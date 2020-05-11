@@ -23,10 +23,12 @@ export interface Canvas {
 
 export const SET_COMPONENTS = "SET_COMPONENTS";
 export const EDIT_COMPONENT = "EDIT_COMPONENT";
+export const EDIT_COMPONENTS = "EDIT_COMPONENTS";
 export const DELETE_COMPONENT = "DELETE_COMPONENT";
 export const ADD_COMPONENT = "ADD_COMPONENT";
 export const SET_CANVAS_STYLING = "SET_CANVAS_STYLING";
 export const SET_CANVAS = "SET_CANVAS";
+export const EDIT_CANVAS = "EDIT_CANVAS";
 
 export interface SetComponentAction {
     type: typeof SET_COMPONENTS;
@@ -48,23 +50,34 @@ export interface EditComponentAction {
     component: Component;
 }
 
+export interface EditComponentsAction {
+    type: typeof EDIT_COMPONENTS;
+    components: Component[];
+}
+
 export interface SetCanvasStylingAction {
     type: typeof SET_CANVAS_STYLING;
-    canvasStyling: CanvasStyling[];
+    canvasStyling: CanvasStyling;
 }
 
 export interface SetCanvasAction {
     type: typeof SET_CANVAS;
-    canvas: Canvas[];
+    canvas: Canvas;
+}
+
+export interface EditCanvasAction {
+    type: typeof EDIT_CANVAS;
+    canvas: Canvas;
 }
 
 export type ComponentActionTypes =
     | SetComponentAction
     | DeleteComponentAction
     | AddComponentAction
-    | EditComponentAction;
+    | EditComponentAction
+    | EditComponentsAction;
 export type CanvasStylingActionTypes = SetCanvasStylingAction;
-export type CanvasActionTypes = SetCanvasAction;
+export type CanvasActionTypes = SetCanvasAction | EditCanvasAction;
 export type AppActions = ComponentActionTypes | CanvasStylingActionTypes | CanvasActionTypes;
 
 // export interface EditComponentAction {

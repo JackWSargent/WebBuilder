@@ -30,7 +30,7 @@ const Layout: React.FC<Props> = (props) => {
     const classes = useStyles();
     const theme = useTheme();
 
-    React.useEffect(() => {}, [canvas[0].drawerOpen]);
+    React.useEffect(() => {}, [canvas.drawerOpen]);
 
     const renderComponents = () => {
         return (
@@ -46,7 +46,7 @@ const Layout: React.FC<Props> = (props) => {
 };
 
 interface LinkStateProps {
-    canvas: Canvas[];
+    canvas: Canvas;
 }
 
 const mapStateToProps = (state: AppState, ownProps: LayoutProps): LinkStateProps => ({
@@ -54,7 +54,7 @@ const mapStateToProps = (state: AppState, ownProps: LayoutProps): LinkStateProps
 });
 
 interface LinkDispatchProps {
-    SetCanvas: (canvas: Canvas[]) => void;
+    SetCanvas: (canvas: Canvas) => void;
 }
 
 const mapDispatchToProps = (

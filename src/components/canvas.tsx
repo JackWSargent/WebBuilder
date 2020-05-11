@@ -59,53 +59,51 @@ type Props = CanvasProps & LinkStateProps & LinkDispatchProps;
 const CanvasDisplay: React.FC<Props> = (props) => {
     const { canvas } = props;
     const classes = useStyles();
-    const [leftMargin, setLeftMargin] = React.useState(canvas[0].drawerLeftMargin);
-    const [marginToggle, setMarginToggle] = React.useState(canvas[0].drawerClicked);
+    const [leftMargin, setLeftMargin] = React.useState(canvas.drawerLeftMargin);
+    const [marginToggle, setMarginToggle] = React.useState(canvas.drawerClicked);
 
     const changeMargin = (event: React.MouseEvent<HTMLElement>): void => {
         // console.log("changing margin");
         let val = Math.min(600, event.clientX);
         val = Math.max(240, event.clientX);
-        if (canvas[0].drawerOpen && canvas[0].drawerClicked && event.clientX > 235 && event.clientX < 600) {
+        if (canvas.drawerOpen && canvas.drawerClicked && event.clientX > 235 && event.clientX < 600) {
             setLeftMargin(val);
-            let canvasVal = [
-                {
-                    drawerOpen: canvas[0].drawerOpen,
-                    drawerLeftMargin: val,
-                    drawerClicked: marginToggle,
-                },
-            ];
+            let canvasVal = {
+                drawerOpen: canvas.drawerOpen,
+                drawerLeftMargin: val,
+                drawerClicked: marginToggle,
+            };
             props.SetCanvas(canvasVal);
         } else {
             setMarginToggle(false);
         }
     };
 
-    const handleMarginClick = (): void => {
-        // console.log("handling margin click");
-        if (marginToggle) {
-            setMarginToggle(false);
-            props.SetCanvas([
-                {
-                    drawerOpen: canvas[0].drawerOpen,
-                    drawerLeftMargin: leftMargin,
-                    drawerClicked: false,
-                },
-            ]);
-            return;
-        }
-        setMarginToggle(true);
-        props.SetCanvas([
-            {
-                drawerOpen: canvas[0].drawerOpen,
-                drawerLeftMargin: canvas[0].drawerLeftMargin,
-                drawerClicked: true,
-            },
-        ]);
-    };
+    // const handleMarginClick = (): void => {
+    //     // console.log("handling margin click");
+    //     if (marginToggle) {
+    //         setMarginToggle(false);
+    //         props.SetCanvas([
+    //             {
+    //                 drawerOpen: canvas.drawerOpen,
+    //                 drawerLeftMargin: leftMargin,
+    //                 drawerClicked: false,
+    //             },
+    //         ]);
+    //         return;
+    //     }
+    //     setMarginToggle(true);
+    //     props.SetCanvas([
+    //         {
+    //             drawerOpen: canvas.drawerOpen,
+    //             drawerLeftMargin: canvas.drawerLeftMargin,
+    //             drawerClicked: true,
+    //         },
+    //     ]);
+    // };
 
     const renderMargin = () => {
-        if (canvas[0].drawerOpen === true) {
+        if (canvas.drawerOpen === true) {
             return (
                 <>
                     <div className={classes.canvasContainer} style={{ fontSize: defaultSize }}>
@@ -113,8 +111,8 @@ const CanvasDisplay: React.FC<Props> = (props) => {
                             style={{
                                 marginTop: 64,
                                 minHeight: "100vh",
-                                marginLeft: canvas[0].drawerLeftMargin,
-                                marginRight: canvas[0].drawerLeftMargin,
+                                marginLeft: canvas.drawerLeftMargin,
+                                marginRight: canvas.drawerLeftMargin,
                                 zIndex: 1400,
                                 // maxWidth: "100vh",
                                 justifyContent: "center",
@@ -167,7 +165,7 @@ const CanvasDisplay: React.FC<Props> = (props) => {
 };
 interface LinkStateProps {
     components: Component[];
-    canvas: Canvas[];
+    canvas: Canvas;
 }
 
 const mapStateToProps = (state: AppState, ownProps: CanvasProps): LinkStateProps => ({
@@ -177,7 +175,7 @@ const mapStateToProps = (state: AppState, ownProps: CanvasProps): LinkStateProps
 
 interface LinkDispatchProps {
     SetComponents: (components: Component[]) => void;
-    SetCanvas: (canvas: Canvas[]) => void;
+    SetCanvas: (canvas: Canvas) => void;
 }
 
 const mapDispatchToProps = (

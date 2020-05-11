@@ -44,8 +44,8 @@ type Props = CanvasStylingProps & LinkStateProps & LinkDispatchProps;
 const CanvasStyle: React.FC<Props> = (props) => {
     const { canvasStyling } = props;
     const classes = useStyles();
-    const [fontSize, setFontSize] = React.useState(canvasStyling[0].fontSize);
-    const [boxSizing, setBoxSizing] = React.useState(canvasStyling[0].boxSizing);
+    const [fontSize, setFontSize] = React.useState(canvasStyling.fontSize);
+    const [boxSizing, setBoxSizing] = React.useState(canvasStyling.boxSizing);
     const [open, setOpen] = React.useState(true);
     const handleFontSizeChange = (e) => {
         setFontSize(e.target.value);
@@ -55,9 +55,9 @@ const CanvasStyle: React.FC<Props> = (props) => {
     };
 
     const handleApplyChanges = (e) => {
-        onSet([{ fontSize, boxSizing }]);
+        onSet({ fontSize, boxSizing });
     };
-    const onSet = (canvasStyling: CanvasStyling[]) => {
+    const onSet = (canvasStyling: CanvasStyling) => {
         props.SetCanvasStyling(canvasStyling);
     };
 
@@ -156,7 +156,7 @@ const CanvasStyle: React.FC<Props> = (props) => {
     );
 };
 interface LinkStateProps {
-    canvasStyling: CanvasStyling[];
+    canvasStyling: CanvasStyling;
 }
 
 const mapStateToProps = (state: AppState, ownProps: CanvasStylingProps): LinkStateProps => ({
@@ -164,7 +164,7 @@ const mapStateToProps = (state: AppState, ownProps: CanvasStylingProps): LinkSta
 });
 
 interface LinkDispatchProps {
-    SetCanvasStyling: (canvasStyling: CanvasStyling[]) => void;
+    SetCanvasStyling: (canvasStyling: CanvasStyling) => void;
 }
 
 const mapDispatchToProps = (

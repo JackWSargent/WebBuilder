@@ -260,7 +260,7 @@ const Renderer: React.FC<Props> = (props) => {
     };
 
     const getSizing = () => {
-        if (canvasStyling[0].boxSizing == "border-box") {
+        if (canvasStyling.boxSizing == "border-box") {
             return "border-box";
         } else {
             return "content-box";
@@ -268,7 +268,7 @@ const Renderer: React.FC<Props> = (props) => {
     };
 
     const getFontSizing = () => {
-        return canvasStyling[0].fontSize.toString() + "px";
+        return canvasStyling.fontSize.toString() + "px";
     };
 
     const renderComponents = (): JSX.Element[] => {
@@ -298,8 +298,8 @@ const Renderer: React.FC<Props> = (props) => {
 };
 interface LinkStateProps {
     components: Component[];
-    canvas: Canvas[];
-    canvasStyling: CanvasStyling[];
+    canvas: Canvas;
+    canvasStyling: CanvasStyling;
 }
 
 const mapStateToProps = (state: AppState, ownProps: RendererProps): LinkStateProps => ({
@@ -310,7 +310,7 @@ const mapStateToProps = (state: AppState, ownProps: RendererProps): LinkStatePro
 
 interface LinkDispatchProps {
     SetComponents: (components: Component[]) => void;
-    SetCanvas: (canvas: Canvas[]) => void;
+    SetCanvas: (canvas: Canvas) => void;
 }
 
 const mapDispatchToProps = (
