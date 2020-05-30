@@ -71,16 +71,13 @@ const EditComponentTab: React.FC<Props> = (props) => {
             }
             case "name": {
                 newComponentName = e.target.value;
-                console.log("changing name to: " + e.target.value);
                 break;
             }
             case "innerText": {
-                console.log("changing innertext to: " + e.target.value);
                 newComponentInnerText = e.target.value;
                 break;
             }
-        }
-        console.log(newComponentName, newComponentInnerText);
+        } //
         newComponent = {
             id: componentId,
             type: newComponentType,
