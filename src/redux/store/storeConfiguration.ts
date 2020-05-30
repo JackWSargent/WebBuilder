@@ -4,6 +4,8 @@ import { componentReducer } from "../reducers/component";
 import { AppActions } from "../types/actions";
 import { canvasStylingReducer } from "../reducers/canvasStyling";
 import { canvasReducer } from "../reducers/canvas";
+import { clipboardReducer } from "../reducers/clipboard";
+import { historyReducer } from "../reducers/history";
 
 // import { composeWithDevTools } from "redux-devtools-extension";
 
@@ -11,6 +13,8 @@ export const rootReducer = combineReducers({
     components: componentReducer,
     canvasStyling: canvasStylingReducer,
     canvas: canvasReducer,
+    clipboard: clipboardReducer,
+    history: historyReducer,
 });
 const composeEnhancers =
     ((window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ &&

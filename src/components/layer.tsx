@@ -179,6 +179,7 @@ const Layer: React.FC<Props> = (props) => {
         changed = true;
         let newLayers = layers.map((layer) => {
             if (layer.id === id) {
+                //Not selected and not inside the selected array
                 if (!layer.selected && !selected.includes(layer.id)) {
                     if (ctrl) {
                         let newSelected = layer.id;
@@ -191,6 +192,7 @@ const Layer: React.FC<Props> = (props) => {
                         ...layer,
                         selected: true,
                     };
+                    //Already Selected
                 } else if (selected.includes(layer.id) || layer.selected) {
                     if (ctrl) {
                         let idx = selected.indexOf(layer.id);
@@ -204,6 +206,7 @@ const Layer: React.FC<Props> = (props) => {
                         ...layer,
                         selected: false,
                     };
+                    //Already Selected
                 } else {
                     let idx = selected.indexOf(id);
                     selected.splice(idx, 1);
@@ -219,7 +222,6 @@ const Layer: React.FC<Props> = (props) => {
 
             return { ...layer, selected: false };
         });
-        // console.log(newLayers);
         if (!deleteChange) {
             props.SetComponents(newLayers);
             setLayers(newLayers);

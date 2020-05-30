@@ -1,13 +1,14 @@
-import { Component } from "../types/actions";
 import {
+    Component,
     ComponentActionTypes,
     SET_COMPONENTS,
     DELETE_COMPONENT,
     ADD_COMPONENT,
     EDIT_COMPONENT,
     EDIT_COMPONENTS,
+    PASTE_COMPONENT,
 } from "../types/actions";
-import { ActionSchedule } from "material-ui/svg-icons";
+import { clipboardReducerDefaultState } from "./clipboard";
 /* eslint-disable */
 
 const componentsReducerDefaultState: Component[] = [
@@ -248,7 +249,7 @@ const deleteComponent = (component, state) => {
     }
 
     newLayers.splice(idx, 1);
-    console.log(newLayers);
+    // console.log(newLayers);
     return newLayers;
 };
 
@@ -265,12 +266,25 @@ const componentReducer = (state = componentsReducerDefaultState, action: Compone
                 }
                 return component;
             });
+        //TODO: Finish doing Edit Components, Basically SetComponents but with a selection accounted in, Might just restort to SetComponents instead and doing everything inside the react component (tsx)
         case EDIT_COMPONENTS: {
             return buildLayerOrder(
-                state.map((comp) => {
-                    return comp;
+                state.map((component) => {
+                    return component;
                 })
             );
+        }
+        case PASTE_COMPONENT: {
+            return state.map((component) => {
+                let id = action.id;
+                if (action.id === component.id) {
+                    return {
+                        ...component,
+                        ...clipboardReducerDefaultState,
+                    };
+                }
+                return component;
+            });
         }
         case DELETE_COMPONENT:
             return deleteComponent(action.component, state);

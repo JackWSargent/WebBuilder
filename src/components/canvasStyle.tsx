@@ -46,7 +46,7 @@ const CanvasStyle: React.FC<Props> = (props) => {
     const classes = useStyles();
     const [fontSize, setFontSize] = React.useState(canvasStyling.fontSize);
     const [boxSizing, setBoxSizing] = React.useState(canvasStyling.boxSizing);
-    const [open, setOpen] = React.useState(true);
+    const [open, setOpen] = React.useState(false);
     const handleFontSizeChange = (e) => {
         setFontSize(e.target.value);
     };
