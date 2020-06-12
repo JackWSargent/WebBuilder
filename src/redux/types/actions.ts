@@ -13,6 +13,10 @@ export const SET_CANVAS = "SET_CANVAS";
 export const EDIT_CANVAS = "EDIT_CANVAS";
 
 export const ADD_HISTORY = "ADD_HISTORY";
+export const UNDO_HISTORY = "UNDO_HISTORY";
+
+export const KEY_DOWN = "KEY_DOWN";
+export const KEY_UP = "KEY_UP";
 
 export interface Component {
     isRendered?: boolean;
@@ -52,13 +56,12 @@ export interface Undo {
     components?: Component[];
     canvasStyling?: CanvasStyling;
     canvas?: Canvas;
+    id?: number;
 }
 
-export interface Redo {
-    components?: Component[];
-    canvasStyling?: CanvasStyling;
-    canvas?: Canvas;
-}
+export interface KeyPress {}
+
+// COMPONENTS
 
 export interface SetComponentAction {
     type: typeof SET_COMPONENTS;
@@ -95,10 +98,14 @@ export interface PasteComponentAction {
     id: number;
 }
 
+// CANVAS STYLING
+
 export interface SetCanvasStylingAction {
     type: typeof SET_CANVAS_STYLING;
     canvasStyling: CanvasStyling;
 }
+
+// CANVAS
 
 export interface SetCanvasAction {
     type: typeof SET_CANVAS;
@@ -110,9 +117,33 @@ export interface EditCanvasAction {
     canvas: Canvas;
 }
 
+// HISTORY
+
 export interface AddHistoryAction {
     type: typeof ADD_HISTORY;
     history: History;
+}
+
+export interface UndoHistoryAction {
+    type: typeof UNDO_HISTORY;
+}
+
+export interface Redo {
+    components?: Component[];
+    canvasStyling?: CanvasStyling;
+    canvas?: Canvas;
+}
+
+// KEY PRESS
+
+export interface KeyDownAction {
+    type: typeof KEY_DOWN;
+    keyPress: KeyPress;
+}
+
+export interface KeyUpAction {
+    type: typeof KEY_UP;
+    keyPress: KeyPress;
 }
 
 export type ComponentActionTypes =
@@ -131,9 +162,12 @@ export type CanvasActionTypes = SetCanvasAction | EditCanvasAction;
 
 export type HistoryActionTypes = AddHistoryAction;
 
+export type KeyPressActionTypes = KeyDownAction | KeyUpAction;
+
 export type AppActions =
     | ClipboardActionTypes
     | ComponentActionTypes
     | CanvasStylingActionTypes
     | CanvasActionTypes
-    | HistoryActionTypes;
+    | HistoryActionTypes
+    | KeyPressActionTypes;

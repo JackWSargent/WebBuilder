@@ -6,6 +6,7 @@ import { canvasStylingReducer } from "../reducers/canvasStyling";
 import { canvasReducer } from "../reducers/canvas";
 import { clipboardReducer } from "../reducers/clipboard";
 import { historyReducer } from "../reducers/history";
+import { keyPressReducer } from "../reducers/keyPress";
 
 // import { composeWithDevTools } from "redux-devtools-extension";
 
@@ -15,6 +16,7 @@ export const rootReducer = combineReducers({
     canvas: canvasReducer,
     clipboard: clipboardReducer,
     history: historyReducer,
+    keyPress: keyPressReducer,
 });
 const composeEnhancers =
     ((window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ &&

@@ -3,20 +3,25 @@ import "../App.css";
 /* eslint-disable */
 import { makeStyles, useTheme, Theme, createStyles } from "@material-ui/core/styles";
 import { connect } from "react-redux";
-import { Component } from "../redux/types/actions";
+import { Component, History, Undo, Redo } from "../redux/types/actions";
 import { AppState } from "../redux/store/storeConfiguration";
 import { bindActionCreators } from "redux";
 import { AppActions } from "../redux/types/actions";
 import { ThunkDispatch } from "redux-thunk";
 import { SetComponents, AddComponent } from "../redux/actions/components";
-import { Grid } from "@material-ui/core";
-import Select from "@material-ui/core/Select";
-import Button from "@material-ui/core/Button";
-import Typography from "@material-ui/core/Typography";
-import ExpansionPanel from "@material-ui/core/ExpansionPanel";
-import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
-import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
+import { AddHistory } from "../redux/actions/history";
+
+import {
+    Grid,
+    Select,
+    Button,
+    Typography,
+    ExpansionPanel,
+    ExpansionPanelSummary,
+    ExpansionPanelDetails,
+} from "@material-ui/core";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         heading: {
@@ -31,7 +36,7 @@ interface NewComponentProps {}
 type Props = NewComponentProps & LinkStateProps & LinkDispatchProps;
 
 const NewComponent: React.FC<Props> = (props) => {
-    const { components } = props;
+    const { components, history } = props;
     const classes = useStyles();
     const [open, setOpen] = React.useState(false);
     const [newComponentType, setNewComponentType] = React.useState("gridContainer");
@@ -52,8 +57,6 @@ const NewComponent: React.FC<Props> = (props) => {
         if (selectedComponents.length === 1) {
             return selectedComponents[0];
         }
-        // console.log(selectedComponents);
-        // console.log("false");
         return false;
     };
 
@@ -88,7 +91,7 @@ const NewComponent: React.FC<Props> = (props) => {
             nestedLevel: parentLayer.nestedLevel + 1,
         };
 
-        console.log(newComponentObj);
+        props.AddHistory({ undo: [newComponentObj] });
         props.AddComponent(newComponentObj);
     };
 
@@ -151,15 +154,18 @@ const NewComponent: React.FC<Props> = (props) => {
 
 interface LinkStateProps {
     components: Component[];
+    history: History;
 }
 
 const mapStateToProps = (state: AppState, ownProps: NewComponentProps): LinkStateProps => ({
     components: state.components,
+    history: state.history,
 });
 
 interface LinkDispatchProps {
     SetComponents: (components: Component[]) => void;
     AddComponent: (component: Component) => void;
+    AddHistory: (history: History) => void;
 }
 
 const mapDispatchToProps = (
@@ -168,6 +174,7 @@ const mapDispatchToProps = (
 ): LinkDispatchProps => ({
     SetComponents: bindActionCreators(SetComponents, dispatch),
     AddComponent: bindActionCreators(AddComponent, dispatch),
+    AddHistory: bindActionCreators(AddHistory, dispatch),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(NewComponent);

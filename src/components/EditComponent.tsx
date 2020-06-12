@@ -10,15 +10,17 @@ import { AppActions } from "../redux/types/actions";
 import { ThunkDispatch } from "redux-thunk";
 import { SetComponents, AddComponent, EditComponent, PasteComponent } from "../redux/actions/components";
 import { CopyComponent } from "../redux/actions/clipboard";
-import { Grid } from "@material-ui/core";
-import Select from "@material-ui/core/Select";
-import Button from "@material-ui/core/Button";
-import Typography from "@material-ui/core/Typography";
-import ExpansionPanel from "@material-ui/core/ExpansionPanel";
-import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
-import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
+import {
+    Grid,
+    TextField,
+    Select,
+    Button,
+    Typography,
+    ExpansionPanel,
+    ExpansionPanelDetails,
+    ExpansionPanelSummary,
+} from "@material-ui/core";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import { TextField } from "@material-ui/core";
 import MdCopy from "react-ionicons/lib/MdCopy";
 import MdClipboard from "react-ionicons/lib/MdClipboard";
 import { ConvertToCopiedComponent, ConvertToComponent } from "../utils/ConvertComponent";
@@ -51,6 +53,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
 
     const hasSelectedLayer = (): boolean => {
         if (selected.length === 1 && selected[0].id !== 100) {
+            console.log(selected);
             return true;
         }
         return false;
@@ -77,7 +80,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
                 newComponentInnerText = e.target.value;
                 break;
             }
-        } //
+        }
         newComponent = {
             id: componentId,
             type: newComponentType,

@@ -21,17 +21,16 @@ import CanvasStyle from "./CanvasStyle";
 import NewComponent from "./AddComponent";
 import EditComponentTab from "./EditComponent";
 import { connect } from "react-redux";
-import { SetComponents, DeleteComponent, EditComponent } from "../redux/actions/components";
-// import { DeleteComponent } from "../redux/actions/component";
+import { SetComponents, DeleteComponent, EditComponent, EditComponents } from "../redux/actions/components";
 import { SetCanvas, EditCanvas } from "../redux/actions/canvas";
-import { Component, Canvas } from "../redux/types/actions";
+import { AddHistory } from "../redux/actions/history";
+import { Component, Canvas, History, Undo, Redo } from "../redux/types/actions";
 import { AppState } from "../redux/store/storeConfiguration";
 import { bindActionCreators } from "redux";
 import { AppActions } from "../redux/types/actions";
 import { ThunkDispatch } from "redux-thunk";
 import ClearIcon from "@material-ui/icons/Clear";
 import WebIcon from "@material-ui/icons/Web";
-
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
@@ -146,7 +145,7 @@ let ctrl: boolean = false;
 let open: boolean = true;
 
 const Layer: React.FC<Props> = (props) => {
-    const { components, canvas } = props;
+    const { components, canvas, history } = props;
 
     const classes = useStyles();
     const theme = useTheme();
@@ -172,12 +171,15 @@ const Layer: React.FC<Props> = (props) => {
         }
         deleteChange = true;
         changed = true;
+        props.AddHistory({ undo: [deletedComponent] });
         props.DeleteComponent(deletedComponent);
     };
 
     const handleSelectedState = (id) => {
         changed = true;
+
         let newLayers = layers.map((layer) => {
+            // If ctrl, can just use edit component, if none selected use edit component, else use edit components because it is modify 2 or more components.
             if (layer.id === id) {
                 //Not selected and not inside the selected array
                 if (!layer.selected && !selected.includes(layer.id)) {
@@ -198,10 +200,9 @@ const Layer: React.FC<Props> = (props) => {
                         let idx = selected.indexOf(layer.id);
                         selected.splice(idx, 1);
                     } else {
-                        let idx = selected.indexOf(id);
+                        // let idx = selected.indexOf(id);
                         selected.splice(0, selected.length);
                     }
-
                     return {
                         ...layer,
                         selected: false,
@@ -216,7 +217,6 @@ const Layer: React.FC<Props> = (props) => {
             if (ctrl) {
                 return layer;
             } else if (selected.includes(layer.id) && !ctrl) {
-                console.log(layer.id);
                 return { ...layer, selected: false };
             }
 
@@ -418,6 +418,7 @@ const Layer: React.FC<Props> = (props) => {
 interface LinkStateProps {
     components: Component[];
     canvas: Canvas;
+    history: History;
 }
 
 interface LinkDispatchProps {
@@ -425,12 +426,15 @@ interface LinkDispatchProps {
     SetComponents: (components: Component[]) => void;
     SetCanvas: (canvas: Canvas) => void;
     EditComponent: (component: Component) => void;
+    EditComponents: (components: Component[]) => void;
     EditCanvas: (canvas: Canvas) => void;
+    AddHistory: (history: History) => void;
 }
 
 const mapStateToProps = (state: AppState, ownProps: LayerProps): LinkStateProps => ({
     components: state.components,
     canvas: state.canvas,
+    history: state.history,
 });
 
 const mapDispatchToProps = (
@@ -441,7 +445,9 @@ const mapDispatchToProps = (
     SetComponents: bindActionCreators(SetComponents, dispatch),
     SetCanvas: bindActionCreators(SetCanvas, dispatch),
     EditComponent: bindActionCreators(EditComponent, dispatch),
+    EditComponents: bindActionCreators(EditComponents, dispatch),
     EditCanvas: bindActionCreators(EditCanvas, dispatch),
+    AddHistory: bindActionCreators(AddHistory, dispatch),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Layer);

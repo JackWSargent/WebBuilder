@@ -11,7 +11,7 @@ import {
 import { clipboardReducerDefaultState } from "./clipboard";
 /* eslint-disable */
 
-const componentsReducerDefaultState: Component[] = [
+export const componentsReducerDefaultState: Component[] = [
     {
         id: 100,
         isRendered: false,
@@ -113,7 +113,6 @@ const runDownNestedLayers = (
         child = child[0];
         currentLayerIndex = layersArray.indexOf(child);
         newArray.push(child);
-        // console.log(child);
     }
     if (layersArray[currentLayerIndex].children === null && layersArray.length !== newArray.length) {
         hasMoreChildren = false;
@@ -132,9 +131,6 @@ function buildLayerOrder(layersArray) {
     for (let i = 0; areMoreComponents; i++) {
         if (!layersArray[i]) {
             areMoreComponents = false;
-            console.log("exit at: " + i);
-            console.log("input arr length: " + layersArray.length);
-            console.log("output arr length: " + newArray.length);
             return newArray;
         }
         let current = i;
@@ -143,9 +139,6 @@ function buildLayerOrder(layersArray) {
             newArray.concat(runDownNestedLayers(current, layersArray, newArray, hasMoreChildren));
         } else {
             if (newArray.length === layersArray.length) {
-                // console.log("Arrays before ending");
-                // console.log(newArray);
-                // console.log(layersArray);
                 areMoreComponents = false;
                 return newArray;
             }
@@ -165,27 +158,20 @@ const addComponent = (components) => {
     });
     if (selectedComponents.length === 1) {
         parentLayer = selectedComponents[0];
-        // console.log(selectedComponents[0]);
         let newComponentObj = components[components.length - 1];
-        // console.log(components);
         newComponentArr = components.map((obj) => {
-            // console.log(obj);
-            // console.log(parentLayer);
             if (obj.id === parentLayer.id) {
                 if (parentLayer.children === null) {
                     let newChild = [newComponentObj.id];
-                    // console.log(newChild);
                     return { ...obj, children: newChild };
                 } else {
                     let newChildren = parentLayer.children.map((el) => {
                         return el;
                     });
                     newChildren.push(newComponentObj.id);
-                    // console.log(newChildren);
                     return { ...obj, children: newChildren };
                 }
             }
-            // console.log(obj);
             return obj;
         });
     }
@@ -204,19 +190,16 @@ const deleteComponent = (component, state) => {
 
     let idx = newLayers.findIndex((layer) => layer.id == id);
     if (idx < 0) {
-        console.log("idx doesnt exist");
+        console.error("Index doesnt exist for deletion");
         return;
     }
 
     let parentIdx = newLayers.findIndex((layer) => layer.id == parent);
     if (newLayers.length == 1 || idx === 0) {
-        // newLayers = [];
-        console.log(newLayers);
+        console.error("Components do not contain anything, GET SOME: " + newLayers);
     }
     if (parent !== null) {
         let childIdx = newLayers[parentIdx].children.indexOf(id);
-        console.log(childIdx);
-        console.log(newLayers);
         if (newLayers[parentIdx].children.length == 1) {
             newLayers = newLayers.map((layer) => {
                 if (layer.id === parent) {
@@ -236,28 +219,21 @@ const deleteComponent = (component, state) => {
         let childrenFound = false;
         for (let i = idx + 1; i < newLayers.length - 1 || !childrenFound; i++) {
             if (newLayers[i].nestedLevel <= component.nestedLevel) {
-                console.log(i);
-                console.log(idx);
                 numChildren = i - idx - 1;
                 childrenFound = true;
-                console.log("children found");
             }
         }
         newLayers.splice(idx + 1, numChildren);
-        console.log(numChildren);
-        console.log(newLayers);
     }
 
     newLayers.splice(idx, 1);
-    // console.log(newLayers);
     return newLayers;
 };
 
 const componentReducer = (state = componentsReducerDefaultState, action: ComponentActionTypes) => {
     switch (action.type) {
         case ADD_COMPONENT:
-            let newComponents = [...state, action.component];
-            newComponents = addComponent(newComponents);
+            let newComponents = addComponent([...state, action.component]);
             return buildLayerOrder(newComponents);
         case EDIT_COMPONENT:
             return state.map((component) => {
@@ -266,10 +242,14 @@ const componentReducer = (state = componentsReducerDefaultState, action: Compone
                 }
                 return component;
             });
-        //TODO: Finish doing Edit Components, Basically SetComponents but with a selection accounted in, Might just restort to SetComponents instead and doing everything inside the react component (tsx)
         case EDIT_COMPONENTS: {
             return buildLayerOrder(
                 state.map((component) => {
+                    action.components.forEach((edit) => {
+                        if (edit.id === component.id) {
+                            return edit;
+                        }
+                    });
                     return component;
                 })
             );

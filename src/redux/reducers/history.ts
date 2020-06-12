@@ -1,4 +1,4 @@
-import { History, ADD_HISTORY, HistoryActionTypes } from "../types/actions";
+import { History, ADD_HISTORY, HistoryActionTypes, Undo, Redo } from "../types/actions";
 
 export let historyReducerDefaultState: History = {
     undo: [],
@@ -8,9 +8,9 @@ export let historyReducerDefaultState: History = {
 const historyReducer = (state = historyReducerDefaultState, action: HistoryActionTypes) => {
     switch (action.type) {
         case ADD_HISTORY:
-            let newUndoArr = state.undo.push(...action.history.undo);
-            let newRedoArr = [];
-            return { newUndoArr, newRedoArr };
+            let newUndoArr: Undo[] = state.undo.concat(...action.history.undo);
+            let newRedoArr: Redo[] = [];
+            return { undo: newUndoArr, redo: newRedoArr };
         default:
             return state;
     }
