@@ -24,7 +24,7 @@ import { connect } from "react-redux";
 import { SetComponents, DeleteComponent, EditComponent, EditComponents } from "../redux/actions/components";
 import { SetCanvas, EditCanvas } from "../redux/actions/canvas";
 import { AddHistory } from "../redux/actions/history";
-import { Component, Canvas, History, Undo, Redo } from "../redux/types/actions";
+import { Component, Canvas, History, KeyPress } from "../redux/types/actions";
 import { AppState } from "../redux/store/storeConfiguration";
 import { bindActionCreators } from "redux";
 import { AppActions } from "../redux/types/actions";
@@ -70,11 +70,9 @@ const useStyles = makeStyles((theme: Theme) =>
             display: "none",
         },
         drawer: {
-            // width: drawerWidth,
             flexShrink: 0,
         },
         drawerPaper: {
-            // width: drawerWidth,
             backgroundColor: "#666666",
             color: "#fff",
         },
@@ -116,19 +114,9 @@ const useStyles = makeStyles((theme: Theme) =>
         divider: {
             backgroundColor: "#fff",
         },
-        marginNS: {
-            marginTop: "100%",
-            width: 400,
-            height: "100%",
-            backgroundColor: "#fff",
-            zIndex: 1000,
-        },
         heading: {
             fontSize: theme.typography.pxToRem(15),
             fontWeight: 600,
-        },
-        details: {
-            padding: 0,
         },
     })
 );
@@ -140,12 +128,11 @@ let deleteChange: boolean = false;
 type Props = LayerProps & LinkStateProps & LinkDispatchProps;
 
 let changed: boolean = true;
-let ctrl: boolean = false;
 
 let open: boolean = true;
 
 const Layer: React.FC<Props> = (props) => {
-    const { components, canvas, history } = props;
+    const { components, canvas, history, keyPress } = props;
 
     const classes = useStyles();
     const theme = useTheme();
@@ -177,9 +164,10 @@ const Layer: React.FC<Props> = (props) => {
 
     const handleSelectedState = (id) => {
         changed = true;
+        let ctrl: boolean = keyPress["ctrl"] ? keyPress["ctrl"] : false;
 
         let newLayers = layers.map((layer) => {
-            // If ctrl, can just use edit component, if none selected use edit component, else use edit components because it is modify 2 or more components.
+            // If keyPress.ctrl, can just use edit component, if none selected use edit component, else use edit components because it is modify 2 or more components.
             if (layer.id === id) {
                 //Not selected and not inside the selected array
                 if (!layer.selected && !selected.includes(layer.id)) {
@@ -274,19 +262,9 @@ const Layer: React.FC<Props> = (props) => {
     };
 
     React.useEffect(() => {
-        window.addEventListener("keydown", (event) => {
-            if (event.keyCode === 17) {
-                ctrl = true;
-            }
-        });
-        window.addEventListener("keyup", (event) => {
-            if (event.keyCode === 17) {
-                ctrl = false;
-            }
-        });
         changed = false;
         deleteChange = false;
-    }, [event, changed, selected, canvas, open, layers]);
+    }, [event, changed, selected, canvas, open, layers, keyPress]);
 
     React.useEffect(() => {
         if (layers.length !== components.length || layers !== components) {
@@ -419,6 +397,7 @@ interface LinkStateProps {
     components: Component[];
     canvas: Canvas;
     history: History;
+    keyPress: KeyPress;
 }
 
 interface LinkDispatchProps {
@@ -435,6 +414,7 @@ const mapStateToProps = (state: AppState, ownProps: LayerProps): LinkStateProps 
     components: state.components,
     canvas: state.canvas,
     history: state.history,
+    keyPress: state.keyPress,
 });
 
 const mapDispatchToProps = (

@@ -53,10 +53,12 @@ export interface History {
 }
 
 export interface Undo {
+    component?: Component;
     components?: Component[];
-    canvasStyling?: CanvasStyling;
     canvas?: Canvas;
     id?: number;
+    boxSizing?: string;
+    fontSize?: number;
 }
 
 export interface KeyPress {}

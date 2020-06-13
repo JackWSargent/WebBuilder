@@ -3,12 +3,13 @@ import "../App.css";
 /* eslint-disable */
 import { makeStyles, useTheme, Theme, createStyles } from "@material-ui/core/styles";
 import { connect } from "react-redux";
-import { Component, CopiedComponent } from "../redux/types/actions";
+import { Component, CopiedComponent, History } from "../redux/types/actions";
 import { AppState } from "../redux/store/storeConfiguration";
 import { bindActionCreators } from "redux";
 import { AppActions } from "../redux/types/actions";
 import { ThunkDispatch } from "redux-thunk";
 import { SetComponents, AddComponent, EditComponent, PasteComponent } from "../redux/actions/components";
+import { AddHistory } from "../redux/actions/history";
 import { CopyComponent } from "../redux/actions/clipboard";
 import {
     Grid,
@@ -40,7 +41,7 @@ type Props = EditComponentProps & LinkStateProps & LinkDispatchProps;
 let renderedComponentArr: JSX.Element[] = [];
 
 const EditComponentTab: React.FC<Props> = (props) => {
-    const { components, clipboard } = props;
+    const { components, clipboard, history } = props;
     const classes = useStyles();
     const [open, setOpen] = React.useState(true);
     const [layers, setLayers] = React.useState(components);
@@ -87,7 +88,9 @@ const EditComponentTab: React.FC<Props> = (props) => {
             name: newComponentName,
             innerText: newComponentInnerText,
         };
+
         if (newComponent.name && newComponent.id) {
+            props.AddHistory({ undo: [newComponent] });
             props.EditComponent(newComponent);
         }
     };
@@ -303,11 +306,13 @@ const EditComponentTab: React.FC<Props> = (props) => {
 interface LinkStateProps {
     components: Component[];
     clipboard: CopiedComponent;
+    history: History;
 }
 
 const mapStateToProps = (state: AppState, ownProps: EditComponentProps): LinkStateProps => ({
     components: state.components,
     clipboard: state.clipboard,
+    history: state.history,
 });
 
 interface LinkDispatchProps {
@@ -316,6 +321,7 @@ interface LinkDispatchProps {
     EditComponent: (component: Component) => void;
     CopyComponent: (copiedComponent: CopiedComponent) => void;
     PasteComponent: (id: number) => void;
+    AddHistory: (history: History) => void;
 }
 
 const mapDispatchToProps = (
@@ -327,6 +333,7 @@ const mapDispatchToProps = (
     EditComponent: bindActionCreators(EditComponent, dispatch),
     CopyComponent: bindActionCreators(CopyComponent, dispatch),
     PasteComponent: bindActionCreators(PasteComponent, dispatch),
+    AddHistory: bindActionCreators(AddHistory, dispatch),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(EditComponentTab);
