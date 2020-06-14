@@ -39,6 +39,7 @@ interface EditComponentProps {}
 
 type Props = EditComponentProps & LinkStateProps & LinkDispatchProps;
 let renderedComponentArr: JSX.Element[] = [];
+let doneWriting: boolean = true;
 
 const EditComponentTab: React.FC<Props> = (props) => {
     const { components, clipboard, history } = props;

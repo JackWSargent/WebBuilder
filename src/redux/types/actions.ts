@@ -14,6 +14,7 @@ export const EDIT_CANVAS = "EDIT_CANVAS";
 
 export const ADD_HISTORY = "ADD_HISTORY";
 export const UNDO_HISTORY = "UNDO_HISTORY";
+export const REDO_HISTORY = "REDO_HISTORY";
 
 export const KEY_DOWN = "KEY_DOWN";
 export const KEY_UP = "KEY_UP";
@@ -53,6 +54,15 @@ export interface History {
 }
 
 export interface Undo {
+    component?: Component;
+    components?: Component[];
+    canvas?: Canvas;
+    id?: number;
+    boxSizing?: string;
+    fontSize?: number;
+}
+
+export interface Redo {
     component?: Component;
     components?: Component[];
     canvas?: Canvas;
@@ -130,10 +140,8 @@ export interface UndoHistoryAction {
     type: typeof UNDO_HISTORY;
 }
 
-export interface Redo {
-    components?: Component[];
-    canvasStyling?: CanvasStyling;
-    canvas?: Canvas;
+export interface RedoHistoryAction {
+    type: typeof REDO_HISTORY;
 }
 
 // KEY PRESS
