@@ -170,7 +170,7 @@ export type CanvasStylingActionTypes = SetCanvasStylingAction;
 
 export type CanvasActionTypes = SetCanvasAction | EditCanvasAction;
 
-export type HistoryActionTypes = AddHistoryAction;
+export type HistoryActionTypes = AddHistoryAction | UndoHistoryAction | RedoHistoryAction;
 
 export type KeyPressActionTypes = KeyDownAction | KeyUpAction;
 
