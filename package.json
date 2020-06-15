@@ -34,7 +34,8 @@
     "redux-thunk": "^2.3.0",
     "seamless-immutable": "^7.1.4",
     "typescript": "~3.7.2",
-    "uuid": "^7.0.2"
+    "uuid": "^7.0.2",
+    "websocket-extensions": "^0.1.4"
   },
   "scripts": {
     "start": "react-scripts start",
