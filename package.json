@@ -11,7 +11,7 @@
     "@types/material-ui": "^0.21.7",
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
-    "browserify-css": "^0.12.0",
+    "browserify-css": "^0.15.0",
     "clsx": "^1.1.0",
     "connected-react-router": "^6.7.0",
     "eslint-plugin-flowtype": "^4.6.0",
