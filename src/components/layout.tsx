@@ -31,29 +31,33 @@ const Layout: React.FC<Props> = (props) => {
     const classes = useStyles();
     const theme = useTheme();
 
-    window.addEventListener("keydown", (event) => {
-        if (!keyPress[event.keyCode]) {
-            props.KeyDown(event.keyCode);
-        }
-    });
-    window.addEventListener("keyup", (event) => {
-        props.KeyUp(event.keyCode);
-    });
-
     const PressingUndo = (): boolean => {
-        return keyPress["z"] && keyPress["ctrl"] ? true : false;
+        return keyPress["z"] && keyPress["ctrl"] && !keyPress["y"] ? true : false;
     };
 
     const PressingRedo = (): boolean => {
-        return keyPress["y"] && keyPress["ctrl"] ? true : false;
+        return keyPress["y"] && keyPress["ctrl"] && !keyPress["z"] ? true : false;
     };
-
+    //working on getting this to work when history is being watched and also not running it a million times and only once, probably by making sure that atleast z is false before enabling a new action on history to be dispatched,
     React.useEffect(() => {
+        console.log("useEffect triggered");
         if (PressingUndo()) {
+            console.log("fjdksafjsd");
+            props.UndoHistory();
+            console.log(history);
         }
         if (PressingRedo()) {
+            props.RedoHistory();
         }
-    }, [canvas.drawerOpen, keyPress]);
+        window.addEventListener("keydown", (event) => {
+            if (!keyPress[event.keyCode]) {
+                props.KeyDown(event.keyCode);
+            }
+        });
+        window.addEventListener("keyup", (event) => {
+            props.KeyUp(event.keyCode);
+        });
+    }, [canvas.drawerOpen, history]);
 
     const renderComponents = () => {
         return (

@@ -12,7 +12,16 @@ const historyReducer = (state = historyReducerDefaultState, action: HistoryActio
             let newRedoArr: Redo[] = [];
             return { undo: newUndoArr, redo: newRedoArr };
         case UNDO_HISTORY:
-            return state;
+            let undoArr = state.undo.map((el) => {
+                return el;
+            });
+            let redoArr = state.redo.map((el) => {
+                return el;
+            });
+            redoArr.push(undoArr[undoArr.length - 1]);
+            undoArr.splice(undoArr.length - 1, 1);
+            console.log("redo arr: ", redoArr);
+            return { undo: undoArr, redo: redoArr };
         case REDO_HISTORY:
             return state;
         default:

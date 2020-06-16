@@ -55,7 +55,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
 
     const hasSelectedLayer = (): boolean => {
         if (selected.length === 1 && selected[0].id !== 100) {
-            console.log(selected);
+            // console.log(selected);
             return true;
         }
         return false;
@@ -68,7 +68,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
             name: null,
             innerText: null,
         };
-        console.log("prop: " + prop);
+        // console.log("prop: " + prop);
         switch (prop) {
             case "type": {
                 newComponentType = e.target.value;
@@ -89,6 +89,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
             name: newComponentName,
             innerText: newComponentInnerText,
         };
+        console.log("console log test");
 
         if (newComponent.name && newComponent.id) {
             props.AddHistory({ undo: [newComponent] });

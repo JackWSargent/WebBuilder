@@ -1,4 +1,4 @@
-import { KeyPress, KEY_UP, KEY_DOWN, KeyPressActionTypes } from "../types/actions";
+import { KEY_UP, KEY_DOWN, KeyPressActionTypes } from "../types/actions";
 
 export let keyPressReducerDefaultState = {};
 
