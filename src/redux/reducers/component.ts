@@ -7,8 +7,12 @@ import {
     EDIT_COMPONENT,
     EDIT_COMPONENTS,
     PASTE_COMPONENT,
+    UNDO_COMPONENT,
+    REDO_COMPONENT,
 } from "../types/actions";
 import { clipboardReducerDefaultState } from "./clipboard";
+import { historyReducerDefaultState } from "./history";
+
 /* eslint-disable */
 
 export const componentsReducerDefaultState: Component[] = [
@@ -21,6 +25,7 @@ export const componentsReducerDefaultState: Component[] = [
         children: [200, 600],
         parent: null,
         nestedLevel: 0,
+        innerText: "",
     },
     {
         id: 200,
@@ -31,6 +36,7 @@ export const componentsReducerDefaultState: Component[] = [
         children: [300, 400, 500],
         parent: 100,
         nestedLevel: 1,
+        innerText: "",
     },
     {
         id: 300,
@@ -41,6 +47,7 @@ export const componentsReducerDefaultState: Component[] = [
         children: null,
         parent: 200,
         nestedLevel: 2,
+        innerText: "",
     },
     {
         id: 400,
@@ -51,6 +58,7 @@ export const componentsReducerDefaultState: Component[] = [
         children: null,
         parent: 200,
         nestedLevel: 2,
+        innerText: "",
     },
     {
         id: 500,
@@ -61,6 +69,7 @@ export const componentsReducerDefaultState: Component[] = [
         children: null,
         parent: 200,
         nestedLevel: 2,
+        innerText: "",
     },
     {
         id: 600,
@@ -71,6 +80,7 @@ export const componentsReducerDefaultState: Component[] = [
         children: null,
         parent: 100,
         nestedLevel: 1,
+        innerText: "",
     },
 ];
 
@@ -230,6 +240,45 @@ const deleteComponent = (component, state) => {
     return newLayers;
 };
 
+const UndoComponent = (components) => {
+    let newComponents = components.map((i) => {
+        return i;
+    });
+    console.log(historyReducerDefaultState);
+    let component = historyReducerDefaultState.undo[historyReducerDefaultState.undo.length - 1];
+    console.log(component, "Component");
+    if (components.includes(component)) {
+        // Inside the components array
+        console.log("Included in array");
+        let idx = components.find(component);
+        newComponents.splice(idx, 1);
+        newComponents.push(component);
+        return buildLayerOrder(newComponents);
+    }
+    // Isn't inside the components array
+    newComponents.push(component);
+    console.log(newComponents);
+    return buildLayerOrder(newComponents);
+};
+
+const RedoComponent = (components) => {
+    let component = historyReducerDefaultState[historyReducerDefaultState.redo.length - 1];
+    let newComponents = components.map((i) => {
+        return i;
+    });
+    if (components.includes(component)) {
+        // Inside the components array
+        let idx = components.find(component);
+        newComponents.splice(idx, 1);
+        newComponents.push(component);
+        return buildLayerOrder(newComponents);
+    }
+    // Isn't inside the components array
+    newComponents.push(component);
+    console.log(newComponents);
+    return buildLayerOrder(newComponents);
+};
+
 const componentReducer = (state = componentsReducerDefaultState, action: ComponentActionTypes) => {
     switch (action.type) {
         case ADD_COMPONENT:
@@ -269,7 +318,12 @@ const componentReducer = (state = componentsReducerDefaultState, action: Compone
         case DELETE_COMPONENT:
             return deleteComponent(action.component, state);
         case SET_COMPONENTS:
+            console.log(action.components);
             return buildLayerOrder(action.components);
+        case UNDO_COMPONENT:
+            return UndoComponent(state);
+        case REDO_COMPONENT:
+            return RedoComponent(state);
         default:
             return state;
     }

@@ -1,4 +1,4 @@
-import { AppActions, History, ADD_HISTORY, UNDO_HISTORY } from "../types/actions";
+import { AppActions, History, ADD_HISTORY, UNDO_HISTORY, ENABLE_DISPATCH, REDO_HISTORY } from "../types/actions";
 import { Dispatch } from "redux";
 import { AppState } from "../store/storeConfiguration";
 
@@ -24,11 +24,21 @@ export const UndoHistory = () => {
 };
 
 export const redoHistory = (): AppActions => ({
-    type: UNDO_HISTORY,
+    type: REDO_HISTORY,
 });
 
 export const RedoHistory = () => {
     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
         dispatch(redoHistory());
+    };
+};
+
+export const enableDispatch = (): AppActions => ({
+    type: ENABLE_DISPATCH,
+});
+
+export const EnableDispatch = () => {
+    return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
+        dispatch(enableDispatch());
     };
 };

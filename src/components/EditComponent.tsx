@@ -3,7 +3,7 @@ import "../App.css";
 /* eslint-disable */
 import { makeStyles, useTheme, Theme, createStyles } from "@material-ui/core/styles";
 import { connect } from "react-redux";
-import { Component, CopiedComponent, History } from "../redux/types/actions";
+import { Component, CopiedComponent, History, KeyPress } from "../redux/types/actions";
 import { AppState } from "../redux/store/storeConfiguration";
 import { bindActionCreators } from "redux";
 import { AppActions } from "../redux/types/actions";
@@ -39,10 +39,9 @@ interface EditComponentProps {}
 
 type Props = EditComponentProps & LinkStateProps & LinkDispatchProps;
 let renderedComponentArr: JSX.Element[] = [];
-let doneWriting: boolean = true;
 
 const EditComponentTab: React.FC<Props> = (props) => {
-    const { components, clipboard, history } = props;
+    const { components, clipboard, history, keyPress } = props;
     const classes = useStyles();
     const [open, setOpen] = React.useState(true);
     const [layers, setLayers] = React.useState(components);
@@ -62,13 +61,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
     };
 
     const setComponentProps = (e, prop): void => {
-        let newComponent = {
-            id: componentId,
-            type: null,
-            name: null,
-            innerText: null,
-        };
-        // console.log("prop: " + prop);
+        let selectedComp = selected[0];
         switch (prop) {
             case "type": {
                 newComponentType = e.target.value;
@@ -83,18 +76,22 @@ const EditComponentTab: React.FC<Props> = (props) => {
                 break;
             }
         }
-        newComponent = {
+        let newComponent = {
             id: componentId,
-            type: newComponentType,
             name: newComponentName,
+            type: newComponentType,
+            isRendered: false,
+            nestedLevel: selectedComp.nestedLevel,
+            parent: selectedComp.parent,
+            children: selectedComp.children,
+            selected: selectedComp.selected,
             innerText: newComponentInnerText,
         };
-        console.log("console log test");
 
-        if (newComponent.name && newComponent.id) {
-            props.AddHistory({ undo: [newComponent] });
-            props.EditComponent(newComponent);
-        }
+        console.log(selectedComp, "Selected");
+        console.log(newComponent, "New Component");
+        props.AddHistory({ undo: [selectedComp] });
+        props.EditComponent(newComponent);
     };
 
     const copyToClipboard = (): void => {
@@ -147,7 +144,6 @@ const EditComponentTab: React.FC<Props> = (props) => {
         if (hasSelectedLayer()) {
             return selected[0].innerText;
         }
-        return "";
     };
 
     let componentId = getSelectedId();
@@ -300,21 +296,23 @@ const EditComponentTab: React.FC<Props> = (props) => {
             setLayers(components);
             renderEditComponent();
         }
-    }, [open, components]);
+    }, [open, components, keyPress, history]);
 
-    return <div>{returnEditComponent()}</div>;
+    return <>{returnEditComponent()}</>;
 };
 
 interface LinkStateProps {
     components: Component[];
     clipboard: CopiedComponent;
     history: History;
+    keyPress: KeyPress;
 }
 
 const mapStateToProps = (state: AppState, ownProps: EditComponentProps): LinkStateProps => ({
     components: state.components,
     clipboard: state.clipboard,
     history: state.history,
+    keyPress: state.keyPress,
 });
 
 interface LinkDispatchProps {

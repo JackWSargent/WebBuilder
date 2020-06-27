@@ -8,6 +8,8 @@ export const SET_CANVAS_STYLING = "SET_CANVAS_STYLING";
 
 export const COPY_COMPONENT = "COPY_COMPONENT";
 export const PASTE_COMPONENT = "PASTE_COMPONENT";
+export const UNDO_COMPONENT = "UNDO_COMPONENT";
+export const REDO_COMPONENT = "REDO_COMPONENT";
 
 export const SET_CANVAS = "SET_CANVAS";
 export const EDIT_CANVAS = "EDIT_CANVAS";
@@ -15,6 +17,7 @@ export const EDIT_CANVAS = "EDIT_CANVAS";
 export const ADD_HISTORY = "ADD_HISTORY";
 export const UNDO_HISTORY = "UNDO_HISTORY";
 export const REDO_HISTORY = "REDO_HISTORY";
+export const ENABLE_DISPATCH = "ENABLE_DISPATCH";
 
 export const KEY_DOWN = "KEY_DOWN";
 export const KEY_UP = "KEY_UP";
@@ -60,6 +63,8 @@ export interface Undo {
     id?: number;
     boxSizing?: string;
     fontSize?: number;
+    type?: string;
+    innerText?: string;
 }
 
 export interface Redo {
@@ -69,6 +74,8 @@ export interface Redo {
     id?: number;
     boxSizing?: string;
     fontSize?: number;
+    type?: string;
+    innerText?: string;
 }
 
 export interface KeyPress {}
@@ -110,6 +117,14 @@ export interface PasteComponentAction {
     id: number;
 }
 
+export interface UndoComponentAction {
+    type: typeof UNDO_COMPONENT;
+}
+
+export interface RedoComponentAction {
+    type: typeof REDO_COMPONENT;
+}
+
 // CANVAS STYLING
 
 export interface SetCanvasStylingAction {
@@ -144,6 +159,10 @@ export interface RedoHistoryAction {
     type: typeof REDO_HISTORY;
 }
 
+export interface EnableDispatchHistoryAction {
+    type: typeof ENABLE_DISPATCH;
+}
+
 // KEY PRESS
 
 export interface KeyDownAction {
@@ -162,7 +181,9 @@ export type ComponentActionTypes =
     | AddComponentAction
     | EditComponentAction
     | EditComponentsAction
-    | PasteComponentAction;
+    | PasteComponentAction
+    | UndoComponentAction
+    | RedoComponentAction;
 
 export type ClipboardActionTypes = CopyComponentAction;
 
@@ -170,7 +191,7 @@ export type CanvasStylingActionTypes = SetCanvasStylingAction;
 
 export type CanvasActionTypes = SetCanvasAction | EditCanvasAction;
 
-export type HistoryActionTypes = AddHistoryAction | UndoHistoryAction | RedoHistoryAction;
+export type HistoryActionTypes = AddHistoryAction | UndoHistoryAction | RedoHistoryAction | EnableDispatchHistoryAction;
 
 export type KeyPressActionTypes = KeyDownAction | KeyUpAction;
 

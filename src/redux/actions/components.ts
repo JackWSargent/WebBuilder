@@ -7,6 +7,8 @@ import {
     EDIT_COMPONENT,
     EDIT_COMPONENTS,
     PASTE_COMPONENT,
+    UNDO_COMPONENT,
+    REDO_COMPONENT,
 } from "../types/actions";
 import { Dispatch } from "redux";
 import { AppState } from "../store/storeConfiguration";
@@ -39,6 +41,14 @@ export const editComponents = (components: Component[]): AppActions => ({
 export const pasteComponent = (id: number): AppActions => ({
     type: PASTE_COMPONENT,
     id,
+});
+
+export const undoComponent = (): AppActions => ({
+    type: UNDO_COMPONENT,
+});
+
+export const redoComponent = (): AppActions => ({
+    type: REDO_COMPONENT,
 });
 
 export const SetComponents = (components: Component[]) => {
@@ -74,5 +84,17 @@ export const EditComponents = (components: Component[]) => {
 export const PasteComponent = (id: number) => {
     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
         dispatch(pasteComponent(id));
+    };
+};
+
+export const UndoComponent = () => {
+    return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
+        dispatch(undoComponent());
+    };
+};
+
+export const RedoComponent = () => {
+    return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
+        dispatch(redoComponent());
     };
 };
