@@ -166,7 +166,7 @@ const Layer: React.FC<Props> = (props) => {
         changed = true;
         let ctrl: boolean = keyPress["ctrl"] ? keyPress["ctrl"] : false;
 
-        let newLayers = layers.map((layer) => {
+        let newLayers: Component[] = layers.map((layer) => {
             // If keyPress.ctrl, can just use edit component, if none selected use edit component, else use edit components because it is modify 2 or more components.
             if (layer.id === id) {
                 //Not selected and not inside the selected array
@@ -212,6 +212,8 @@ const Layer: React.FC<Props> = (props) => {
         });
         if (!deleteChange) {
             props.SetComponents(newLayers);
+            props.AddHistory({ undo: newLayers });
+            console.log("Selection Change", { undo: newLayers });
             setLayers(newLayers);
         }
     };

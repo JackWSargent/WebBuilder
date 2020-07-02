@@ -1,6 +1,8 @@
 import {
     AppActions,
     Component,
+    Undo,
+    Redo,
     SET_COMPONENTS,
     DELETE_COMPONENT,
     ADD_COMPONENT,
@@ -12,6 +14,7 @@ import {
 } from "../types/actions";
 import { Dispatch } from "redux";
 import { AppState } from "../store/storeConfiguration";
+import { store } from "../store/storeConfiguration";
 
 export const setComponents = (components: Component[]): AppActions => ({
     type: SET_COMPONENTS,
@@ -43,12 +46,14 @@ export const pasteComponent = (id: number): AppActions => ({
     id,
 });
 
-export const undoComponent = (): AppActions => ({
-    type: UNDO_COMPONENT,
-});
+// export const undoComponent = (undo: Undo[]): AppActions => ({
+//     type: UNDO_COMPONENT,
+//     undo,
+// });
 
-export const redoComponent = (): AppActions => ({
+export const redoComponent = (redo: Redo[]): AppActions => ({
     type: REDO_COMPONENT,
+    redo,
 });
 
 export const SetComponents = (components: Component[]) => {
@@ -87,14 +92,27 @@ export const PasteComponent = (id: number) => {
     };
 };
 
-export const UndoComponent = () => {
-    return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
-        dispatch(undoComponent());
-    };
-};
+// export const UndoComponent = (undo: Undo[]) => {
+//     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
+//         dispatch(undoComponent(undo));
+//     };
+// };
 
-export const RedoComponent = () => {
+export function UndoComponent(undo: Undo[]) {
+    return (dispatch, getState) => {
+        let reduxStore = store.getState();
+        let historyStore = reduxStore.history;
+        console.log(historyStore);
+        dispatch({
+            type: UNDO_COMPONENT,
+            undo,
+            history: historyStore,
+        });
+    };
+}
+
+export const RedoComponent = (redo: Redo[]) => {
     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
-        dispatch(redoComponent());
+        dispatch(redoComponent(redo));
     };
 };

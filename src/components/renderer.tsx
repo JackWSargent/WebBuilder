@@ -2,7 +2,7 @@ import * as React from "react";
 /* eslint-disable */
 import { connect } from "react-redux";
 import { SetCanvas } from "../redux/actions/canvas";
-import { Component, Canvas } from "../redux/types/actions";
+import { Component, Canvas, History } from "../redux/types/actions";
 import { AppState } from "../redux/store/storeConfiguration";
 import { bindActionCreators } from "redux";
 import { AppActions } from "../redux/types/actions";
@@ -49,7 +49,7 @@ let renderedComponentsArr: JSX.Element[] = [];
 
 type Props = RendererProps & LinkStateProps & LinkDispatchProps;
 const Renderer: React.FC<Props> = (props) => {
-    const { components, canvasStyling, canvas } = props;
+    const { components, canvasStyling, canvas, history } = props;
     const classes = useStyles();
     const [renderedComponents, setRenderedComponents] = React.useState([]);
 
@@ -282,7 +282,7 @@ const Renderer: React.FC<Props> = (props) => {
 
     React.useEffect(() => {
         reRenderComponents();
-    }, [components, newComponents, renderedComponentsArr]);
+    }, [components, newComponents, renderedComponentsArr, history]);
 
     return (
         <div
@@ -300,12 +300,14 @@ interface LinkStateProps {
     components: Component[];
     canvas: Canvas;
     canvasStyling: CanvasStyling;
+    history: History;
 }
 
 const mapStateToProps = (state: AppState, ownProps: RendererProps): LinkStateProps => ({
     components: state.components,
     canvas: state.canvas,
     canvasStyling: state.canvasStyling,
+    history: state.history,
 });
 
 interface LinkDispatchProps {

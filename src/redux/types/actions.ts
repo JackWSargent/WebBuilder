@@ -15,6 +15,7 @@ export const SET_CANVAS = "SET_CANVAS";
 export const EDIT_CANVAS = "EDIT_CANVAS";
 
 export const ADD_HISTORY = "ADD_HISTORY";
+export const ADD_REDO_HISTORY = "ADD_REDO_HISTORY";
 export const UNDO_HISTORY = "UNDO_HISTORY";
 export const REDO_HISTORY = "REDO_HISTORY";
 export const ENABLE_DISPATCH = "ENABLE_DISPATCH";
@@ -59,12 +60,14 @@ export interface History {
 export interface Undo {
     component?: Component;
     components?: Component[];
+    newLayers?: Component[];
     canvas?: Canvas;
     id?: number;
     boxSizing?: string;
     fontSize?: number;
     type?: string;
     innerText?: string;
+    comp?: Object;
 }
 
 export interface Redo {
@@ -119,10 +122,13 @@ export interface PasteComponentAction {
 
 export interface UndoComponentAction {
     type: typeof UNDO_COMPONENT;
+    undo: Undo[];
+    history: History;
 }
 
 export interface RedoComponentAction {
     type: typeof REDO_COMPONENT;
+    redo: Redo[];
 }
 
 // CANVAS STYLING
@@ -149,10 +155,17 @@ export interface EditCanvasAction {
 export interface AddHistoryAction {
     type: typeof ADD_HISTORY;
     history: History;
+    components?: Component[];
+}
+
+export interface AddRedoHistoryAction {
+    type: typeof ADD_REDO_HISTORY;
+    history: History;
 }
 
 export interface UndoHistoryAction {
     type: typeof UNDO_HISTORY;
+    redo: Redo;
 }
 
 export interface RedoHistoryAction {
@@ -191,7 +204,12 @@ export type CanvasStylingActionTypes = SetCanvasStylingAction;
 
 export type CanvasActionTypes = SetCanvasAction | EditCanvasAction;
 
-export type HistoryActionTypes = AddHistoryAction | UndoHistoryAction | RedoHistoryAction | EnableDispatchHistoryAction;
+export type HistoryActionTypes =
+    | AddHistoryAction
+    | AddRedoHistoryAction
+    | UndoHistoryAction
+    | RedoHistoryAction
+    | EnableDispatchHistoryAction;
 
 export type KeyPressActionTypes = KeyDownAction | KeyUpAction;
 

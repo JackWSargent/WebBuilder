@@ -88,10 +88,11 @@ const EditComponentTab: React.FC<Props> = (props) => {
             innerText: newComponentInnerText,
         };
 
-        console.log(selectedComp, "Selected");
-        console.log(newComponent, "New Component");
-        props.AddHistory({ undo: [selectedComp] });
+        // console.log(selectedComp, "Selected");
+        // console.log(newComponent, "New Component");
+
         props.EditComponent(newComponent);
+        props.AddHistory({ undo: [selectedComp] });
     };
 
     const copyToClipboard = (): void => {

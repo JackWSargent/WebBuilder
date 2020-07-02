@@ -1,25 +1,49 @@
-import { AppActions, History, ADD_HISTORY, UNDO_HISTORY, ENABLE_DISPATCH, REDO_HISTORY } from "../types/actions";
+import {
+    AppActions,
+    History,
+    Redo,
+    // Undo,
+    ADD_HISTORY,
+    UNDO_HISTORY,
+    ENABLE_DISPATCH,
+    REDO_HISTORY,
+    ADD_REDO_HISTORY,
+    Component,
+} from "../types/actions";
 import { Dispatch } from "redux";
 import { AppState } from "../store/storeConfiguration";
 
-export const addHistory = (history: History): AppActions => ({
+export const addHistory = (history: History, components?: Component[]): AppActions => ({
     type: ADD_HISTORY,
     history,
+    components,
 });
 
-export const AddHistory = (history: History) => {
+export const AddHistory = (history: History, components?: Component[]) => {
     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
-        dispatch(addHistory(history));
+        dispatch(addHistory(history, components));
     };
 };
 
-export const undoHistory = (): AppActions => ({
-    type: UNDO_HISTORY,
+export const addRedoHistory = (history: History): AppActions => ({
+    type: ADD_REDO_HISTORY,
+    history,
 });
 
-export const UndoHistory = () => {
+export const AddRedoHistory = (history: History) => {
     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
-        dispatch(undoHistory());
+        dispatch(addRedoHistory(history));
+    };
+};
+
+export const undoHistory = (redo: Redo): AppActions => ({
+    type: UNDO_HISTORY,
+    redo,
+});
+
+export const UndoHistory = (redo: Redo) => {
+    return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
+        dispatch(undoHistory(redo));
     };
 };
 

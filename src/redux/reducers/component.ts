@@ -1,6 +1,7 @@
 import {
     Component,
-    ComponentActionTypes,
+    // ComponentActionTypes,
+    AppActions,
     SET_COMPONENTS,
     DELETE_COMPONENT,
     ADD_COMPONENT,
@@ -10,12 +11,11 @@ import {
     UNDO_COMPONENT,
     REDO_COMPONENT,
 } from "../types/actions";
-import { clipboardReducerDefaultState } from "./clipboard";
-import { historyReducerDefaultState } from "./history";
+import { clipboardReducerDefaultState } from "./clipboard"; //NOT GOOD
 
 /* eslint-disable */
 
-export const componentsReducerDefaultState: Component[] = [
+const componentsReducerDefaultState: Component[] = [
     {
         id: 100,
         isRendered: false,
@@ -240,17 +240,54 @@ const deleteComponent = (component, state) => {
     return newLayers;
 };
 
-const UndoComponent = (components) => {
+const UndoComponent = (undo, components) => {
+    let component = null;
+    // console.log(undo[undo.length - 1]);
+    // console.log(undo);
+    // console.log(" Components ", components, undo);
     let newComponents = components.map((i) => {
+        // console.log(i.id);
+
+        if (i.id === undo[undo.length - 1].id) {
+            console.log("iteration id: ", i.id);
+            component = i;
+
+            return i;
+        }
         return i;
     });
-    console.log(historyReducerDefaultState);
-    let component = historyReducerDefaultState.undo[historyReducerDefaultState.undo.length - 1];
-    console.log(component, "Component");
-    if (components.includes(component)) {
+    if (!component) {
+        console.error(component);
+        console.warn(newComponents);
+        return components;
+    }
+    console.log("Component inside Undo", component);
+
+    let newComponent = undo[undo.length - 1];
+    console.log(newComponent);
+    if (component) {
+        let idx = newComponents.indexOf(component);
+        // console.log("idx", idx);
+        // console.log("New Components", newComponents);
+        // console.log("Component ", component);
+        newComponents.splice(idx, 1);
+        newComponents.push(newComponent);
+        return buildLayerOrder(newComponents);
+    }
+    console.log("Component ", component);
+    newComponents.push(component);
+    console.log("New Components", newComponents); /////////////////////////////////
+    return buildLayerOrder(newComponents);
+};
+
+const RedoComponent = (redo, state) => {
+    let component = redo[redo.length - 1];
+    let newComponents = state.map((i) => {
+        return i;
+    });
+    if (newComponents.includes(component)) {
         // Inside the components array
-        console.log("Included in array");
-        let idx = components.find(component);
+        let idx = newComponents.find(component);
         newComponents.splice(idx, 1);
         newComponents.push(component);
         return buildLayerOrder(newComponents);
@@ -261,25 +298,7 @@ const UndoComponent = (components) => {
     return buildLayerOrder(newComponents);
 };
 
-const RedoComponent = (components) => {
-    let component = historyReducerDefaultState[historyReducerDefaultState.redo.length - 1];
-    let newComponents = components.map((i) => {
-        return i;
-    });
-    if (components.includes(component)) {
-        // Inside the components array
-        let idx = components.find(component);
-        newComponents.splice(idx, 1);
-        newComponents.push(component);
-        return buildLayerOrder(newComponents);
-    }
-    // Isn't inside the components array
-    newComponents.push(component);
-    console.log(newComponents);
-    return buildLayerOrder(newComponents);
-};
-
-const componentReducer = (state = componentsReducerDefaultState, action: ComponentActionTypes) => {
+const componentReducer = (state = componentsReducerDefaultState, action: AppActions) => {
     switch (action.type) {
         case ADD_COMPONENT:
             let newComponents = addComponent([...state, action.component]);
@@ -309,7 +328,7 @@ const componentReducer = (state = componentsReducerDefaultState, action: Compone
                 if (action.id === component.id) {
                     return {
                         ...component,
-                        ...clipboardReducerDefaultState,
+                        ...clipboardReducerDefaultState, ///TODO: send clipboard when pasting component values
                     };
                 }
                 return component;
@@ -321,9 +340,11 @@ const componentReducer = (state = componentsReducerDefaultState, action: Compone
             console.log(action.components);
             return buildLayerOrder(action.components);
         case UNDO_COMPONENT:
-            return UndoComponent(state);
+            // console.log("UNDO::::: action.undo", action.undo);
+            console.log(action.history);
+            return UndoComponent(action.history.undo, state);
         case REDO_COMPONENT:
-            return RedoComponent(state);
+            return RedoComponent(action.redo, state);
         default:
             return state;
     }

@@ -6,7 +6,7 @@ import CanvasDisplay from "./Canvas";
 import { makeStyles, useTheme, Theme, createStyles } from "@material-ui/core/styles";
 import { connect } from "react-redux";
 import { SetCanvas } from "../redux/actions/canvas";
-import { UndoHistory, RedoHistory, EnableDispatch } from "../redux/actions/history";
+import { AddHistory, UndoHistory, RedoHistory, EnableDispatch, AddRedoHistory } from "../redux/actions/history";
 import { SetCanvasStyling } from "../redux/actions/canvasStyling";
 import {
     SetComponents,
@@ -24,7 +24,8 @@ import { AppState } from "../redux/store/storeConfiguration";
 import { bindActionCreators } from "redux";
 import { AppActions } from "../redux/types/actions";
 import { ThunkDispatch } from "redux-thunk";
-import { canDispatch } from "../redux/reducers/history";
+import { canDispatch, historyReducer } from "../redux/reducers/history";
+import { store } from "../redux/store/storeConfiguration";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -43,6 +44,8 @@ const Layout: React.FC<Props> = (props) => {
     const classes = useStyles();
     const theme = useTheme();
 
+    const [undoArr, setUndoArr] = React.useState(history.undo);
+
     const PressingUndo = (): boolean => {
         return keyPress["z"] === true && keyPress["ctrl"] === true && !keyPress["y"] ? true : false;
     };
@@ -55,62 +58,79 @@ const Layout: React.FC<Props> = (props) => {
         return keyPress["ctrl"] === true ? true : false;
     };
 
-    const UndoComponent = () => {
-        console.log(components, "Original Components");
-        let currentComponent = components.filter((el) => el.id === history.undo[history.undo.length - 1].id);
-        // Last component on top of undo stack
-        if (currentComponent) {
-            console.log(currentComponent, "Current Component");
+    // const UndoComponent = () => {
+    //     // console.log(components, "Original Components");
+    //     let currentComponent = components.filter((el) => el.id === history.undo[history.undo.length - 1].id);
+    //     // Last component on top of undo stack
+    //     if (currentComponent) {
+    //         // console.log(currentComponent, "Current Component");
 
-            let newComponents = components.map((comp) => {
-                if (comp.id === history.undo[history.undo.length - 1].id) {
-                    console.log({ ...history.undo[history.undo.length - 1] });
-                    console.log("history undo", history.undo);
-                    return { ...history.undo[history.undo.length - 1] };
-                }
-                return comp;
-            });
-            console.log("New Components", newComponents);
-            console.log("length", history.undo.length);
-            console.log("history undo", history.undo);
-            props.SetComponents(newComponents);
-            return;
-        }
-        let newComponents = components.map((comp) => {
-            return comp;
-        });
-        newComponents.push(history.undo[history.undo.length - 1]);
-        console.log("length", history.undo.length);
-        console.log(newComponents);
-        props.SetComponents(newComponents);
-        return;
-    };
+    //         let newComponents = components.map((comp) => {
+    //             if (comp.id === history.undo[history.undo.length - 1].id) {
+    //                 // console.log({ ...history.undo[history.undo.length - 1] });
+    //                 // console.log("history undo", history.undo);
+    //                 return { ...history.undo[history.undo.length - 1] };
+    //             }
+    //             return comp;
+    //         });
+    //         // console.log("New Components", newComponents);
+    //         // console.log("length", history.undo.length);
+    //         // console.log("history undo", history.undo);
+    //         props.SetComponents(newComponents);
+    //         return;
+    //     }
+    //     let newComponents = components.map((comp) => {
+    //         return comp;
+    //     });
+    //     newComponents.push(history.undo[history.undo.length - 1]);
+    //     // console.log("length", history.undo.length);
+    //     // console.log(newComponents);
+    //     props.SetComponents(newComponents);
+    // };
 
-    const Undo = () => {
-        let EndOfArray = history.undo[history.undo.length - 1];
-        if (EndOfArray.id !== null) {
-            if (EndOfArray.type !== null) {
-                UndoComponent();
-                return;
-            }
-        }
-    };
+    // const Undo = () => {
+    //     let EndOfArray = history.undo[history.undo.length - 1];
+    //     if (EndOfArray.id !== null) {
+    //         if (EndOfArray.type !== null) {
+    //             UndoComponent();
+    //         }
+    //     }
+    // };
     //working on getting this to work when history is being watched and also not running it a million times and only once, probably by making sure that atleast z is false before enabling a new action on history to be dispatched,
+    const getUndo = () => {
+        return history.undo.map((el) => {
+            return el;
+        });
+    };
+
     React.useEffect(() => {
+        // setUndoArr(history.undo);
+        console.log("undo arr:  ", history.undo);
+        setUndoArr(history.undo);
+        const otherUndo = history.undo;
+
         window.addEventListener("keydown", (event) => {
             if (!keyPress[event.keyCode] || keyPress[event.keyCode] === false) {
-                // If keyPressed is false
                 props.KeyDown(event.keyCode);
             }
             // Take away browsers abilities to mess with undo and redo
             if (PressingCTRL()) {
                 event.preventDefault();
             }
+            // console.log("undo arr:  ", otherUndo);
+
             if (PressingUndo() && canDispatch && history.undo.length > 0) {
-                Undo(); // Activates Undo
-                props.UndoHistory();
-            } else if (PressingRedo() && canDispatch && history.redo.length > 0) {
-                props.RedoHistory();
+                // If latest action was done on a component
+                let newUndo = store.getState().history.undo;
+                if (newUndo[newUndo.length - 1].id) {
+                    let component = components.filter((comp) => comp.id === newUndo[newUndo.length - 1].id);
+                    let selectedComponent = component[0];
+                    if (!selectedComponent) {
+                        console.error("Undo Component is null", selectedComponent);
+                    }
+                    props.UndoComponent(newUndo); // Activates Undo
+                    props.UndoHistory(selectedComponent);
+                }
             }
         });
         window.addEventListener("keyup", (event) => {
@@ -118,7 +138,7 @@ const Layout: React.FC<Props> = (props) => {
             props.EnableDispatch();
             event.preventDefault();
         });
-    }, [canvas.drawerOpen, keyPress, history, components]);
+    }, [canvas.drawerOpen, components, history]);
 
     const renderComponents = () => {
         return (
@@ -152,7 +172,8 @@ interface LinkDispatchProps {
     SetCanvas: (canvas: Canvas) => void;
     KeyUp: (keyPress: KeyPress) => void;
     KeyDown: (keyPress: KeyPress) => void;
-    UndoHistory: () => void;
+    AddHistory: (history: History, components?: Component[]) => void;
+    UndoHistory: (redo: Redo) => void;
     RedoHistory: () => void;
     EnableDispatch: () => void;
     SetCanvasStyling: (canvasStyling: CanvasStyling) => void;
@@ -160,8 +181,9 @@ interface LinkDispatchProps {
     AddComponent: (component: Component) => void;
     EditComponent: (component: Component) => void;
     PasteComponent: (id: number) => void;
-    UndoComponent: () => void;
-    RedoComponent: () => void;
+    UndoComponent: (undo: Undo[]) => void;
+    RedoComponent: (redo: Redo[]) => void;
+    AddRedoHistory: (history: History) => void;
 }
 
 const mapDispatchToProps = (
@@ -171,6 +193,7 @@ const mapDispatchToProps = (
     SetCanvas: bindActionCreators(SetCanvas, dispatch),
     KeyUp: bindActionCreators(KeyUp, dispatch),
     KeyDown: bindActionCreators(KeyDown, dispatch),
+    AddHistory: bindActionCreators(AddHistory, dispatch),
     RedoHistory: bindActionCreators(RedoHistory, dispatch),
     UndoHistory: bindActionCreators(UndoHistory, dispatch),
     EnableDispatch: bindActionCreators(EnableDispatch, dispatch),
@@ -181,6 +204,7 @@ const mapDispatchToProps = (
     PasteComponent: bindActionCreators(PasteComponent, dispatch),
     UndoComponent: bindActionCreators(UndoComponent, dispatch),
     RedoComponent: bindActionCreators(RedoComponent, dispatch),
+    AddRedoHistory: bindActionCreators(AddRedoHistory, dispatch),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Layout);

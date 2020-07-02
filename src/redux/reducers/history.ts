@@ -2,11 +2,12 @@ import {
     History,
     ADD_HISTORY,
     HistoryActionTypes,
-    Undo,
+    // Undo,
     Redo,
     UNDO_HISTORY,
     REDO_HISTORY,
     ENABLE_DISPATCH,
+    ADD_REDO_HISTORY,
 } from "../types/actions";
 
 export let historyReducerDefaultState: History = {
@@ -22,13 +23,33 @@ const historyReducer = (state = historyReducerDefaultState, action: HistoryActio
             if (!canDispatch) {
                 return state;
             }
-            let newUndoArr: Undo[] = state.undo.concat(...action.history.undo);
+            let newUndoArr = [];
+            if (action.history.undo.length > 1) {
+                newUndoArr = state.undo.concat({ comp: action.history.undo });
+            } else if (state.undo[state.undo.length - 1] !== action.history.undo[action.history.undo.length - 1]) {
+                // console.log("true");
+                newUndoArr = state.undo.concat(...action.history.undo);
+            }
             let newRedoArr: Redo[] = [];
-            return { undo: newUndoArr, redo: newRedoArr };
+            return {
+                undo: newUndoArr,
+                redo: newRedoArr,
+            };
+        case ADD_REDO_HISTORY:
+            if (!canDispatch) {
+                return state;
+            }
+            let newRedo = [];
+            if (action.history.redo) {
+                newRedo.concat(action.history.redo);
+            }
+            canDispatch = false;
+            return {
+                undo: state.undo,
+                redo: newRedo,
+            };
         case UNDO_HISTORY:
             if (!canDispatch || state.undo.length < 1) {
-                console.log("Cannot dispatch inside undo");
-
                 return state;
             }
             let undoArr = state.undo.map((el) => {
@@ -37,13 +58,17 @@ const historyReducer = (state = historyReducerDefaultState, action: HistoryActio
             let redoArr = state.redo.map((el) => {
                 return el;
             });
-            redoArr.push(undoArr[undoArr.length - 1]);
+            redoArr.push(action.redo);
+            // redoArr.push(undoArr[undoArr.length - 1]);
             undoArr.splice(undoArr.length - 1, 1);
             canDispatch = false;
-            return { undo: undoArr, redo: redoArr };
+            return {
+                undo: undoArr,
+                redo: redoArr,
+            };
         case REDO_HISTORY:
             if (!canDispatch || state.redo.length < 1) {
-                console.log("Cannot dispatch inside redo");
+                // console.log("Cannot dispatch inside redo");
                 canDispatch = false;
                 return state;
             }
@@ -56,7 +81,10 @@ const historyReducer = (state = historyReducerDefaultState, action: HistoryActio
             newUndoArray.push(newRedoArray[newRedoArray.length - 1]);
             newRedoArray.splice(newRedoArray.length - 1, 1);
             canDispatch = false;
-            return { undo: newUndoArray, redo: newRedoArray };
+            return {
+                undo: newUndoArray,
+                redo: newRedoArray,
+            };
         case ENABLE_DISPATCH:
             canDispatch = true;
             return state;
