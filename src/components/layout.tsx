@@ -58,53 +58,7 @@ const Layout: React.FC<Props> = (props) => {
         return keyPress["ctrl"] === true ? true : false;
     };
 
-    // const UndoComponent = () => {
-    //     // console.log(components, "Original Components");
-    //     let currentComponent = components.filter((el) => el.id === history.undo[history.undo.length - 1].id);
-    //     // Last component on top of undo stack
-    //     if (currentComponent) {
-    //         // console.log(currentComponent, "Current Component");
-
-    //         let newComponents = components.map((comp) => {
-    //             if (comp.id === history.undo[history.undo.length - 1].id) {
-    //                 // console.log({ ...history.undo[history.undo.length - 1] });
-    //                 // console.log("history undo", history.undo);
-    //                 return { ...history.undo[history.undo.length - 1] };
-    //             }
-    //             return comp;
-    //         });
-    //         // console.log("New Components", newComponents);
-    //         // console.log("length", history.undo.length);
-    //         // console.log("history undo", history.undo);
-    //         props.SetComponents(newComponents);
-    //         return;
-    //     }
-    //     let newComponents = components.map((comp) => {
-    //         return comp;
-    //     });
-    //     newComponents.push(history.undo[history.undo.length - 1]);
-    //     // console.log("length", history.undo.length);
-    //     // console.log(newComponents);
-    //     props.SetComponents(newComponents);
-    // };
-
-    // const Undo = () => {
-    //     let EndOfArray = history.undo[history.undo.length - 1];
-    //     if (EndOfArray.id !== null) {
-    //         if (EndOfArray.type !== null) {
-    //             UndoComponent();
-    //         }
-    //     }
-    // };
-    //working on getting this to work when history is being watched and also not running it a million times and only once, probably by making sure that atleast z is false before enabling a new action on history to be dispatched,
-    const getUndo = () => {
-        return history.undo.map((el) => {
-            return el;
-        });
-    };
-
     React.useEffect(() => {
-        // setUndoArr(history.undo);
         console.log("undo arr:  ", history.undo);
         setUndoArr(history.undo);
         const otherUndo = history.undo;
@@ -140,7 +94,7 @@ const Layout: React.FC<Props> = (props) => {
         });
     }, [canvas.drawerOpen, components, history]);
 
-    const renderComponents = () => {
+    const renderComponents = (): JSX.Element => {
         return (
             <div className={classes.root}>
                 <Layer />
