@@ -24,29 +24,22 @@ const historyReducer = (state = historyReducerDefaultState, action: HistoryActio
                 return state;
             }
             let newUndoArr = [];
-            if (action.history.undo.length > 1) {
-                newUndoArr = state.undo.concat({ comp: action.history.undo });
-            } else if (state.undo[state.undo.length - 1] !== action.history.undo[action.history.undo.length - 1]) {
-                // console.log("true");
+            let undoRef = action.history.undo;
+            //Component Array (Selection of Components Undo)
+            if (undoRef.length > 1 && undoRef[0].id) {
+                newUndoArr = state.undo.concat({ comp: undoRef });
+            }
+            //Single Component Modification
+            else if (
+                state.undo[state.undo.length - 1] !== action.history.undo[action.history.undo.length - 1] &&
+                action.history.undo[0].id
+            ) {
                 newUndoArr = state.undo.concat(...action.history.undo);
             }
             let newRedoArr: Redo[] = [];
             return {
                 undo: newUndoArr,
                 redo: newRedoArr,
-            };
-        case ADD_REDO_HISTORY:
-            if (!canDispatch) {
-                return state;
-            }
-            let newRedo = [];
-            if (action.history.redo) {
-                newRedo.concat(action.history.redo);
-            }
-            canDispatch = false;
-            return {
-                undo: state.undo,
-                redo: newRedo,
             };
         case UNDO_HISTORY:
             if (!canDispatch || state.undo.length < 1) {

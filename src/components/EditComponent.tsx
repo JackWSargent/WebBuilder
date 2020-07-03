@@ -42,11 +42,16 @@ let renderedComponentArr: JSX.Element[] = [];
 
 const EditComponentTab: React.FC<Props> = (props) => {
     const { components, clipboard, history, keyPress } = props;
+    let selected = components.filter((component) => component.selected === true);
+
     const classes = useStyles();
     const [open, setOpen] = React.useState(true);
-    const [layers, setLayers] = React.useState(components);
-
-    let selected = components.filter((component) => component.selected === true);
+    const [layers, setLayers] = React.useState([]);
+    const [componentName, setComponentName] = React.useState(selected.length === 1 ? selected[0].name : "");
+    const [componentType, setComponentType] = React.useState(selected.length === 1 ? selected[0].type : "");
+    const [componentInnerText, setComponentInnerText] = React.useState(
+        selected.length === 1 ? selected[0].innerText : ""
+    );
 
     const handleExpand = (): void => {
         setOpen(!open);
@@ -54,7 +59,16 @@ const EditComponentTab: React.FC<Props> = (props) => {
 
     const hasSelectedLayer = (): boolean => {
         if (selected.length === 1 && selected[0].id !== 100) {
-            // console.log(selected);
+            let componentSelected = selected[0];
+            // if (componentSelected.type !== componentType) {
+            //     setComponentType(componentSelected.type);
+            // }
+            // if (componentSelected.name !== componentName) {
+            //     setComponentType(componentSelected.name);
+            // }
+            // if (componentSelected.innerText !== componentInnerText) {
+            //     setComponentType(componentSelected.innerText);
+            // }
             return true;
         }
         return false;
@@ -65,14 +79,17 @@ const EditComponentTab: React.FC<Props> = (props) => {
         switch (prop) {
             case "type": {
                 newComponentType = e.target.value;
+                setComponentType(e.target.value);
                 break;
             }
             case "name": {
                 newComponentName = e.target.value;
+                setComponentName(e.target.value);
                 break;
             }
             case "innerText": {
                 newComponentInnerText = e.target.value;
+                setComponentInnerText(e.target.value);
                 break;
             }
         }
@@ -87,9 +104,6 @@ const EditComponentTab: React.FC<Props> = (props) => {
             selected: selectedComp.selected,
             innerText: newComponentInnerText,
         };
-
-        // console.log(selectedComp, "Selected");
-        // console.log(newComponent, "New Component");
 
         props.EditComponent(newComponent);
         props.AddHistory({ undo: [selectedComp] });
@@ -152,7 +166,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
     let newComponentName = getSelectedName();
     let newComponentInnerText = getSelectedInnerText();
 
-    const renderElementName = () => {
+    const renderElementName = (name) => {
         if (!hasSelectedLayer) {
             return;
         }
@@ -162,7 +176,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
                 variant="outlined"
                 type="string"
                 key={component.id}
-                defaultValue={component.name}
+                value={componentName}
                 onChange={(e) => setComponentProps(e, "name")}
                 disabled={!hasSelectedLayer()}
             />
@@ -173,14 +187,15 @@ const EditComponentTab: React.FC<Props> = (props) => {
         if (!hasSelectedLayer) {
             return;
         }
+        console.log(selected);
         return selected.map((component) => (
             <TextField
                 id="innerTextControl"
                 variant="outlined"
                 type="string"
                 multiline
+                value={componentInnerText}
                 key={component.id}
-                defaultValue={component.innerText}
                 onChange={(e) => setComponentProps(e, "innerText")}
                 disabled={!hasSelectedLayer()}
             />
@@ -194,7 +209,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
                 <Select
                     native
                     onChange={(e) => setComponentProps(e, "type")}
-                    defaultValue={newComponentType}
+                    value={componentType}
                     disableUnderline
                     style={{}}>
                     <option value={"gridContainer"}>Grid Container</option>
@@ -205,83 +220,92 @@ const EditComponentTab: React.FC<Props> = (props) => {
     };
 
     const renderEditComponent = () => {
+        selected = components.filter((component) => component.selected === true);
+        if (selected.length === 1) {
+            setComponentName(selected[0].name);
+            setComponentType(selected[0].type);
+            setComponentInnerText(selected[0].innerText);
+        }
+        console.log("selected", selected);
+        renderedComponentArr = [];
         if (hasSelectedLayer()) {
-            let editComp = selected.map((comp) => {
-                return (
-                    <div key={comp.id}>
-                        <ExpansionPanel
-                            expanded={open}
-                            style={{ marginTop: 0, marginBottom: 0, borderTop: "1px solid rgba(255, 255, 255, 0.12)" }}>
-                            <ExpansionPanelSummary
-                                expandIcon={<ExpandMoreIcon />}
-                                aria-controls="panel1a-content"
-                                id="panel1a-header"
-                                style={{ backgroundColor: "#2e2e2e" }}
-                                onClick={handleExpand}>
-                                <Typography className={classes.heading}>{comp.name}</Typography>
-                            </ExpansionPanelSummary>
-                            <Grid container style={{ marginTop: "10px" }}>
-                                <Grid item xs={4}>
-                                    <MdCopy
-                                        color="white"
-                                        id="copy"
-                                        fontSize="35px"
-                                        onClick={() => copyToClipboard()}></MdCopy>
-                                    <MdClipboard
-                                        color="white"
-                                        id="paste"
-                                        fontSize="35px"
-                                        style={{ marginLeft: "4px" }}
-                                        onClick={() => pasteComponent()}></MdClipboard>
-                                </Grid>
-                                <Grid item xs={8} />
+            console.log(renderedComponentArr);
+            let comp = selected[0];
+            let editComp = (
+                <div key={comp.id}>
+                    <ExpansionPanel
+                        expanded={open}
+                        style={{ marginTop: 0, marginBottom: 0, borderTop: "1px solid rgba(255, 255, 255, 0.12)" }}>
+                        <ExpansionPanelSummary
+                            expandIcon={<ExpandMoreIcon />}
+                            aria-controls="panel1a-content"
+                            id="panel1a-header"
+                            style={{ backgroundColor: "#2e2e2e" }}
+                            onClick={handleExpand}>
+                            <Typography className={classes.heading}>{comp.name}</Typography>
+                        </ExpansionPanelSummary>
+                        <Grid container style={{ marginTop: "10px" }}>
+                            <Grid item xs={4}>
+                                <MdCopy
+                                    color="white"
+                                    id="copy"
+                                    fontSize="35px"
+                                    onClick={() => copyToClipboard()}></MdCopy>
+                                <MdClipboard
+                                    color="white"
+                                    id="paste"
+                                    fontSize="35px"
+                                    style={{ marginLeft: "4px" }}
+                                    onClick={() => pasteComponent()}></MdClipboard>
                             </Grid>
+                            <Grid item xs={8} />
+                        </Grid>
 
-                            <Grid container style={{ marginTop: "10px" }}>
-                                <Grid item xs={3}>
-                                    <Typography
-                                        variant="subtitle1"
-                                        style={{
-                                            lineHeight: "64px",
-                                            // marginLeft: "10px",
-                                            // marginRight: "20px",
-                                            alignItems: "left",
-                                        }}>
-                                        Name
-                                    </Typography>
-                                </Grid>
-                                <Grid item xs={8}>
-                                    {renderElementName()}
-                                    <Grid item />
-                                </Grid>
-                            </Grid>
-                            <Grid container>
+                        <Grid container style={{ marginTop: "10px" }}>
+                            <Grid item xs={3}>
                                 <Typography
                                     variant="subtitle1"
-                                    style={{ lineHeight: "64px", marginLeft: "20px", marginRight: "20px" }}>
-                                    Type
+                                    style={{
+                                        lineHeight: "64px",
+                                        // marginLeft: "10px",
+                                        // marginRight: "20px",
+                                        alignItems: "left",
+                                    }}>
+                                    Name
                                 </Typography>
-                                {renderElementType()}
                             </Grid>
+                            <Grid item xs={8}>
+                                {renderElementName(comp.name)}
+                                <Grid item />
+                            </Grid>
+                        </Grid>
+                        <Grid container>
+                            <Typography
+                                variant="subtitle1"
+                                style={{ lineHeight: "64px", marginLeft: "20px", marginRight: "20px" }}>
+                                Type
+                            </Typography>
+                            {renderElementType()}
+                        </Grid>
 
-                            <Grid container>
-                                <Grid item xs={3}>
-                                    <Typography
-                                        variant="subtitle1"
-                                        style={{ lineHeight: "64px", marginLeft: "10px", marginRight: "40px" }}>
-                                        InnerText
-                                    </Typography>
-                                </Grid>
-                                <Grid item xs={8}>
-                                    {renderElementInnerText()}
-                                    <Grid item />
-                                </Grid>
+                        <Grid container>
+                            <Grid item xs={3}>
+                                <Typography
+                                    variant="subtitle1"
+                                    style={{ lineHeight: "64px", marginLeft: "10px", marginRight: "40px" }}>
+                                    InnerText
+                                </Typography>
                             </Grid>
-                        </ExpansionPanel>
-                    </div>
-                );
-            });
-            renderedComponentArr = editComp;
+                            <Grid item xs={8}>
+                                {renderElementInnerText()}
+                                <Grid item />
+                            </Grid>
+                        </Grid>
+                    </ExpansionPanel>
+                </div>
+            );
+            renderedComponentArr = [editComp];
+            setLayers([editComp]);
         }
     };
 
@@ -292,12 +316,18 @@ const EditComponentTab: React.FC<Props> = (props) => {
     };
 
     React.useEffect(() => {
+        setLayers([]);
         selected = components.filter((component) => component.selected === true);
         if (layers.length !== components.length || layers !== components) {
-            setLayers(components);
             renderEditComponent();
         }
-    }, [open, components, keyPress, history]);
+        if (selected[0] && selected.length === 1) {
+            setComponentName(selected[0].name);
+            setComponentType(selected[0].type);
+            setComponentInnerText(selected[0].innerText);
+            renderEditComponent();
+        }
+    }, [open, components, keyPress, history, componentName]);
 
     return <>{returnEditComponent()}</>;
 };

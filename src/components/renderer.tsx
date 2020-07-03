@@ -41,7 +41,7 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 let idx: number = 0;
-let renderTimes: number = 0;
+// let renderTimes: number = 0;
 let newComponents = [];
 let canvasStyleChange: boolean = false;
 let componentChange: boolean = false;
@@ -191,23 +191,12 @@ const Renderer: React.FC<Props> = (props) => {
     */
 
     const reRenderComponents = (): void => {
-        //Check for times rendered
-        renderTimes = renderTimes + 1;
-        // console.log("reRendering, render times: " + renderTimes);
-        //Check for style or properties changes and reset rendered elements
         if (canvasStyleChange) {
             setRenderedComponents([]);
-            // console.log("changing state");
         } else if (componentChange) {
-            // console.log("changing components line 133");
             renderedComponentsArr = [];
         }
-        //Reset is rendered on the elements
-        // let oldComponents = newComponents.map((el) => {
-        //     return el;
-        // });
         if (newComponents.length === 1 && newComponents[0].isRendered == true) {
-            console.log("rendered the first component");
             return;
         }
         newComponents = components.map((element) => {
@@ -215,19 +204,15 @@ const Renderer: React.FC<Props> = (props) => {
             componentObject.isRendered = false;
             return componentObject;
         });
-
-        // console.log(newComponents);
         // Init and check to see if there are any elements
         let layer: Component = newComponents[idx];
         if (layer) {
             // Check to make sure that it is not rendered already
             if (layer.isRendered) {
-                // console.warn("not rendering element: " + component.id);
                 return;
             }
             // Init a new array to
             let newRenderedComponents: JSX.Element[] = [];
-            // setRenderedComponents([]); ----------------------
             renderedComponentsArr = [];
             if (components.length === 1) {
                 renderedComponentsArr = [returnComponent(newComponents[idx])];

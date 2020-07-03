@@ -60,8 +60,7 @@ const Layout: React.FC<Props> = (props) => {
 
     React.useEffect(() => {
         console.log("undo arr:  ", history.undo);
-        setUndoArr(history.undo);
-        const otherUndo = history.undo;
+        // setUndoArr(history.undo);
 
         window.addEventListener("keydown", (event) => {
             if (!keyPress[event.keyCode] || keyPress[event.keyCode] === false) {
@@ -71,7 +70,6 @@ const Layout: React.FC<Props> = (props) => {
             if (PressingCTRL()) {
                 event.preventDefault();
             }
-            // console.log("undo arr:  ", otherUndo);
 
             if (PressingUndo() && canDispatch && history.undo.length > 0) {
                 // If latest action was done on a component
@@ -102,7 +100,6 @@ const Layout: React.FC<Props> = (props) => {
             </div>
         );
     };
-    //
     return <div className="App">{renderComponents()}</div>;
 };
 
