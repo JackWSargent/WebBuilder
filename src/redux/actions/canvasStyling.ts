@@ -3,13 +3,11 @@ import { AppActions, SET_CANVAS_STYLING } from "../types/actions";
 import { Dispatch } from "redux";
 import { AppState } from "../store/storeConfiguration";
 
-export const setCanvasStyling = (canvasStyling: CanvasStyling): AppActions => ({
-    type: SET_CANVAS_STYLING,
-    canvasStyling,
-});
-
-export const SetCanvasStyling = (canvasStyling: CanvasStyling) => {
+export function SetCanvasStyling(canvasStyling: CanvasStyling) {
     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
-        dispatch(setCanvasStyling(canvasStyling));
+        dispatch({
+            type: SET_CANVAS_STYLING,
+            canvasStyling,
+        });
     };
-};
+}

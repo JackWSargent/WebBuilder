@@ -7,7 +7,6 @@ import {
     UNDO_HISTORY,
     REDO_HISTORY,
     ENABLE_DISPATCH,
-    ADD_REDO_HISTORY,
 } from "../types/actions";
 
 export let historyReducerDefaultState: History = {

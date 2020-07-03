@@ -59,25 +59,25 @@ type Props = CanvasProps & LinkStateProps & LinkDispatchProps;
 const CanvasDisplay: React.FC<Props> = (props) => {
     const { canvas } = props;
     const classes = useStyles();
-    const [leftMargin, setLeftMargin] = React.useState(canvas.drawerLeftMargin);
-    const [marginToggle, setMarginToggle] = React.useState(canvas.drawerClicked);
+    // const [leftMargin, setLeftMargin] = React.useState(canvas.drawerLeftMargin);
+    // const [marginToggle, setMarginToggle] = React.useState(canvas.drawerClicked);
 
-    const changeMargin = (event: React.MouseEvent<HTMLElement>): void => {
-        // console.log("changing margin");
-        let val = Math.min(600, event.clientX);
-        val = Math.max(240, event.clientX);
-        if (canvas.drawerOpen && canvas.drawerClicked && event.clientX > 235 && event.clientX < 600) {
-            setLeftMargin(val);
-            let canvasVal = {
-                drawerOpen: canvas.drawerOpen,
-                drawerLeftMargin: val,
-                drawerClicked: marginToggle,
-            };
-            props.SetCanvas(canvasVal);
-        } else {
-            setMarginToggle(false);
-        }
-    };
+    // const changeMargin = (event: React.MouseEvent<HTMLElement>): void => {
+    //     // console.log("changing margin");
+    //     let val = Math.min(600, event.clientX);
+    //     val = Math.max(240, event.clientX);
+    //     if (canvas.drawerOpen && canvas.drawerClicked && event.clientX > 235 && event.clientX < 600) {
+    //         setLeftMargin(val);
+    //         let canvasVal = {
+    //             drawerOpen: canvas.drawerOpen,
+    //             drawerLeftMargin: val,
+    //             drawerClicked: marginToggle,
+    //         };
+    //         props.SetCanvas(canvasVal);
+    //     } else {
+    //         setMarginToggle(false);
+    //     }
+    // };
 
     // const handleMarginClick = (): void => {
     //     // console.log("handling margin click");
@@ -127,7 +127,7 @@ const CanvasDisplay: React.FC<Props> = (props) => {
                         // className={clsx(classes.toggleOff, {
                         //     [classes.toggleOn]: marginToggle,
                         // })}
-                        onMouseMove={changeMargin}
+                        // onMouseMove={changeMargin}
                         style={{ fontSize: defaultSize }}>
                         {/* <div
                             id="margin-resize"

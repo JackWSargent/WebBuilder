@@ -2,24 +2,20 @@ import { AppActions, KeyPress, KEY_DOWN, KEY_UP } from "../types/actions";
 import { Dispatch } from "redux";
 import { AppState } from "../store/storeConfiguration";
 
-export const keyUp = (keyPress: KeyPress): AppActions => ({
-    type: KEY_UP,
-    keyPress,
-});
-
-export const KeyUp = (keyPress: KeyPress) => {
+export function KeyUp(keyPress: KeyPress) {
     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
-        dispatch(keyUp(keyPress));
+        dispatch({
+            type: KEY_DOWN,
+            keyPress,
+        });
     };
-};
+}
 
-export const keyDown = (keyPress: KeyPress): AppActions => ({
-    type: KEY_DOWN,
-    keyPress,
-});
-
-export const KeyDown = (keyPress: KeyPress) => {
+export function KeyDown(keyPress: KeyPress) {
     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
-        dispatch(keyDown(keyPress));
+        dispatch({
+            type: KEY_DOWN,
+            keyPress,
+        });
     };
-};
+}

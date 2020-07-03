@@ -6,7 +6,7 @@ import CanvasDisplay from "./Canvas";
 import { makeStyles, useTheme, Theme, createStyles } from "@material-ui/core/styles";
 import { connect } from "react-redux";
 import { SetCanvas } from "../redux/actions/canvas";
-import { AddHistory, UndoHistory, RedoHistory, EnableDispatch, AddRedoHistory } from "../redux/actions/history";
+import { AddHistory, UndoHistory, RedoHistory, EnableDispatch } from "../redux/actions/history";
 import { SetCanvasStyling } from "../redux/actions/canvasStyling";
 import {
     SetComponents,
@@ -134,7 +134,6 @@ interface LinkDispatchProps {
     PasteComponent: (id: number) => void;
     UndoComponent: (undo: Undo[]) => void;
     RedoComponent: (redo: Redo[]) => void;
-    AddRedoHistory: (history: History) => void;
 }
 
 const mapDispatchToProps = (
@@ -155,7 +154,6 @@ const mapDispatchToProps = (
     PasteComponent: bindActionCreators(PasteComponent, dispatch),
     UndoComponent: bindActionCreators(UndoComponent, dispatch),
     RedoComponent: bindActionCreators(RedoComponent, dispatch),
-    AddRedoHistory: bindActionCreators(AddRedoHistory, dispatch),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Layout);

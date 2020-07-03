@@ -7,62 +7,40 @@ import {
     UNDO_HISTORY,
     ENABLE_DISPATCH,
     REDO_HISTORY,
-    ADD_REDO_HISTORY,
-    Component,
 } from "../types/actions";
 import { Dispatch } from "redux";
 import { AppState } from "../store/storeConfiguration";
 
-export const addHistory = (history: History, components?: Component[]): AppActions => ({
-    type: ADD_HISTORY,
-    history,
-    components,
-});
-
-export const AddHistory = (history: History, components?: Component[]) => {
+export function AddHistory(history: History) {
     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
-        dispatch(addHistory(history, components));
+        dispatch({
+            type: ADD_HISTORY,
+            history,
+        });
     };
-};
+}
 
-export const addRedoHistory = (history: History): AppActions => ({
-    type: ADD_REDO_HISTORY,
-    history,
-});
-
-export const AddRedoHistory = (history: History) => {
+export function UndoHistory(redo: Redo) {
     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
-        dispatch(addRedoHistory(history));
+        dispatch({
+            type: UNDO_HISTORY,
+            redo,
+        });
     };
-};
+}
 
-export const undoHistory = (redo: Redo): AppActions => ({
-    type: UNDO_HISTORY,
-    redo,
-});
-
-export const UndoHistory = (redo: Redo) => {
+export function RedoHistory() {
     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
-        dispatch(undoHistory(redo));
+        dispatch({
+            type: REDO_HISTORY,
+        });
     };
-};
+}
 
-export const redoHistory = (): AppActions => ({
-    type: REDO_HISTORY,
-});
-
-export const RedoHistory = () => {
+export function EnableDispatch() {
     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
-        dispatch(redoHistory());
+        dispatch({
+            type: ENABLE_DISPATCH,
+        });
     };
-};
-
-export const enableDispatch = (): AppActions => ({
-    type: ENABLE_DISPATCH,
-});
-
-export const EnableDispatch = () => {
-    return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
-        dispatch(enableDispatch());
-    };
-};
+}
