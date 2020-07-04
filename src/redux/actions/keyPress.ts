@@ -5,7 +5,7 @@ import { AppState } from "../store/storeConfiguration";
 export function KeyUp(keyPress: KeyPress) {
     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
         dispatch({
-            type: KEY_DOWN,
+            type: KEY_UP,
             keyPress,
         });
     };

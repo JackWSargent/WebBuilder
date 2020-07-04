@@ -240,7 +240,7 @@ const deleteComponent = (component, state) => {
     return newLayers;
 };
 
-const UndoComponent = (undo, components) => {
+const UndoRedoComponent = (undo, components) => {
     let component = null;
     // console.log(undo[undo.length - 1]);
     // console.log(undo);
@@ -342,9 +342,9 @@ const componentReducer = (state = componentsReducerDefaultState, action: AppActi
         case UNDO_COMPONENT:
             // console.log("UNDO::::: action.undo", action.undo);
             console.log(action.history);
-            return UndoComponent(action.history.undo, state);
+            return UndoRedoComponent(action.history.undo, state);
         case REDO_COMPONENT:
-            return RedoComponent(action.redo, state);
+            return UndoRedoComponent(action.history.redo, state);
         default:
             return state;
     }

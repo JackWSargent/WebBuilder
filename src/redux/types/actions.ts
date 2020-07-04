@@ -128,6 +128,7 @@ export interface UndoComponentAction {
 export interface RedoComponentAction {
     type: typeof REDO_COMPONENT;
     redo: Redo[];
+    history: History;
 }
 
 // CANVAS STYLING
@@ -164,6 +165,7 @@ export interface UndoHistoryAction {
 
 export interface RedoHistoryAction {
     type: typeof REDO_HISTORY;
+    undo: Undo;
 }
 
 export interface EnableDispatchHistoryAction {

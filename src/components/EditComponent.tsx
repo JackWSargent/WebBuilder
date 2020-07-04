@@ -59,16 +59,6 @@ const EditComponentTab: React.FC<Props> = (props) => {
 
     const hasSelectedLayer = (): boolean => {
         if (selected.length === 1 && selected[0].id !== 100) {
-            let componentSelected = selected[0];
-            // if (componentSelected.type !== componentType) {
-            //     setComponentType(componentSelected.type);
-            // }
-            // if (componentSelected.name !== componentName) {
-            //     setComponentType(componentSelected.name);
-            // }
-            // if (componentSelected.innerText !== componentInnerText) {
-            //     setComponentType(componentSelected.innerText);
-            // }
             return true;
         }
         return false;
@@ -166,7 +156,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
     let newComponentName = getSelectedName();
     let newComponentInnerText = getSelectedInnerText();
 
-    const renderElementName = (name) => {
+    const renderElementName = () => {
         if (!hasSelectedLayer) {
             return;
         }
@@ -187,7 +177,6 @@ const EditComponentTab: React.FC<Props> = (props) => {
         if (!hasSelectedLayer) {
             return;
         }
-        console.log(selected);
         return selected.map((component) => (
             <TextField
                 id="innerTextControl"
@@ -226,10 +215,8 @@ const EditComponentTab: React.FC<Props> = (props) => {
             setComponentType(selected[0].type);
             setComponentInnerText(selected[0].innerText);
         }
-        console.log("selected", selected);
         renderedComponentArr = [];
         if (hasSelectedLayer()) {
-            console.log(renderedComponentArr);
             let comp = selected[0];
             let editComp = (
                 <div key={comp.id}>
@@ -275,7 +262,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
                                 </Typography>
                             </Grid>
                             <Grid item xs={8}>
-                                {renderElementName(comp.name)}
+                                {renderElementName()}
                                 <Grid item />
                             </Grid>
                         </Grid>

@@ -2,7 +2,7 @@ import {
     AppActions,
     History,
     Redo,
-    // Undo,
+    Undo,
     ADD_HISTORY,
     UNDO_HISTORY,
     ENABLE_DISPATCH,
@@ -29,10 +29,11 @@ export function UndoHistory(redo: Redo) {
     };
 }
 
-export function RedoHistory() {
+export function RedoHistory(undo: Undo) {
     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
         dispatch({
             type: REDO_HISTORY,
+            undo,
         });
     };
 }

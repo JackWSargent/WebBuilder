@@ -84,9 +84,12 @@ export function UndoComponent(undo: Undo[]) {
 
 export function RedoComponent(redo: Redo[]) {
     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
+        let reduxStore = store.getState();
+        let historyStore = reduxStore.history;
         dispatch({
             type: REDO_COMPONENT,
             redo,
+            history: historyStore,
         });
     };
 }

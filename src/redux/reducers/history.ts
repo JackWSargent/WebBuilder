@@ -42,6 +42,7 @@ const historyReducer = (state = historyReducerDefaultState, action: HistoryActio
             };
         case UNDO_HISTORY:
             if (!canDispatch || state.undo.length < 1) {
+                canDispatch = false;
                 return state;
             }
             let undoArr = state.undo.map((el) => {
@@ -51,7 +52,6 @@ const historyReducer = (state = historyReducerDefaultState, action: HistoryActio
                 return el;
             });
             redoArr.push(action.redo);
-            // redoArr.push(undoArr[undoArr.length - 1]);
             undoArr.splice(undoArr.length - 1, 1);
             canDispatch = false;
             return {
@@ -60,7 +60,6 @@ const historyReducer = (state = historyReducerDefaultState, action: HistoryActio
             };
         case REDO_HISTORY:
             if (!canDispatch || state.redo.length < 1) {
-                // console.log("Cannot dispatch inside redo");
                 canDispatch = false;
                 return state;
             }
@@ -70,7 +69,7 @@ const historyReducer = (state = historyReducerDefaultState, action: HistoryActio
             let newRedoArray = state.redo.map((el) => {
                 return el;
             });
-            newUndoArray.push(newRedoArray[newRedoArray.length - 1]);
+            newUndoArray.push(action.undo);
             newRedoArray.splice(newRedoArray.length - 1, 1);
             canDispatch = false;
             return {

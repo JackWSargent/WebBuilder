@@ -44,14 +44,12 @@ const Layout: React.FC<Props> = (props) => {
     const classes = useStyles();
     const theme = useTheme();
 
-    const [undoArr, setUndoArr] = React.useState(history.undo);
-
     const PressingUndo = (): boolean => {
         return keyPress["z"] === true && keyPress["ctrl"] === true && !keyPress["y"] ? true : false;
     };
 
     const PressingRedo = (): boolean => {
-        return keyPress["z"] === false && keyPress["y"] && keyPress["ctrl"] ? true : false;
+        return !keyPress["z"] && keyPress["y"] && keyPress["ctrl"] ? true : false;
     };
 
     const PressingCTRL = (): boolean => {
@@ -59,9 +57,6 @@ const Layout: React.FC<Props> = (props) => {
     };
 
     React.useEffect(() => {
-        console.log("undo arr:  ", history.undo);
-        // setUndoArr(history.undo);
-
         window.addEventListener("keydown", (event) => {
             if (!keyPress[event.keyCode] || keyPress[event.keyCode] === false) {
                 props.KeyDown(event.keyCode);
@@ -74,14 +69,22 @@ const Layout: React.FC<Props> = (props) => {
             if (PressingUndo() && canDispatch && history.undo.length > 0) {
                 // If latest action was done on a component
                 let newUndo = store.getState().history.undo;
+                let storeComponents = store.getState().components;
                 if (newUndo[newUndo.length - 1].id) {
-                    let component = components.filter((comp) => comp.id === newUndo[newUndo.length - 1].id);
+                    let component = storeComponents.filter((comp) => comp.id === newUndo[newUndo.length - 1].id);
                     let selectedComponent = component[0];
-                    if (!selectedComponent) {
-                        console.error("Undo Component is null", selectedComponent);
-                    }
                     props.UndoComponent(newUndo); // Activates Undo
                     props.UndoHistory(selectedComponent);
+                }
+            }
+            if (PressingRedo() && canDispatch && history.redo.length > 0) {
+                let newRedo = store.getState().history.redo;
+                let storeComponents = store.getState().components;
+                if (newRedo[newRedo.length - 1].id) {
+                    let component = storeComponents.filter((comp) => comp.id === newRedo[newRedo.length - 1].id);
+                    let selectedComponent = component[0];
+                    props.RedoComponent(newRedo);
+                    props.RedoHistory(selectedComponent);
                 }
             }
         });
@@ -90,7 +93,7 @@ const Layout: React.FC<Props> = (props) => {
             props.EnableDispatch();
             event.preventDefault();
         });
-    }, [canvas.drawerOpen, components, history]);
+    }, [components, history]);
 
     const renderComponents = (): JSX.Element => {
         return (
@@ -125,7 +128,7 @@ interface LinkDispatchProps {
     KeyDown: (keyPress: KeyPress) => void;
     AddHistory: (history: History, components?: Component[]) => void;
     UndoHistory: (redo: Redo) => void;
-    RedoHistory: () => void;
+    RedoHistory: (undo: Undo) => void;
     EnableDispatch: () => void;
     SetCanvasStyling: (canvasStyling: CanvasStyling) => void;
     SetComponents: (components: Component[]) => void;
