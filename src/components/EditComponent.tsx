@@ -24,7 +24,7 @@ import {
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import MdCopy from "react-ionicons/lib/MdCopy";
 import MdClipboard from "react-ionicons/lib/MdClipboard";
-import { ConvertToCopiedComponent, ConvertToComponent } from "../utils/ConvertComponent";
+import { ConvertToCopiedComponent } from "../utils/ConvertComponent";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
