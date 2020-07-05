@@ -9,9 +9,11 @@ import {
     EDIT_COMPONENTS,
     PASTE_COMPONENT,
     UNDO_COMPONENT,
+    UNDO_COMPONENTS,
     REDO_COMPONENT,
+    UNDO_DELETE_COMPONENTS,
 } from "../types/actions";
-import { clipboardReducerDefaultState } from "./clipboard"; //NOT GOOD
+// import { store } from "../store/storeConfiguration";
 
 /* eslint-disable */
 
@@ -242,12 +244,8 @@ const deleteComponent = (component, state) => {
 
 const UndoRedoComponent = (undo, components) => {
     let component = null;
-    // console.log(undo[undo.length - 1]);
-    // console.log(undo);
-    // console.log(" Components ", components, undo);
-    let newComponents = components.map((i) => {
-        // console.log(i.id);
 
+    let newComponents = components.map((i) => {
         if (i.id === undo[undo.length - 1].id) {
             console.log("iteration id: ", i.id);
             component = i;
@@ -257,46 +255,33 @@ const UndoRedoComponent = (undo, components) => {
         return i;
     });
     if (!component) {
-        console.error(component);
-        console.warn(newComponents);
+        // newComponents.concat(undo.comp);
+        // console.log("missing components", undo.comp);
         return components;
     }
-    console.log("Component inside Undo", component);
 
     let newComponent = undo[undo.length - 1];
-    console.log(newComponent);
     if (component) {
         let idx = newComponents.indexOf(component);
-        // console.log("idx", idx);
-        // console.log("New Components", newComponents);
-        // console.log("Component ", component);
         newComponents.splice(idx, 1);
         newComponents.push(newComponent);
         return buildLayerOrder(newComponents);
     }
-    console.log("Component ", component);
     newComponents.push(component);
-    console.log("New Components", newComponents); /////////////////////////////////
     return buildLayerOrder(newComponents);
 };
 
-const RedoComponent = (redo, state) => {
-    let component = redo[redo.length - 1];
-    let newComponents = state.map((i) => {
-        return i;
-    });
-    if (newComponents.includes(component)) {
-        // Inside the components array
-        let idx = newComponents.find(component);
-        newComponents.splice(idx, 1);
-        newComponents.push(component);
-        return buildLayerOrder(newComponents);
-    }
-    // Isn't inside the components array
-    newComponents.push(component);
-    console.log(newComponents);
-    return buildLayerOrder(newComponents);
-};
+// const UndoRedoComponents = (undo, components) => {
+//     let newComponentArr: Component[] = undo.map((el) => {
+//         let idx = undo.indexOf(el)
+//         if(el !== components[idx]){
+
+//         }
+//     });
+//     if (newComponentArr) {
+//         return newComponentArr;
+//     }
+// };
 
 const componentReducer = (state = componentsReducerDefaultState, action: AppActions) => {
     switch (action.type) {
@@ -328,7 +313,7 @@ const componentReducer = (state = componentsReducerDefaultState, action: AppActi
                 if (action.id === component.id) {
                     return {
                         ...component,
-                        ...clipboardReducerDefaultState, ///TODO: send clipboard when pasting component values
+                        // ...store.getState().clipboard,
                     };
                 }
                 return component;
@@ -337,12 +322,17 @@ const componentReducer = (state = componentsReducerDefaultState, action: AppActi
         case DELETE_COMPONENT:
             return deleteComponent(action.component, state);
         case SET_COMPONENTS:
-            console.log(action.components);
             return buildLayerOrder(action.components);
         case UNDO_COMPONENT:
-            // console.log("UNDO::::: action.undo", action.undo);
-            console.log(action.history);
             return UndoRedoComponent(action.history.undo, state);
+        case UNDO_COMPONENTS:
+            let previousComponentArr = action.history.undo[action.history.undo.length - 1].comp;
+            console.log("doing this action");
+            return buildLayerOrder(previousComponentArr);
+        case UNDO_DELETE_COMPONENTS:
+            let previousComponents = action.history.undo[action.history.undo.length - 1].comp;
+            console.log("undo deletion components", buildLayerOrder(previousComponents));
+            return buildLayerOrder(previousComponents);
         case REDO_COMPONENT:
             return UndoRedoComponent(action.history.redo, state);
         default:

@@ -59,6 +59,30 @@ const Renderer: React.FC<Props> = (props) => {
         let innerText: string = layer.innerText;
         let childrenVal: boolean = layer.children !== null;
         switch (layer.type) {
+            case "canvas":
+                if (childrenVal) {
+                    return (
+                        <div
+                            id={name}
+                            key={id}
+                            className={clsx(classes.layer, {
+                                [classes.layerSelectedCanvas]: layer.selected,
+                            })}>
+                            {innerText}
+                            {returnChildren(layer)}
+                        </div>
+                    );
+                }
+                return (
+                    <div
+                        id={name}
+                        key={id}
+                        className={clsx(classes.layer, {
+                            [classes.layerSelectedCanvas]: layer.selected,
+                        })}>
+                        {innerText}
+                    </div>
+                );
             case "gridContainer":
                 if (childrenVal) {
                     return (
@@ -111,30 +135,7 @@ const Renderer: React.FC<Props> = (props) => {
                         {innerText}
                     </Grid>
                 );
-            case "canvas":
-                if (childrenVal) {
-                    return (
-                        <div
-                            id={name}
-                            key={id}
-                            className={clsx(classes.layer, {
-                                [classes.layerSelectedCanvas]: layer.selected,
-                            })}>
-                            {innerText}
-                            {returnChildren(layer)}
-                        </div>
-                    );
-                }
-                return (
-                    <div
-                        id={name}
-                        key={id}
-                        className={clsx(classes.layer, {
-                            [classes.layerSelectedCanvas]: layer.selected,
-                        })}>
-                        {innerText}
-                    </div>
-                );
+
             default:
                 if (childrenVal) {
                     return (

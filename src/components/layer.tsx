@@ -25,7 +25,7 @@ import { SetComponents, DeleteComponent, EditComponent, EditComponents } from ".
 import { SetCanvas, EditCanvas } from "../redux/actions/canvas";
 import { AddHistory } from "../redux/actions/history";
 import { Component, Canvas, History, KeyPress } from "../redux/types/actions";
-import { AppState } from "../redux/store/storeConfiguration";
+import { AppState, store } from "../redux/store/storeConfiguration";
 import { bindActionCreators } from "redux";
 import { AppActions } from "../redux/types/actions";
 import { ThunkDispatch } from "redux-thunk";
@@ -128,7 +128,7 @@ let deleteChange: boolean = false;
 type Props = LayerProps & LinkStateProps & LinkDispatchProps;
 
 let changed: boolean = true;
-
+let renderedComponents: JSX.Element[] = [];
 let open: boolean = true;
 
 const Layer: React.FC<Props> = (props) => {
@@ -158,7 +158,7 @@ const Layer: React.FC<Props> = (props) => {
         }
         deleteChange = true;
         changed = true;
-        props.AddHistory({ undo: [deletedComponent] });
+        props.AddHistory({ undo: store.getState().components });
         props.DeleteComponent(deletedComponent);
     };
 
@@ -212,33 +212,32 @@ const Layer: React.FC<Props> = (props) => {
         });
         if (!deleteChange) {
             props.SetComponents(newLayers);
-            props.AddHistory({ undo: newLayers });
+            props.AddHistory({ undo: layers });
             console.log("Selection Change", { undo: newLayers });
             setLayers(newLayers);
         }
     };
 
-    const createLayers = (layers) => {
-        let layersArray = layers.map((layer) => {
-            return layer;
-        });
-        return layersArray;
-    };
+    // const createLayers = (layers) => {
+    //     let layersArray = layers.map((layer) => {
+    //         return layer;
+    //     });
+    //     return layersArray;
+    // };
 
-    const renderLayers = () => {
-        let layersArray = createLayers(layers);
-        if (layersArray) {
-            return layersArray.map((layer) => {
+    const renderLayers = (componentArray) => {
+        if (componentArray) {
+            renderedComponents = componentArray.map((component) => {
                 return (
-                    <div key={layer.id}>
-                        <Grid container onClick={() => handleSelectedState(layer.id)}>
+                    <div key={component.id}>
+                        <Grid container onClick={() => handleSelectedState(component.id)}>
                             <ListItem
                                 button
                                 className={clsx(classes.layer, {
-                                    [classes.layerSelected]: selected.includes(layer.id),
+                                    [classes.layerSelected]: component.selected,
                                 })}
                                 divider={true}>
-                                <div style={{ marginLeft: 10 * layer.nestedLevel }}></div>
+                                <div style={{ marginLeft: 10 * component.nestedLevel }}></div>
 
                                 <Typography
                                     variant="subtitle2"
@@ -248,11 +247,11 @@ const Layer: React.FC<Props> = (props) => {
                                         color: "#fff",
                                         fontSize: "1.15rem",
                                     }}>
-                                    {layer.name}
+                                    {component.name}
                                 </Typography>
 
-                                {renderCanvasIcon(layer.type)}
-                                {renderDelete(layer)}
+                                {renderCanvasIcon(component.type)}
+                                {renderDelete(component)}
                             </ListItem>
                         </Grid>
                     </div>
@@ -271,8 +270,10 @@ const Layer: React.FC<Props> = (props) => {
     React.useEffect(() => {
         if (layers.length !== components.length || layers !== components) {
             setLayers(components);
+            renderedComponents = [];
+            reRenderComponents();
         }
-    }, [components, layersOpen]);
+    }, [components, layersOpen, history]);
 
     const handleExpand = () => {
         setLayersOpen(!layersOpen);
@@ -290,6 +291,12 @@ const Layer: React.FC<Props> = (props) => {
         props.EditCanvas({
             drawerOpen: false,
         });
+    };
+
+    const reRenderComponents = () => {
+        renderedComponents = [];
+        renderLayers(components);
+        return renderedComponents;
     };
 
     /* eslint-enable */
@@ -352,7 +359,7 @@ const Layer: React.FC<Props> = (props) => {
                             onClick={handleExpand}>
                             <Typography className={classes.heading}>Explorer</Typography>
                         </ExpansionPanelSummary>
-                        {renderLayers()}
+                        {reRenderComponents()}
                     </ExpansionPanel>
 
                     <CanvasStyle />

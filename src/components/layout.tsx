@@ -16,6 +16,8 @@ import {
     PasteComponent,
     DeleteComponent,
     UndoComponent,
+    UndoComponents,
+    UndoDeleteComponents,
     RedoComponent,
 } from "../redux/actions/components";
 import { KeyDown, KeyUp } from "../redux/actions/keyPress";
@@ -70,11 +72,41 @@ const Layout: React.FC<Props> = (props) => {
                 // If latest action was done on a component
                 let newUndo = store.getState().history.undo;
                 let storeComponents = store.getState().components;
-                if (newUndo[newUndo.length - 1].id) {
-                    let component = storeComponents.filter((comp) => comp.id === newUndo[newUndo.length - 1].id);
+                let endOfArray = newUndo.length - 1;
+                if (!newUndo[0]) {
+                    return;
+                }
+                if (newUndo[endOfArray].id) {
+                    let component = storeComponents.filter((comp) => comp.id === newUndo[endOfArray].id);
                     let selectedComponent = component[0];
                     props.UndoComponent(newUndo); // Activates Undo
                     props.UndoHistory(selectedComponent);
+                }
+                if (newUndo[endOfArray].comp) {
+                    console.log("Undo Components Triggered", storeComponents, newUndo[endOfArray].comp);
+                    let componentDifferential = storeComponents.map((el) => {
+                        console.log("el", el);
+                        if (!el.id) {
+                            console.error("store id does not exist");
+                            return;
+                        }
+                        if (!newUndo[endOfArray].comp[0].id) {
+                            console.error("undo id does not exist");
+                        }
+                        if (el.id === newUndo[endOfArray].comp[0].id) {
+                            console.log("returning", el);
+                            return el;
+                        }
+                    });
+                    console.log(componentDifferential);
+                    if (componentDifferential.length === 0) {
+                        console.log("missing inside store");
+
+                        props.UndoDeleteComponents([...newUndo[endOfArray].comp]);
+                        props.UndoHistory(storeComponents);
+                    }
+                    props.UndoComponents([...newUndo[endOfArray].comp]);
+                    props.UndoHistory(storeComponents);
                 }
             }
             if (PressingRedo() && canDispatch && history.redo.length > 0) {
@@ -136,6 +168,8 @@ interface LinkDispatchProps {
     EditComponent: (component: Component) => void;
     PasteComponent: (id: number) => void;
     UndoComponent: (undo: Undo[]) => void;
+    UndoComponents: (undo: Undo[]) => void;
+    UndoDeleteComponents: (undo: Undo[]) => void;
     RedoComponent: (redo: Redo[]) => void;
 }
 
@@ -156,6 +190,8 @@ const mapDispatchToProps = (
     EditComponent: bindActionCreators(EditComponent, dispatch),
     PasteComponent: bindActionCreators(PasteComponent, dispatch),
     UndoComponent: bindActionCreators(UndoComponent, dispatch),
+    UndoComponents: bindActionCreators(UndoComponents, dispatch),
+    UndoDeleteComponents: bindActionCreators(UndoDeleteComponents, dispatch),
     RedoComponent: bindActionCreators(RedoComponent, dispatch),
 });
 
