@@ -84,28 +84,20 @@ const Layout: React.FC<Props> = (props) => {
                 }
                 if (newUndo[endOfArray].comp) {
                     console.log("Undo Components Triggered", storeComponents, newUndo[endOfArray].comp);
-                    let componentDifferential = storeComponents.map((el) => {
-                        console.log("el", el);
-                        if (!el.id) {
-                            console.error("store id does not exist");
-                            return;
-                        }
-                        if (!newUndo[endOfArray].comp[0].id) {
-                            console.error("undo id does not exist");
-                        }
-                        if (el.id === newUndo[endOfArray].comp[0].id) {
-                            console.log("returning", el);
-                            return el;
-                        }
-                    });
-                    console.log(componentDifferential);
-                    if (componentDifferential.length === 0) {
-                        console.log("missing inside store");
-
-                        props.UndoDeleteComponents([...newUndo[endOfArray].comp]);
-                        props.UndoHistory(storeComponents);
+                    let undoneComponentArr = newUndo[endOfArray].comp;
+                    let componentDifferential = false;
+                    if (storeComponents.length < undoneComponentArr.length) {
+                        componentDifferential = true;
                     }
-                    props.UndoComponents([...newUndo[endOfArray].comp]);
+                    console.log(componentDifferential);
+                    if (componentDifferential === true) {
+                        console.log("missing inside store", undoneComponentArr);
+
+                        props.UndoDeleteComponents([...undoneComponentArr]);
+                        props.UndoHistory(storeComponents);
+                        return;
+                    }
+                    props.UndoComponents([...undoneComponentArr]);
                     props.UndoHistory(storeComponents);
                 }
             }

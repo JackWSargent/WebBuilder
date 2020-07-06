@@ -35,6 +35,7 @@ import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import { buildLayerOrder } from "../redux/reducers/component";
 
 let drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
@@ -124,12 +125,13 @@ interface LayerProps {}
 
 let selected: Array<number> = [];
 let deleteChange: boolean = false;
-
 type Props = LayerProps & LinkStateProps & LinkDispatchProps;
-
+let deletedComp = {};
 let changed: boolean = true;
 let renderedComponents: JSX.Element[] = [];
 let open: boolean = true;
+let storeLayers = store.getState().components;
+let oldLayers = store.getState().components.map((el) => el);
 
 const Layer: React.FC<Props> = (props) => {
     const { components, canvas, history, keyPress } = props;
@@ -158,15 +160,20 @@ const Layer: React.FC<Props> = (props) => {
         }
         deleteChange = true;
         changed = true;
+        console.log(layers);
         props.AddHistory({ undo: store.getState().components });
-        props.DeleteComponent(deletedComponent);
+        // props.DeleteComponent(deletedComponent);
     };
+
+    React.useEffect(() => {
+        changed = false;
+        deleteChange = false;
+    }, [event, changed, selected, canvas, open, layers, keyPress]);
 
     const handleSelectedState = (id) => {
         changed = true;
         let ctrl: boolean = keyPress["ctrl"] ? keyPress["ctrl"] : false;
-
-        let newLayers: Component[] = layers.map((layer) => {
+        let newLayers: Component[] = storeLayers.map((layer) => {
             // If keyPress.ctrl, can just use edit component, if none selected use edit component, else use edit components because it is modify 2 or more components.
             if (layer.id === id) {
                 //Not selected and not inside the selected array
@@ -211,19 +218,12 @@ const Layer: React.FC<Props> = (props) => {
             return { ...layer, selected: false };
         });
         if (!deleteChange) {
+            newLayers = buildLayerOrder(newLayers);
+            props.AddHistory({ undo: storeLayers });
             props.SetComponents(newLayers);
-            props.AddHistory({ undo: layers });
-            console.log("Selection Change", { undo: newLayers });
             setLayers(newLayers);
         }
     };
-
-    // const createLayers = (layers) => {
-    //     let layersArray = layers.map((layer) => {
-    //         return layer;
-    //     });
-    //     return layersArray;
-    // };
 
     const renderLayers = (componentArray) => {
         if (componentArray) {
@@ -263,11 +263,6 @@ const Layer: React.FC<Props> = (props) => {
     };
 
     React.useEffect(() => {
-        changed = false;
-        deleteChange = false;
-    }, [event, changed, selected, canvas, open, layers, keyPress]);
-
-    React.useEffect(() => {
         if (layers.length !== components.length || layers !== components) {
             setLayers(components);
             renderedComponents = [];
@@ -295,7 +290,7 @@ const Layer: React.FC<Props> = (props) => {
 
     const reRenderComponents = () => {
         renderedComponents = [];
-        renderLayers(components);
+        renderLayers(layers);
         return renderedComponents;
     };
 

@@ -13,7 +13,7 @@ import {
     REDO_COMPONENT,
     UNDO_DELETE_COMPONENTS,
 } from "../types/actions";
-// import { store } from "../store/storeConfiguration";
+import { store } from "../store/storeConfiguration";
 
 /* eslint-disable */
 
@@ -137,7 +137,7 @@ const runDownNestedLayers = (
     }
 };
 
-function buildLayerOrder(layersArray) {
+export function buildLayerOrder(layersArray) {
     let areMoreComponents = true;
     let newArray = [];
     for (let i = 0; areMoreComponents; i++) {
@@ -196,31 +196,29 @@ const deleteComponent = (component, state) => {
     let children = component.children;
     let parent = component.parent;
 
-    let newLayers = state.map((layer) => {
-        return layer;
-    });
+    let newLayers = state.slice();
 
-    let idx = newLayers.findIndex((layer) => layer.id == id);
+    let idx = newLayers.findIndex((comp) => comp.id == id);
     if (idx < 0) {
         console.error("Index doesnt exist for deletion");
         return;
     }
 
-    let parentIdx = newLayers.findIndex((layer) => layer.id == parent);
-    if (newLayers.length == 1 || idx === 0) {
+    let parentIdx = newLayers.findIndex((comp) => comp.id == parent);
+    if (newLayers.length === 1 || idx === 0) {
         console.error("Components do not contain anything, GET SOME: " + newLayers);
     }
     if (parent !== null) {
         let childIdx = newLayers[parentIdx].children.indexOf(id);
         if (newLayers[parentIdx].children.length == 1) {
-            newLayers = newLayers.map((layer) => {
-                if (layer.id === parent) {
+            newLayers = newLayers.map((comp) => {
+                if (comp.id === parent) {
                     return {
-                        ...layer,
+                        ...comp,
                         children: null,
                     };
                 }
-                return layer;
+                return comp;
             });
         } else {
             newLayers[parentIdx].children.splice(childIdx, 1);
@@ -239,6 +237,7 @@ const deleteComponent = (component, state) => {
     }
 
     newLayers.splice(idx, 1);
+    console.log(newLayers);
     return newLayers;
 };
 
@@ -255,8 +254,6 @@ const UndoRedoComponent = (undo, components) => {
         return i;
     });
     if (!component) {
-        // newComponents.concat(undo.comp);
-        // console.log("missing components", undo.comp);
         return components;
     }
 
@@ -271,17 +268,20 @@ const UndoRedoComponent = (undo, components) => {
     return buildLayerOrder(newComponents);
 };
 
-// const UndoRedoComponents = (undo, components) => {
-//     let newComponentArr: Component[] = undo.map((el) => {
-//         let idx = undo.indexOf(el)
-//         if(el !== components[idx]){
-
-//         }
-//     });
-//     if (newComponentArr) {
-//         return newComponentArr;
-//     }
-// };
+const PushParents = (oldComponents, state) => {
+    let currentComponents = state.map((el) => el);
+    oldComponents.map((el) => {
+        if (!currentComponents.includes(el)) {
+            console.log("doesnt include: " + el.id);
+            console.log(oldComponents);
+            let parentIdx = currentComponents.findIndex((comp) => comp.id === el.parent);
+            let oldIdx = oldComponents.findIndex((comp) => comp.id === el.parent);
+            currentComponents[parentIdx].children = oldComponents[oldIdx].children;
+            currentComponents.push(el);
+        }
+    });
+    return buildLayerOrder(currentComponents);
+};
 
 const componentReducer = (state = componentsReducerDefaultState, action: AppActions) => {
     switch (action.type) {
@@ -320,6 +320,7 @@ const componentReducer = (state = componentsReducerDefaultState, action: AppActi
             });
         }
         case DELETE_COMPONENT:
+            console.log(state);
             return deleteComponent(action.component, state);
         case SET_COMPONENTS:
             return buildLayerOrder(action.components);
@@ -327,12 +328,13 @@ const componentReducer = (state = componentsReducerDefaultState, action: AppActi
             return UndoRedoComponent(action.history.undo, state);
         case UNDO_COMPONENTS:
             let previousComponentArr = action.history.undo[action.history.undo.length - 1].comp;
-            console.log("doing this action");
-            return buildLayerOrder(previousComponentArr);
+            return previousComponentArr;
         case UNDO_DELETE_COMPONENTS:
-            let previousComponents = action.history.undo[action.history.undo.length - 1].comp;
-            console.log("undo deletion components", buildLayerOrder(previousComponents));
-            return buildLayerOrder(previousComponents);
+            let previousComponents = [action.history.undo[action.history.undo.length - 1].comp];
+            previousComponents.map((el) => el);
+            console.log(previousComponents[0]);
+            let newState = PushParents(previousComponents[0], state);
+            return newState;
         case REDO_COMPONENT:
             return UndoRedoComponent(action.history.redo, state);
         default:

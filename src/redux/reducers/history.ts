@@ -23,17 +23,16 @@ const historyReducer = (state = historyReducerDefaultState, action: HistoryActio
                 return state;
             }
             let newUndoArr = [];
-            let undoRef = action.history.undo;
+            let undoRef = action.history.undo.map((el) => el);
+            let undoRef2 = undoRef.slice();
+            console.log(undoRef2);
             //Component Array (Selection of Components Undo)
             if (undoRef.length > 1 && undoRef[0].id) {
-                newUndoArr = state.undo.concat({ comp: undoRef });
+                newUndoArr = state.undo.concat({ comp: undoRef2 });
             }
             //Single Component Modification
-            else if (
-                state.undo[state.undo.length - 1] !== action.history.undo[action.history.undo.length - 1] &&
-                action.history.undo[0].id
-            ) {
-                newUndoArr = state.undo.concat(...action.history.undo);
+            else if (state.undo[state.undo.length - 1] !== undoRef2[undoRef2.length - 1] && undoRef2[0].id) {
+                newUndoArr = state.undo.concat(...undoRef2);
             }
             let newRedoArr: Redo[] = [];
             return {
