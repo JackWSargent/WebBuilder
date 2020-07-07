@@ -21,18 +21,18 @@ const useStyles = makeStyles((theme: Theme) =>
             minWidth: "100%",
             width: "100%",
         },
-        layer: {},
-        layerSelected: {
+        component: {},
+        componentSelected: {
             borderStyle: "dashed",
             borderWidth: "1px",
             borderColor: "#668ace",
         },
-        layerSelectedContainer: {
+        componentSelectedContainer: {
             borderStyle: "dashed",
             borderWidth: "2px",
             borderColor: "#668ace",
         },
-        layerSelectedCanvas: {
+        componentSelectedCanvas: {
             borderStyle: "dashed",
             borderWidth: "3px",
             borderColor: "#668ace",
@@ -53,23 +53,23 @@ const Renderer: React.FC<Props> = (props) => {
     const classes = useStyles();
     const [renderedComponents, setRenderedComponents] = React.useState([]);
 
-    const returnComponent = (layer) => {
-        let id: number = layer.id;
-        let name: string = layer.name;
-        let innerText: string = layer.innerText;
-        let childrenVal: boolean = layer.children !== null;
-        switch (layer.type) {
+    const returnComponent = (component) => {
+        let id: number = component.id;
+        let name: string = component.name;
+        let innerText: string = component.innerText;
+        let childrenVal: boolean = component.children !== null;
+        switch (component.type) {
             case "canvas":
                 if (childrenVal) {
                     return (
                         <div
                             id={name}
                             key={id}
-                            className={clsx(classes.layer, {
-                                [classes.layerSelectedCanvas]: layer.selected,
+                            className={clsx(classes.component, {
+                                [classes.componentSelectedCanvas]: component.selected,
                             })}>
                             {innerText}
-                            {returnChildren(layer)}
+                            {returnChildren(component)}
                         </div>
                     );
                 }
@@ -77,8 +77,8 @@ const Renderer: React.FC<Props> = (props) => {
                     <div
                         id={name}
                         key={id}
-                        className={clsx(classes.layer, {
-                            [classes.layerSelectedCanvas]: layer.selected,
+                        className={clsx(classes.component, {
+                            [classes.componentSelectedCanvas]: component.selected,
                         })}>
                         {innerText}
                     </div>
@@ -90,11 +90,11 @@ const Renderer: React.FC<Props> = (props) => {
                             container
                             id={name}
                             key={id}
-                            className={clsx(classes.layer, {
-                                [classes.layerSelectedContainer]: layer.selected,
+                            className={clsx(classes.component, {
+                                [classes.componentSelectedContainer]: component.selected,
                             })}>
                             {innerText}
-                            {returnChildren(layer)}
+                            {returnChildren(component)}
                         </Grid>
                     );
                 }
@@ -103,8 +103,8 @@ const Renderer: React.FC<Props> = (props) => {
                         container
                         id={name}
                         key={id}
-                        className={clsx(classes.layer, {
-                            [classes.layerSelectedContainer]: layer.selected,
+                        className={clsx(classes.component, {
+                            [classes.componentSelectedContainer]: component.selected,
                         })}>
                         {innerText}
                     </Grid>
@@ -116,11 +116,11 @@ const Renderer: React.FC<Props> = (props) => {
                             item
                             id={name}
                             key={id}
-                            className={clsx(classes.layer, {
-                                [classes.layerSelected]: layer.selected,
+                            className={clsx(classes.component, {
+                                [classes.componentSelected]: component.selected,
                             })}>
                             {innerText}
-                            {returnChildren(layer)}
+                            {returnChildren(component)}
                         </Grid>
                     );
                 }
@@ -129,8 +129,8 @@ const Renderer: React.FC<Props> = (props) => {
                         item
                         id={name}
                         key={id}
-                        className={clsx(classes.layer, {
-                            [classes.layerSelected]: layer.selected,
+                        className={clsx(classes.component, {
+                            [classes.componentSelected]: component.selected,
                         })}>
                         {innerText}
                     </Grid>
@@ -142,11 +142,11 @@ const Renderer: React.FC<Props> = (props) => {
                         <div
                             id={name}
                             key={id}
-                            className={clsx(classes.layer, {
-                                [classes.layerSelected]: layer.selected,
+                            className={clsx(classes.component, {
+                                [classes.componentSelected]: component.selected,
                             })}>
                             {innerText}
-                            {returnChildren(layer)}
+                            {returnChildren(component)}
                         </div>
                     );
                 }
@@ -154,8 +154,8 @@ const Renderer: React.FC<Props> = (props) => {
                     <div
                         id={name}
                         key={id}
-                        className={clsx(classes.layer, {
-                            [classes.layerSelected]: layer.selected,
+                        className={clsx(classes.component, {
+                            [classes.componentSelected]: component.selected,
                         })}>
                         {innerText}
                     </div>
@@ -163,21 +163,21 @@ const Renderer: React.FC<Props> = (props) => {
         }
         // }
         // if (childrenVal) {
-        //     return <div key={id}>{returnChildren(layer)}</div>;
+        //     return <div key={id}>{returnChildren(component)}</div>;
         // }
         // return <div key={id}></div>;
     };
 
-    const returnChildren = (layer): Array<JSX.Element> => {
+    const returnChildren = (component): Array<JSX.Element> => {
         let childrenArr: JSX.Element[] = [];
-        for (let i = 1; i < layer.children.length + 1; i++) {
+        for (let i = 1; i < component.children.length + 1; i++) {
             idx = idx + 1;
-            let layer = newComponents[idx];
-            if (layer == null || layer.isRendered) {
+            let component = newComponents[idx];
+            if (component == null || component.isRendered) {
                 return;
             }
-            layer.isRendered = true;
-            childrenArr.push(returnComponent(layer));
+            component.isRendered = true;
+            childrenArr.push(returnComponent(component));
         }
         return childrenArr;
     };
@@ -206,10 +206,10 @@ const Renderer: React.FC<Props> = (props) => {
             return componentObject;
         });
         // Init and check to see if there are any elements
-        let layer: Component = newComponents[idx];
-        if (layer) {
+        let component: Component = newComponents[idx];
+        if (component) {
             // Check to make sure that it is not rendered already
-            if (layer.isRendered) {
+            if (component.isRendered) {
                 return;
             }
             // Init a new array to
@@ -222,16 +222,16 @@ const Renderer: React.FC<Props> = (props) => {
                 return;
             }
             for (let i: number = 1; i < newComponents.length; i++) {
-                layer = newComponents[idx];
-                if (!layer || layer.isRendered == true || layer.parent !== null) {
+                component = newComponents[idx];
+                if (!component || component.isRendered == true || component.parent !== null) {
                     return;
                 }
                 if (i == 1 && renderedComponents.length > 0) {
-                    newRenderedComponents = newRenderedComponents.concat(returnComponent(layer));
+                    newRenderedComponents = newRenderedComponents.concat(returnComponent(component));
                 } else {
-                    newRenderedComponents = renderedComponents.concat(returnComponent(layer));
+                    newRenderedComponents = renderedComponents.concat(returnComponent(component));
                 }
-                layer.isRendered = true;
+                component.isRendered = true;
 
                 idx = idx + 1;
                 setRenderedComponents(newRenderedComponents);

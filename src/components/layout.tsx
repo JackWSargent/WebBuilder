@@ -1,7 +1,7 @@
 import * as React from "react";
 /* eslint-disable */
 import "../App.css";
-import Layer from "./Layer";
+import ComponentLayers from "./ComponentLayers";
 import CanvasDisplay from "./Canvas";
 import { makeStyles, useTheme, Theme, createStyles } from "@material-ui/core/styles";
 import { connect } from "react-redux";
@@ -12,9 +12,9 @@ import {
     SetComponents,
     EditComponent,
     AddComponent,
-    EditComponents,
+    // EditComponents,
     PasteComponent,
-    DeleteComponent,
+    // DeleteComponent,
     UndoComponent,
     UndoComponents,
     UndoDeleteComponents,
@@ -26,7 +26,7 @@ import { AppState } from "../redux/store/storeConfiguration";
 import { bindActionCreators } from "redux";
 import { AppActions } from "../redux/types/actions";
 import { ThunkDispatch } from "redux-thunk";
-import { canDispatch, historyReducer } from "../redux/reducers/history";
+import { canDispatch } from "../redux/reducers/history";
 import { store } from "../redux/store/storeConfiguration";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -58,47 +58,62 @@ const Layout: React.FC<Props> = (props) => {
         return keyPress["ctrl"] === true ? true : false;
     };
 
+    const IsUndoComponent = (undoArray) => {
+        let lastUndo = undoArray.length - 1;
+        return undoArray[lastUndo].id ? true : false;
+    };
+
+    const IsUndoComponentArray = (undoArray) => {
+        let lastUndo = undoArray.length - 1;
+        return undoArray[lastUndo].comp ? true : false;
+    };
+
+    const GetUndoComponent = (components, undoArray) => {
+        let lastUndo = undoArray.length - 1;
+        let componentArray = components.filter((comp) => comp.id === undoArray[lastUndo].id);
+        return componentArray[0];
+    };
+
+    const UndoLastComponent = (storeComponents, undoArray) => {
+        let selectedComponent = GetUndoComponent(storeComponents, undoArray);
+        props.UndoComponent(undoArray);
+        props.UndoHistory(selectedComponent);
+    };
+
+    const UndoLastComponentArray = (storeComponents, undoArray) => {
+        let lastUndo = undoArray.length - 1;
+        let undoneComponentArr = undoArray[lastUndo].comp;
+        let componentDifferential = false;
+        if (storeComponents.length < undoneComponentArr.length) {
+            componentDifferential = true;
+        }
+        if (componentDifferential === true) {
+            props.UndoDeleteComponents([...undoneComponentArr]);
+            props.UndoHistory(storeComponents);
+            return;
+        }
+        props.UndoComponents([...undoneComponentArr]);
+        props.UndoHistory(storeComponents);
+    };
+
     React.useEffect(() => {
         window.addEventListener("keydown", (event) => {
             if (!keyPress[event.keyCode] || keyPress[event.keyCode] === false) {
                 props.KeyDown(event.keyCode);
             }
-            // Take away browsers abilities to mess with undo and redo
             if (PressingCTRL()) {
                 event.preventDefault();
             }
-
             if (PressingUndo() && canDispatch && history.undo.length > 0) {
                 // If latest action was done on a component
                 let newUndo = store.getState().history.undo;
                 let storeComponents = store.getState().components;
                 let endOfArray = newUndo.length - 1;
-                if (!newUndo[0]) {
-                    return;
+                if (IsUndoComponent(newUndo)) {
+                    UndoLastComponent(storeComponents, newUndo);
                 }
-                if (newUndo[endOfArray].id) {
-                    let component = storeComponents.filter((comp) => comp.id === newUndo[endOfArray].id);
-                    let selectedComponent = component[0];
-                    props.UndoComponent(newUndo); // Activates Undo
-                    props.UndoHistory(selectedComponent);
-                }
-                if (newUndo[endOfArray].comp) {
-                    console.log("Undo Components Triggered", storeComponents, newUndo[endOfArray].comp);
-                    let undoneComponentArr = newUndo[endOfArray].comp;
-                    let componentDifferential = false;
-                    if (storeComponents.length < undoneComponentArr.length) {
-                        componentDifferential = true;
-                    }
-                    console.log(componentDifferential);
-                    if (componentDifferential === true) {
-                        console.log("missing inside store", undoneComponentArr);
-
-                        props.UndoDeleteComponents([...undoneComponentArr]);
-                        props.UndoHistory(storeComponents);
-                        return;
-                    }
-                    props.UndoComponents([...undoneComponentArr]);
-                    props.UndoHistory(storeComponents);
+                if (IsUndoComponentArray(newUndo)) {
+                    UndoLastComponentArray(storeComponents, newUndo);
                 }
             }
             if (PressingRedo() && canDispatch && history.redo.length > 0) {
@@ -122,7 +137,7 @@ const Layout: React.FC<Props> = (props) => {
     const renderComponents = (): JSX.Element => {
         return (
             <div className={classes.root}>
-                <Layer />
+                <ComponentLayers />
                 <CanvasDisplay />
             </div>
         );

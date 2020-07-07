@@ -61,7 +61,7 @@ export interface History {
 export interface Undo {
     component?: Component;
     components?: Component[];
-    newLayers?: Component[];
+    newComponents?: Component[];
     canvas?: Canvas;
     id?: number;
     boxSizing?: string;

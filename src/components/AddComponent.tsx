@@ -47,11 +47,11 @@ const NewComponent: React.FC<Props> = (props) => {
         setOpen(!open);
     };
 
-    const hasSelectedLayer = () => {
+    const hasSelectedComponent = () => {
         let selectedComponents = [];
-        components.map((layer) => {
-            if (layer.selected === true) {
-                selectedComponents.push(layer);
+        components.map((comp) => {
+            if (comp.selected === true) {
+                selectedComponents.push(comp);
             }
         });
         if (selectedComponents.length === 1) {
@@ -75,11 +75,11 @@ const NewComponent: React.FC<Props> = (props) => {
     };
 
     const handleNewComponent = () => {
-        if (!hasSelectedLayer) {
+        if (!hasSelectedComponent) {
             // console.log("does not have selected Component");
             return;
         }
-        let parentLayer = hasSelectedLayer();
+        let parentComponent = hasSelectedComponent();
         let newComponentObj: Component = {
             id: getId(),
             isRendered: false,
@@ -87,8 +87,8 @@ const NewComponent: React.FC<Props> = (props) => {
             type: newComponentType,
             selected: false,
             children: null,
-            parent: parentLayer.id,
-            nestedLevel: parentLayer.nestedLevel + 1,
+            parent: parentComponent.id,
+            nestedLevel: parentComponent.nestedLevel + 1,
         };
 
         props.AddHistory({ undo: [newComponentObj] });

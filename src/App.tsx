@@ -33,5 +33,3 @@ const App: React.FC = () => {
 };
 
 export default App;
-// app --> layers(map to a layer component)
-// layer + canvas

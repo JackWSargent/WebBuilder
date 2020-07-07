@@ -35,7 +35,7 @@ import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import { buildLayerOrder } from "../redux/reducers/component";
+import { BuildComponentOrder } from "../redux/reducers/component";
 
 let drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
@@ -103,11 +103,11 @@ const useStyles = makeStyles((theme: Theme) =>
         icon: {
             color: "#fff",
         },
-        layer: {
+        component: {
             paddingTop: 0,
             paddingBottom: 0,
         },
-        layerSelected: {
+        componentSelected: {
             paddingTop: 0,
             paddingBottom: 0,
             backgroundColor: "#5e697c",
@@ -121,25 +121,25 @@ const useStyles = makeStyles((theme: Theme) =>
         },
     })
 );
-interface LayerProps {}
+interface ComponentLayersProps {}
 
 let selected: Array<number> = [];
 let deleteChange: boolean = false;
-type Props = LayerProps & LinkStateProps & LinkDispatchProps;
+type Props = ComponentLayersProps & LinkStateProps & LinkDispatchProps;
 let deletedComp = {};
 let changed: boolean = true;
 let renderedComponents: JSX.Element[] = [];
 let open: boolean = true;
-let storeLayers = store.getState().components;
-let oldLayers = store.getState().components.map((el) => el);
+let storeComponents = store.getState().components;
+let oldComponents = store.getState().components.slice();
 
-const Layer: React.FC<Props> = (props) => {
+const ComponentLayers: React.FC<Props> = (props) => {
     const { components, canvas, history, keyPress } = props;
 
     const classes = useStyles();
     const theme = useTheme();
-    const [layers, setLayers] = React.useState(components);
-    const [layersOpen, setLayersOpen] = React.useState(true);
+    const [stateComponents, setStateComponents] = React.useState(components);
+    const [menuOpen, setMenuOpen] = React.useState(true);
 
     const renderDelete = (deletedComponent) => {
         if (deletedComponent.type === "canvas") {
@@ -160,7 +160,7 @@ const Layer: React.FC<Props> = (props) => {
         }
         deleteChange = true;
         changed = true;
-        console.log(layers);
+        console.log(stateComponents);
         props.AddHistory({ undo: store.getState().components });
         // props.DeleteComponent(deletedComponent);
     };
@@ -168,64 +168,64 @@ const Layer: React.FC<Props> = (props) => {
     React.useEffect(() => {
         changed = false;
         deleteChange = false;
-    }, [event, changed, selected, canvas, open, layers, keyPress]);
+    }, [event, changed, selected, canvas, open, stateComponents, keyPress]);
 
     const handleSelectedState = (id) => {
         changed = true;
         let ctrl: boolean = keyPress["ctrl"] ? keyPress["ctrl"] : false;
-        let newLayers: Component[] = storeLayers.map((layer) => {
+        let newComponents: Component[] = storeComponents.map((component) => {
             // If keyPress.ctrl, can just use edit component, if none selected use edit component, else use edit components because it is modify 2 or more components.
-            if (layer.id === id) {
+            if (component.id === id) {
                 //Not selected and not inside the selected array
-                if (!layer.selected && !selected.includes(layer.id)) {
+                if (!component.selected && !selected.includes(component.id)) {
                     if (ctrl) {
-                        let newSelected = layer.id;
+                        let newSelected = component.id;
                         selected.push(newSelected);
                     } else {
                         selected.splice(0, selected.length);
                         selected.push(id);
                     }
                     return {
-                        ...layer,
+                        ...component,
                         selected: true,
                     };
                     //Already Selected
-                } else if (selected.includes(layer.id) || layer.selected) {
+                } else if (selected.includes(component.id) || component.selected) {
                     if (ctrl) {
-                        let idx = selected.indexOf(layer.id);
+                        let idx = selected.indexOf(component.id);
                         selected.splice(idx, 1);
                     } else {
                         // let idx = selected.indexOf(id);
                         selected.splice(0, selected.length);
                     }
                     return {
-                        ...layer,
+                        ...component,
                         selected: false,
                     };
                     //Already Selected
                 } else {
                     let idx = selected.indexOf(id);
                     selected.splice(idx, 1);
-                    return { ...layer, selected: false };
+                    return { ...component, selected: false };
                 }
             }
             if (ctrl) {
-                return layer;
-            } else if (selected.includes(layer.id) && !ctrl) {
-                return { ...layer, selected: false };
+                return component;
+            } else if (selected.includes(component.id) && !ctrl) {
+                return { ...component, selected: false };
             }
 
-            return { ...layer, selected: false };
+            return { ...component, selected: false };
         });
         if (!deleteChange) {
-            newLayers = buildLayerOrder(newLayers);
-            props.AddHistory({ undo: storeLayers });
-            props.SetComponents(newLayers);
-            setLayers(newLayers);
+            newComponents = BuildComponentOrder(newComponents);
+            props.AddHistory({ undo: storeComponents });
+            props.SetComponents(newComponents);
+            setStateComponents(newComponents);
         }
     };
 
-    const renderLayers = (componentArray) => {
+    const RenderComponentLayers = (componentArray) => {
         if (componentArray) {
             renderedComponents = componentArray.map((component) => {
                 return (
@@ -233,8 +233,8 @@ const Layer: React.FC<Props> = (props) => {
                         <Grid container onClick={() => handleSelectedState(component.id)}>
                             <ListItem
                                 button
-                                className={clsx(classes.layer, {
-                                    [classes.layerSelected]: component.selected,
+                                className={clsx(classes.component, {
+                                    [classes.componentSelected]: component.selected,
                                 })}
                                 divider={true}>
                                 <div style={{ marginLeft: 10 * component.nestedLevel }}></div>
@@ -258,20 +258,20 @@ const Layer: React.FC<Props> = (props) => {
                 );
             });
         } else {
-            console.log("missing layers");
+            console.log("missing state components");
         }
     };
 
     React.useEffect(() => {
-        if (layers.length !== components.length || layers !== components) {
-            setLayers(components);
+        if (stateComponents.length !== components.length || stateComponents !== components) {
+            setStateComponents(components);
             renderedComponents = [];
             reRenderComponents();
         }
-    }, [components, layersOpen, history]);
+    }, [components, menuOpen, history]);
 
     const handleExpand = () => {
-        setLayersOpen(!layersOpen);
+        setMenuOpen(!menuOpen);
     };
 
     const handleDrawerOpen = () => {
@@ -290,7 +290,7 @@ const Layer: React.FC<Props> = (props) => {
 
     const reRenderComponents = () => {
         renderedComponents = [];
-        renderLayers(layers);
+        RenderComponentLayers(stateComponents);
         return renderedComponents;
     };
 
@@ -344,7 +344,7 @@ const Layer: React.FC<Props> = (props) => {
                     </Grid>
 
                     <ExpansionPanel
-                        expanded={layersOpen}
+                        expanded={menuOpen}
                         style={{ marginTop: 0, marginBottom: 0, borderTop: "1px solid rgba(255, 255, 255, 0.12)" }}>
                         <ExpansionPanelSummary
                             expandIcon={<ExpandMoreIcon />}
@@ -414,7 +414,7 @@ interface LinkDispatchProps {
     AddHistory: (history: History) => void;
 }
 
-const mapStateToProps = (state: AppState, ownProps: LayerProps): LinkStateProps => ({
+const mapStateToProps = (state: AppState, ownProps: ComponentLayersProps): LinkStateProps => ({
     components: state.components,
     canvas: state.canvas,
     history: state.history,
@@ -423,7 +423,7 @@ const mapStateToProps = (state: AppState, ownProps: LayerProps): LinkStateProps 
 
 const mapDispatchToProps = (
     dispatch: ThunkDispatch<any, any, AppActions>,
-    ownProps: LayerProps
+    ownProps: ComponentLayersProps
 ): LinkDispatchProps => ({
     DeleteComponent: bindActionCreators(DeleteComponent, dispatch),
     SetComponents: bindActionCreators(SetComponents, dispatch),
@@ -434,4 +434,4 @@ const mapDispatchToProps = (
     AddHistory: bindActionCreators(AddHistory, dispatch),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(Layer);
+export default connect(mapStateToProps, mapDispatchToProps)(ComponentLayers);

@@ -46,7 +46,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
 
     const classes = useStyles();
     const [open, setOpen] = React.useState(true);
-    const [layers, setLayers] = React.useState([]);
+    const [stateComponents, setStateComponents] = React.useState([]);
     const [componentName, setComponentName] = React.useState(selected.length === 1 ? selected[0].name : "");
     const [componentType, setComponentType] = React.useState(selected.length === 1 ? selected[0].type : "");
     const [componentInnerText, setComponentInnerText] = React.useState(
@@ -57,7 +57,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
         setOpen(!open);
     };
 
-    const hasSelectedLayer = (): boolean => {
+    const hasSelectedComponent = (): boolean => {
         if (selected.length === 1 && selected[0].id !== 100) {
             return true;
         }
@@ -100,7 +100,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
     };
 
     const copyToClipboard = (): void => {
-        if (hasSelectedLayer() && getSelectedName()) {
+        if (hasSelectedComponent() && getSelectedName()) {
             let selectedComponent = selected[0];
             let convertedComponent = ConvertToCopiedComponent(selectedComponent);
             if (convertedComponent !== clipboard) {
@@ -110,7 +110,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
     };
 
     const pasteComponent = (): void => {
-        if (hasSelectedLayer() && getSelectedName()) {
+        if (hasSelectedComponent() && getSelectedName()) {
             let selectedComponent = selected[0];
             let newComponent = {
                 ...selectedComponent,
@@ -125,28 +125,28 @@ const EditComponentTab: React.FC<Props> = (props) => {
     };
 
     const getSelectedName = () => {
-        if (hasSelectedLayer()) {
+        if (hasSelectedComponent()) {
             return selected[0].name;
         }
         return "";
     };
 
     const getSelectedType = () => {
-        if (hasSelectedLayer()) {
+        if (hasSelectedComponent()) {
             return selected[0].type;
         }
         return "";
     };
 
     const getSelectedId = () => {
-        if (hasSelectedLayer()) {
+        if (hasSelectedComponent()) {
             return selected[0].id;
         }
         return 0;
     };
 
     const getSelectedInnerText = () => {
-        if (hasSelectedLayer()) {
+        if (hasSelectedComponent()) {
             return selected[0].innerText;
         }
     };
@@ -157,7 +157,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
     let newComponentInnerText = getSelectedInnerText();
 
     const renderElementName = () => {
-        if (!hasSelectedLayer) {
+        if (!hasSelectedComponent) {
             return;
         }
         return selected.map((component) => (
@@ -168,13 +168,13 @@ const EditComponentTab: React.FC<Props> = (props) => {
                 key={component.id}
                 value={componentName}
                 onChange={(e) => setComponentProps(e, "name")}
-                disabled={!hasSelectedLayer()}
+                disabled={!hasSelectedComponent()}
             />
         ));
     };
 
     const renderElementInnerText = () => {
-        if (!hasSelectedLayer) {
+        if (!hasSelectedComponent) {
             return;
         }
         return selected.map((component) => (
@@ -186,13 +186,13 @@ const EditComponentTab: React.FC<Props> = (props) => {
                 value={componentInnerText}
                 key={component.id}
                 onChange={(e) => setComponentProps(e, "innerText")}
-                disabled={!hasSelectedLayer()}
+                disabled={!hasSelectedComponent()}
             />
         ));
     };
 
     const renderElementType = () => {
-        if (!hasSelectedLayer) return;
+        if (!hasSelectedComponent) return;
         if (newComponentName.length > -1 && selected.length === 1) {
             return (
                 <Select
@@ -216,7 +216,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
             setComponentInnerText(selected[0].innerText);
         }
         renderedComponentArr = [];
-        if (hasSelectedLayer()) {
+        if (hasSelectedComponent()) {
             let comp = selected[0];
             let editComp = (
                 <div key={comp.id}>
@@ -292,20 +292,20 @@ const EditComponentTab: React.FC<Props> = (props) => {
                 </div>
             );
             renderedComponentArr = [editComp];
-            setLayers([editComp]);
+            setStateComponents([editComp]);
         }
     };
 
     const returnEditComponent = () => {
-        if (hasSelectedLayer()) {
+        if (hasSelectedComponent()) {
             return renderedComponentArr;
         }
     };
 
     React.useEffect(() => {
-        setLayers([]);
+        setStateComponents([]);
         selected = components.filter((component) => component.selected === true);
-        if (layers.length !== components.length || layers !== components) {
+        if (stateComponents.length !== components.length || stateComponents !== components) {
             renderEditComponent();
         }
         if (selected[0] && selected.length === 1) {
