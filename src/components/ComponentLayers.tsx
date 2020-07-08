@@ -162,7 +162,8 @@ const ComponentLayers: React.FC<Props> = (props) => {
         changed = true;
         console.log(stateComponents);
         props.AddHistory({ undo: store.getState().components });
-        // props.DeleteComponent(deletedComponent);
+        console.log(deletedComponent);
+        props.DeleteComponent(deletedComponent);
     };
 
     React.useEffect(() => {
@@ -170,53 +171,70 @@ const ComponentLayers: React.FC<Props> = (props) => {
         deleteChange = false;
     }, [event, changed, selected, canvas, open, stateComponents, keyPress]);
 
+    const IsComponentNotSelected = (component) => {
+        return !component.selected && !selected.includes(component.id) ? true : false;
+    };
+
+    const PushToSelected = (component, id, ctrl) => {
+        if (ctrl) {
+            selected.push(component.id);
+        } else {
+            selected.splice(0, selected.length);
+            selected.push(id);
+        }
+        return {
+            ...component,
+            selected: true,
+        };
+    };
+
+    const IsComponentSelected = (component) => {
+        return selected.includes(component.id) || component.selected ? true : false;
+    };
+
+    const RemoveFromSelected = (component, ctrl) => {
+        if (ctrl) {
+            let idx = selected.indexOf(component.id);
+            selected.splice(idx, 1);
+        } else {
+            selected.splice(0, selected.length);
+        }
+        return {
+            ...component,
+            selected: false,
+        };
+    };
+
+    const ReturnOtherComponents = (component, ctrl) => {
+        if (ctrl) {
+            return component;
+        } else if (selected.includes(component.id) && !ctrl) {
+            return { ...component, selected: false };
+        }
+
+        return { ...component, selected: false };
+    };
+
+    const CreateNewSelectedComponents = (id, ctrl) => {
+        return storeComponents.map((component) => {
+            if (component.id === id) {
+                if (IsComponentNotSelected(component)) {
+                    return (component = PushToSelected(component, id, ctrl));
+                }
+                if (IsComponentSelected(component)) {
+                    return (component = RemoveFromSelected(component, ctrl));
+                }
+                selected.splice(selected.indexOf(id), 1);
+                return { ...component, selected: false };
+            }
+            return ReturnOtherComponents(component, ctrl);
+        });
+    };
+
     const handleSelectedState = (id) => {
         changed = true;
         let ctrl: boolean = keyPress["ctrl"] ? keyPress["ctrl"] : false;
-        let newComponents: Component[] = storeComponents.map((component) => {
-            // If keyPress.ctrl, can just use edit component, if none selected use edit component, else use edit components because it is modify 2 or more components.
-            if (component.id === id) {
-                //Not selected and not inside the selected array
-                if (!component.selected && !selected.includes(component.id)) {
-                    if (ctrl) {
-                        let newSelected = component.id;
-                        selected.push(newSelected);
-                    } else {
-                        selected.splice(0, selected.length);
-                        selected.push(id);
-                    }
-                    return {
-                        ...component,
-                        selected: true,
-                    };
-                    //Already Selected
-                } else if (selected.includes(component.id) || component.selected) {
-                    if (ctrl) {
-                        let idx = selected.indexOf(component.id);
-                        selected.splice(idx, 1);
-                    } else {
-                        // let idx = selected.indexOf(id);
-                        selected.splice(0, selected.length);
-                    }
-                    return {
-                        ...component,
-                        selected: false,
-                    };
-                    //Already Selected
-                } else {
-                    let idx = selected.indexOf(id);
-                    selected.splice(idx, 1);
-                    return { ...component, selected: false };
-                }
-            }
-            if (ctrl) {
-                return component;
-            } else if (selected.includes(component.id) && !ctrl) {
-                return { ...component, selected: false };
-            }
-
-            return { ...component, selected: false };
-        });
+        let newComponents: Component[] = CreateNewSelectedComponents(id, ctrl);
         if (!deleteChange) {
             newComponents = BuildComponentOrder(newComponents);
             props.AddHistory({ undo: storeComponents });

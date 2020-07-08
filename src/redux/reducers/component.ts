@@ -1,6 +1,5 @@
 import {
     Component,
-    // ComponentActionTypes,
     AppActions,
     SET_COMPONENTS,
     DELETE_COMPONENT,
@@ -204,54 +203,87 @@ const addComponent = (components) => {
     return newComponentArr;
 };
 
-const deleteComponent = (component, state) => {
+const GetParentIndex = (components, parent) => {
+    return components.findIndex((comp) => comp.id === parent);
+};
+
+const GetChildIndex = (components, parentIndex, id) => {
+    return components[parentIndex].children.indexOf(id);
+};
+
+const ComponentHasSingleChild = (components, parentIndex) => {
+    return components[parentIndex].children.length == 1 ? true : false;
+};
+
+const SetParentChildrenToNull = (components, parentId) => {
+    return components.map((comp) => {
+        if (comp.id === parentId) {
+            return {
+                ...comp,
+                children: null,
+            };
+        }
+        return comp;
+    });
+};
+
+const RemoveIdFromParent = (components, parentIndex, id, parentId) => {
+    let childIndex = GetChildIndex(components, parentIndex, id);
+    if (ComponentHasSingleChild(components, parentIndex)) {
+        components = SetParentChildrenToNull(components, parentId);
+    } else {
+        components[parentIndex].children.splice(childIndex, 1);
+    }
+    return components;
+};
+
+const IsNextComponentNestedLevelEqualOrHigher = (components, component, nextIndex) => {
+    return components[nextIndex].nestedLevel >= component.nestedLevel ? true : false;
+};
+
+const RemoveChildren = (components, parentIndex, component) => {
+    let numChildren = 0;
+    let childrenFound = false;
+    for (let k = parentIndex + 1; k < components.length - 1 || !childrenFound; k++) {
+        if (IsNextComponentNestedLevelEqualOrHigher(components, component, k)) {
+            numChildren = k - parentIndex - 1;
+            childrenFound = true;
+        }
+    }
+    components.splice(parentIndex + 1, numChildren);
+    return components;
+};
+
+const GetComponentIndex = (components, component) => {
+    return components.findIndex((comp) => comp === component);
+};
+
+const DeleteComponent = (component, state) => {
     let id = component.id;
     let children = component.children;
-    let parent = component.parent;
-
-    let newComponents = state.slice();
-
-    let idx = newComponents.findIndex((comp) => comp.id == id);
-    if (idx < 0) {
-        console.error("Index doesnt exist for deletion");
+    let parentId = component.parent;
+    // console.log(state);
+    let components = state;
+    // console.log(components);
+    let componentIndex = GetComponentIndex(components, component);
+    let parentIndex = GetParentIndex(components, parentId);
+    if (parentIndex < 0) {
+        console.error("Parent Component does not exist");
         return;
     }
-
-    let parentIdx = newComponents.findIndex((comp) => comp.id == parent);
-    if (newComponents.length === 1 || idx === 0) {
-        console.error("Components do not contain anything, GET SOME: " + newComponents);
+    if (components.length === 1) {
+        console.warn("Canvas does not contain anything");
     }
-    if (parent !== null) {
-        let childIdx = newComponents[parentIdx].children.indexOf(id);
-        if (newComponents[parentIdx].children.length == 1) {
-            newComponents = newComponents.map((comp) => {
-                if (comp.id === parent) {
-                    return {
-                        ...comp,
-                        children: null,
-                    };
-                }
-                return comp;
-            });
-        } else {
-            newComponents[parentIdx].children.splice(childIdx, 1);
-        }
+    if (parent) {
+        components = RemoveIdFromParent(components, parentIndex, id, parentId);
     }
-    if (children !== null) {
-        let numChildren = 0;
-        let childrenFound = false;
-        for (let i = idx + 1; i < newComponents.length - 1 || !childrenFound; i++) {
-            if (newComponents[i].nestedLevel <= component.nestedLevel) {
-                numChildren = i - idx - 1;
-                childrenFound = true;
-            }
-        }
-        newComponents.splice(idx + 1, numChildren);
+    if (children) {
+        components = RemoveChildren(components, parentIndex, component);
     }
-
-    newComponents.splice(idx, 1);
-    console.log(newComponents);
-    return newComponents;
+    // console.log("Component Index" + componentIndex);
+    components.splice(componentIndex, 1);
+    // console.log(components);
+    return components;
 };
 
 const UndoRedoComponent = (undo, components) => {
@@ -333,8 +365,7 @@ const componentReducer = (state = componentsReducerDefaultState, action: AppActi
             });
         }
         case DELETE_COMPONENT:
-            console.log(state);
-            return deleteComponent(action.component, state);
+            return DeleteComponent(action.component, state);
         case SET_COMPONENTS:
             return BuildComponentOrder(action.components);
         case UNDO_COMPONENT:

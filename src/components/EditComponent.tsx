@@ -53,18 +53,18 @@ const EditComponentTab: React.FC<Props> = (props) => {
         selected.length === 1 ? selected[0].innerText : ""
     );
 
-    const handleExpand = (): void => {
+    const HandleExpand = (): void => {
         setOpen(!open);
     };
 
-    const hasSelectedComponent = (): boolean => {
+    const HasSelectedComponent = (): boolean => {
         if (selected.length === 1 && selected[0].id !== 100) {
             return true;
         }
         return false;
     };
 
-    const setComponentProps = (e, prop): void => {
+    const SetComponentProps = (e, prop): void => {
         let selectedComp = selected[0];
         switch (prop) {
             case "type": {
@@ -99,8 +99,8 @@ const EditComponentTab: React.FC<Props> = (props) => {
         props.AddHistory({ undo: [selectedComp] });
     };
 
-    const copyToClipboard = (): void => {
-        if (hasSelectedComponent() && getSelectedName()) {
+    const CopyToClipboard = (): void => {
+        if (HasSelectedComponent() && GetSelectedName()) {
             let selectedComponent = selected[0];
             let convertedComponent = ConvertToCopiedComponent(selectedComponent);
             if (convertedComponent !== clipboard) {
@@ -109,8 +109,8 @@ const EditComponentTab: React.FC<Props> = (props) => {
         }
     };
 
-    const pasteComponent = (): void => {
-        if (hasSelectedComponent() && getSelectedName()) {
+    const PasteComponent = (): void => {
+        if (HasSelectedComponent() && GetSelectedName()) {
             let selectedComponent = selected[0];
             let newComponent = {
                 ...selectedComponent,
@@ -124,40 +124,40 @@ const EditComponentTab: React.FC<Props> = (props) => {
         }
     };
 
-    const getSelectedName = () => {
-        if (hasSelectedComponent()) {
+    const GetSelectedName = () => {
+        if (HasSelectedComponent()) {
             return selected[0].name;
         }
         return "";
     };
 
     const getSelectedType = () => {
-        if (hasSelectedComponent()) {
+        if (HasSelectedComponent()) {
             return selected[0].type;
         }
         return "";
     };
 
     const getSelectedId = () => {
-        if (hasSelectedComponent()) {
+        if (HasSelectedComponent()) {
             return selected[0].id;
         }
         return 0;
     };
 
     const getSelectedInnerText = () => {
-        if (hasSelectedComponent()) {
+        if (HasSelectedComponent()) {
             return selected[0].innerText;
         }
     };
 
     let componentId = getSelectedId();
     let newComponentType = getSelectedType();
-    let newComponentName = getSelectedName();
+    let newComponentName = GetSelectedName();
     let newComponentInnerText = getSelectedInnerText();
 
     const renderElementName = () => {
-        if (!hasSelectedComponent) {
+        if (!HasSelectedComponent) {
             return;
         }
         return selected.map((component) => (
@@ -167,14 +167,14 @@ const EditComponentTab: React.FC<Props> = (props) => {
                 type="string"
                 key={component.id}
                 value={componentName}
-                onChange={(e) => setComponentProps(e, "name")}
-                disabled={!hasSelectedComponent()}
+                onChange={(e) => SetComponentProps(e, "name")}
+                disabled={!HasSelectedComponent()}
             />
         ));
     };
 
     const renderElementInnerText = () => {
-        if (!hasSelectedComponent) {
+        if (!HasSelectedComponent) {
             return;
         }
         return selected.map((component) => (
@@ -185,19 +185,19 @@ const EditComponentTab: React.FC<Props> = (props) => {
                 multiline
                 value={componentInnerText}
                 key={component.id}
-                onChange={(e) => setComponentProps(e, "innerText")}
-                disabled={!hasSelectedComponent()}
+                onChange={(e) => SetComponentProps(e, "innerText")}
+                disabled={!HasSelectedComponent()}
             />
         ));
     };
 
     const renderElementType = () => {
-        if (!hasSelectedComponent) return;
+        if (!HasSelectedComponent) return;
         if (newComponentName.length > -1 && selected.length === 1) {
             return (
                 <Select
                     native
-                    onChange={(e) => setComponentProps(e, "type")}
+                    onChange={(e) => SetComponentProps(e, "type")}
                     value={componentType}
                     disableUnderline
                     style={{}}>
@@ -216,7 +216,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
             setComponentInnerText(selected[0].innerText);
         }
         renderedComponentArr = [];
-        if (hasSelectedComponent()) {
+        if (HasSelectedComponent()) {
             let comp = selected[0];
             let editComp = (
                 <div key={comp.id}>
@@ -228,7 +228,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
                             aria-controls="panel1a-content"
                             id="panel1a-header"
                             style={{ backgroundColor: "#2e2e2e" }}
-                            onClick={handleExpand}>
+                            onClick={HandleExpand}>
                             <Typography className={classes.heading}>{comp.name}</Typography>
                         </ExpansionPanelSummary>
                         <Grid container style={{ marginTop: "10px" }}>
@@ -237,13 +237,13 @@ const EditComponentTab: React.FC<Props> = (props) => {
                                     color="white"
                                     id="copy"
                                     fontSize="35px"
-                                    onClick={() => copyToClipboard()}></MdCopy>
+                                    onClick={() => CopyToClipboard()}></MdCopy>
                                 <MdClipboard
                                     color="white"
                                     id="paste"
                                     fontSize="35px"
                                     style={{ marginLeft: "4px" }}
-                                    onClick={() => pasteComponent()}></MdClipboard>
+                                    onClick={() => PasteComponent()}></MdClipboard>
                             </Grid>
                             <Grid item xs={8} />
                         </Grid>
@@ -297,7 +297,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
     };
 
     const returnEditComponent = () => {
-        if (hasSelectedComponent()) {
+        if (HasSelectedComponent()) {
             return renderedComponentArr;
         }
     };

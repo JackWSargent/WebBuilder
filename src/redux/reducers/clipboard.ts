@@ -10,7 +10,6 @@ const clipboardReducer = (state = clipboardReducerDefaultState, action: Clipboar
     let comp = action.copiedComponent;
     switch (action.type) {
         case COPY_COMPONENT: {
-            console.log(action.copiedComponent);
             return { ...state, ...comp };
         }
         default:
