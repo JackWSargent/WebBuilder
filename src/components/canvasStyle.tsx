@@ -61,7 +61,7 @@ const CanvasStyle: React.FC<Props> = (props) => {
             fontSize,
             boxSizing,
         };
-        props.AddHistory({ undo: [canvasStyling] });
+        // props.AddHistory({ undo: [canvasStyling] });
         props.SetCanvasStyling(canvasStyling);
     };
 

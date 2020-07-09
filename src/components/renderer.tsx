@@ -12,6 +12,7 @@ import { SetComponents } from "../redux/actions/components";
 import { Grid } from "@material-ui/core";
 import { CanvasStyling } from "../redux/types/actions";
 import clsx from "clsx";
+import { store } from "../redux/store/storeConfiguration";
 
 interface RendererProps {}
 
@@ -46,6 +47,7 @@ let newComponents = [];
 let canvasStyleChange: boolean = false;
 let componentChange: boolean = false;
 let renderedComponentsArr: JSX.Element[] = [];
+let storeComponents = store.getState().components;
 
 type Props = RendererProps & LinkStateProps & LinkDispatchProps;
 const Renderer: React.FC<Props> = (props) => {
@@ -213,9 +215,10 @@ const Renderer: React.FC<Props> = (props) => {
     };
 
     const ReRenderComponents = (): void => {
-        if (componentChange) {
-            renderedComponentsArr = [];
-        }
+        // if (componentChange) {
+        //     renderedComponentsArr = [];
+        // }
+        console.log(components);
         if (IsAlreadyRendered()) {
             return;
         }

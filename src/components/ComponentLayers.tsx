@@ -161,7 +161,7 @@ const ComponentLayers: React.FC<Props> = (props) => {
         deleteChange = true;
         changed = true;
         console.log(stateComponents);
-        props.AddHistory({ undo: store.getState().components });
+        // props.AddHistory({ undo: store.getState().components });
         console.log(deletedComponent);
         props.DeleteComponent(deletedComponent);
     };
@@ -216,7 +216,7 @@ const ComponentLayers: React.FC<Props> = (props) => {
     };
 
     const CreateNewSelectedComponents = (id, ctrl) => {
-        return storeComponents.map((component) => {
+        return components.map((component) => {
             if (component.id === id) {
                 if (IsComponentNotSelected(component)) {
                     return (component = PushToSelected(component, id, ctrl));
@@ -237,7 +237,7 @@ const ComponentLayers: React.FC<Props> = (props) => {
         let newComponents: Component[] = CreateNewSelectedComponents(id, ctrl);
         if (!deleteChange) {
             newComponents = BuildComponentOrder(newComponents);
-            props.AddHistory({ undo: newComponents });
+            // props.AddHistory({ undo: newComponents });//
             props.SetComponents(newComponents);
             setStateComponents(newComponents);
         }

@@ -91,7 +91,7 @@ const NewComponent: React.FC<Props> = (props) => {
             nestedLevel: parentComponent.nestedLevel + 1,
         };
 
-        props.AddHistory({ undo: [newComponentObj] });
+        // props.AddHistory({ undo: [newComponentObj] });
         props.AddComponent(newComponentObj);
     };
 

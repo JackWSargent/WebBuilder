@@ -97,7 +97,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
         console.log(newComponent);
 
         props.EditComponent(newComponent);
-        props.AddHistory({ undo: [selectedComp] });
+        // props.AddHistory({ undo: [selectedComp] });
     };
 
     const CopyToClipboard = (): void => {
@@ -304,7 +304,8 @@ const EditComponentTab: React.FC<Props> = (props) => {
     };
 
     React.useEffect(() => {
-        setStateComponents([]);
+        // setStateComponents([]);
+        console.log(components);
         selected = components.filter((component) => component.selected === true);
         if (stateComponents.length !== components.length || stateComponents !== components) {
             renderEditComponent();
