@@ -141,41 +141,49 @@ const ComponentLayers: React.FC<Props> = (props) => {
     const [stateComponents, setStateComponents] = React.useState(components);
     const [menuOpen, setMenuOpen] = React.useState(true);
 
-    const renderDelete = (deletedComponent) => {
+    React.useEffect(() => {
+        changed = false;
+        deleteChange = false;
+    }, [event, changed, selected, canvas, open, stateComponents, keyPress]);
+
+    React.useEffect(() => {
+        if (stateComponents.length !== components.length || stateComponents !== components) {
+            setStateComponents(components);
+            renderedComponents = [];
+            ReRenderComponents();
+        }
+    }, [components, menuOpen, history]);
+
+    const RenderDelete = (deletedComponent): JSX.Element => {
         if (deletedComponent.type === "canvas") {
             return;
         }
-        return <ClearIcon style={{ color: "#fff" }} onClick={() => handleDeleteChange(deletedComponent)} />;
+        return <ClearIcon style={{ color: "#fff" }} onClick={() => HandleDeleteChange(deletedComponent)} />;
     };
 
-    const renderCanvasIcon = (type) => {
+    const RenderCanvasIcon = (type): JSX.Element => {
         if (type === "canvas") {
             return <WebIcon style={{ color: "#fff" }} fontSize="small" />;
         }
     };
 
-    const handleDeleteChange = (deletedComponent) => {
+    const HandleDeleteChange = (deletedComponent): void => {
         if (deletedComponent.type === "canvas") {
             return;
         }
         deleteChange = true;
         changed = true;
         console.log(stateComponents);
-        // props.AddHistory({ undo: store.getState().components });
+        props.AddHistory({ undo: store.getState().components });
         console.log(deletedComponent);
         props.DeleteComponent(deletedComponent);
     };
 
-    React.useEffect(() => {
-        changed = false;
-        deleteChange = false;
-    }, [event, changed, selected, canvas, open, stateComponents, keyPress]);
-
-    const IsComponentNotSelected = (component) => {
-        return !component.selected && !selected.includes(component.id) ? true : false;
+    const IsComponentNotSelected = (component): boolean => {
+        return !component.selected && !selected.includes(component.id);
     };
 
-    const PushToSelected = (component, id, ctrl) => {
+    const PushToSelected = (component, id, ctrl): Component => {
         if (ctrl) {
             selected.push(component.id);
         } else {
@@ -188,11 +196,11 @@ const ComponentLayers: React.FC<Props> = (props) => {
         };
     };
 
-    const IsComponentSelected = (component) => {
-        return selected.includes(component.id) || component.selected ? true : false;
+    const IsComponentSelected = (component): boolean => {
+        return selected.includes(component.id) || component.selected;
     };
 
-    const RemoveFromSelected = (component, ctrl) => {
+    const RemoveFromSelected = (component, ctrl): Component => {
         if (ctrl) {
             let idx = selected.indexOf(component.id);
             selected.splice(idx, 1);
@@ -205,7 +213,7 @@ const ComponentLayers: React.FC<Props> = (props) => {
         };
     };
 
-    const ReturnOtherComponents = (component, ctrl) => {
+    const ReturnOtherComponents = (component, ctrl): Component => {
         if (ctrl) {
             return component;
         } else if (selected.includes(component.id) && !ctrl) {
@@ -215,7 +223,7 @@ const ComponentLayers: React.FC<Props> = (props) => {
         return { ...component, selected: false };
     };
 
-    const CreateNewSelectedComponents = (id, ctrl) => {
+    const CreateNewSelectedComponents = (id, ctrl): Component[] => {
         return components.map((component) => {
             if (component.id === id) {
                 if (IsComponentNotSelected(component)) {
@@ -231,24 +239,24 @@ const ComponentLayers: React.FC<Props> = (props) => {
         });
     };
 
-    const handleSelectedState = (id) => {
+    const HandleSelectedState = (id): void => {
         changed = true;
         let ctrl: boolean = keyPress["ctrl"] ? keyPress["ctrl"] : false;
         let newComponents: Component[] = CreateNewSelectedComponents(id, ctrl);
         if (!deleteChange) {
             newComponents = BuildComponentOrder(newComponents);
-            // props.AddHistory({ undo: newComponents });//
+            props.AddHistory({ undo: newComponents });
             props.SetComponents(newComponents);
             setStateComponents(newComponents);
         }
     };
 
-    const RenderComponentLayers = (componentArray) => {
+    const RenderComponentLayers = (componentArray): Component[] => {
         if (componentArray) {
             renderedComponents = componentArray.map((component) => {
                 return (
                     <div key={component.id}>
-                        <Grid container onClick={() => handleSelectedState(component.id)}>
+                        <Grid container onClick={() => HandleSelectedState(component.id)}>
                             <ListItem
                                 button
                                 className={clsx(classes.component, {
@@ -268,45 +276,38 @@ const ComponentLayers: React.FC<Props> = (props) => {
                                     {component.name}
                                 </Typography>
 
-                                {renderCanvasIcon(component.type)}
-                                {renderDelete(component)}
+                                {RenderCanvasIcon(component.type)}
+                                {RenderDelete(component)}
                             </ListItem>
                         </Grid>
                     </div>
                 );
             });
         } else {
-            console.log("missing state components");
+            console.error("Missing State Components");
+            return [];
         }
     };
 
-    React.useEffect(() => {
-        if (stateComponents.length !== components.length || stateComponents !== components) {
-            setStateComponents(components);
-            renderedComponents = [];
-            reRenderComponents();
-        }
-    }, [components, menuOpen, history]);
-
-    const handleExpand = () => {
+    const HandleExpand = (): void => {
         setMenuOpen(!menuOpen);
     };
 
-    const handleDrawerOpen = () => {
+    const HandleDrawerOpen = (): void => {
         open = true;
         props.EditCanvas({
             drawerOpen: true,
         });
     };
 
-    const handleDrawerClose = () => {
+    const HandleDrawerClose = (): void => {
         open = false;
         props.EditCanvas({
             drawerOpen: false,
         });
     };
 
-    const reRenderComponents = () => {
+    const ReRenderComponents = (): JSX.Element[] => {
         renderedComponents = [];
         RenderComponentLayers(stateComponents);
         return renderedComponents;
@@ -334,7 +335,7 @@ const ComponentLayers: React.FC<Props> = (props) => {
                         <IconButton
                             color="inherit"
                             aria-label="open drawer"
-                            onClick={handleDrawerOpen}
+                            onClick={HandleDrawerOpen}
                             edge="start"
                             className={clsx(classes.menuButton, open && classes.hide)}
                             style={{ zIndex: 1300 }}>
@@ -354,7 +355,7 @@ const ComponentLayers: React.FC<Props> = (props) => {
                         <Grid item xs={8}></Grid>
                         <Grid item xs={4}>
                             <div className={classes.drawerHeader}>
-                                <IconButton className={classes.icon} onClick={handleDrawerClose}>
+                                <IconButton className={classes.icon} onClick={HandleDrawerClose}>
                                     {theme.direction === "ltr" ? <ChevronLeftIcon /> : <ChevronRightIcon />}
                                 </IconButton>
                             </div>
@@ -369,10 +370,10 @@ const ComponentLayers: React.FC<Props> = (props) => {
                             aria-controls="panel1a-content"
                             id="panel1a-header"
                             style={{ backgroundColor: "#2e2e2e" }}
-                            onClick={handleExpand}>
+                            onClick={HandleExpand}>
                             <Typography className={classes.heading}>Explorer</Typography>
                         </ExpansionPanelSummary>
-                        {reRenderComponents()}
+                        {ReRenderComponents()}
                     </ExpansionPanel>
 
                     <CanvasStyle />
@@ -395,7 +396,7 @@ const ComponentLayers: React.FC<Props> = (props) => {
                         </Grid>
                         <Grid item xs={4}>
                             <div className={classes.drawerHeader}>
-                                <IconButton className={classes.icon} onClick={handleDrawerClose}>
+                                <IconButton className={classes.icon} onClick={HandleDrawerClose}>
                                     {theme.direction === "ltr" ? <ChevronRightIcon /> : <ChevronLeftIcon />}
                                 </IconButton>
                             </div>

@@ -55,7 +55,7 @@ const Renderer: React.FC<Props> = (props) => {
     const classes = useStyles();
     const [renderedComponents, setRenderedComponents] = React.useState([]);
 
-    const returnComponent = (component) => {
+    const ReturnComponent = (component): JSX.Element => {
         let id: number = component.id;
         let name: string = component.name;
         let innerText: string = component.innerText;
@@ -71,7 +71,7 @@ const Renderer: React.FC<Props> = (props) => {
                                 [classes.componentSelectedCanvas]: component.selected,
                             })}>
                             {innerText}
-                            {returnChildren(component)}
+                            {ReturnChildren(component)}
                         </div>
                     );
                 }
@@ -96,7 +96,7 @@ const Renderer: React.FC<Props> = (props) => {
                                 [classes.componentSelectedContainer]: component.selected,
                             })}>
                             {innerText}
-                            {returnChildren(component)}
+                            {ReturnChildren(component)}
                         </Grid>
                     );
                 }
@@ -122,7 +122,7 @@ const Renderer: React.FC<Props> = (props) => {
                                 [classes.componentSelected]: component.selected,
                             })}>
                             {innerText}
-                            {returnChildren(component)}
+                            {ReturnChildren(component)}
                         </Grid>
                     );
                 }
@@ -148,7 +148,7 @@ const Renderer: React.FC<Props> = (props) => {
                                 [classes.componentSelected]: component.selected,
                             })}>
                             {innerText}
-                            {returnChildren(component)}
+                            {ReturnChildren(component)}
                         </div>
                     );
                 }
@@ -165,7 +165,7 @@ const Renderer: React.FC<Props> = (props) => {
         }
     };
 
-    const returnChildren = (component): Array<JSX.Element> => {
+    const ReturnChildren = (component): Array<JSX.Element> => {
         let childrenArr: JSX.Element[] = [];
         for (let i = 1; i < component.children.length + 1; i++) {
             idx = idx + 1;
@@ -174,7 +174,7 @@ const Renderer: React.FC<Props> = (props) => {
                 return;
             }
             component.isRendered = true;
-            childrenArr.push(returnComponent(component));
+            childrenArr.push(ReturnComponent(component));
         }
         return childrenArr;
     };
@@ -182,8 +182,8 @@ const Renderer: React.FC<Props> = (props) => {
     /*
     First start while loop and look at the first idx, it will be a root
     Send it to the render function where it first checks if there are children.
-    If not the component will be sent to the returnComponent function
-    If there are children then it will be sent to the returnComponent function and also have to trigger the function nested inside it to render the children/child.
+    If not the component will be sent to the ReturnComponent function
+    If there are children then it will be sent to the ReturnComponent function and also have to trigger the function nested inside it to render the children/child.
     It will run a loop of the children and all render them and check for their children and 
     do the work again to go through the children.
     */
@@ -201,8 +201,8 @@ const Renderer: React.FC<Props> = (props) => {
     };
 
     const RenderCanvas = (): void => {
-        renderedComponentsArr = [returnComponent(newComponents[idx])];
-        setRenderedComponents([returnComponent(newComponents[idx])]);
+        renderedComponentsArr = [ReturnComponent(newComponents[idx])];
+        setRenderedComponents([ReturnComponent(newComponents[idx])]);
         idx = idx + 1;
     };
 
@@ -214,11 +214,37 @@ const Renderer: React.FC<Props> = (props) => {
         return components.length === 1;
     };
 
+    const IsRenderedComponentsEmpty = (i): boolean => {
+        return i === 1 && renderedComponents.length > 0;
+    };
+
+    const RenderAllComponents = (component): void => {
+        let newRenderedComponents: JSX.Element[] = [];
+        for (let i: number = 1; i < newComponents.length; i++) {
+            component = newComponents[idx];
+            if (IsComponentAlreadyRendered(component)) {
+                return;
+            }
+            if (IsRenderedComponentsEmpty(i)) {
+                newRenderedComponents = newRenderedComponents.concat(ReturnComponent(component));
+            } else {
+                newRenderedComponents = renderedComponents.concat(ReturnComponent(component));
+            }
+            component.isRendered = true;
+            idx = idx + 1;
+            setRenderedComponents(newRenderedComponents);
+            renderedComponentsArr = newRenderedComponents;
+        }
+    };
+
+    const ResetRendering = (): void => {
+        renderedComponentsArr = [];
+        idx = 0;
+        canvasStyleChange = false;
+        componentChange = false;
+    };
+
     const ReRenderComponents = (): void => {
-        // if (componentChange) {
-        //     renderedComponentsArr = [];
-        // }
-        console.log(components);
         if (IsAlreadyRendered()) {
             return;
         }
@@ -228,37 +254,18 @@ const Renderer: React.FC<Props> = (props) => {
             if (component.isRendered) {
                 return;
             }
-            let newRenderedComponents: JSX.Element[] = [];
             renderedComponentsArr = [];
             if (OnlyCanvas()) {
                 RenderCanvas();
                 return;
             }
-            for (let i: number = 1; i < newComponents.length; i++) {
-                component = newComponents[idx];
-                if (IsComponentAlreadyRendered(component)) {
-                    return;
-                }
-                if (i == 1 && renderedComponents.length > 0) {
-                    newRenderedComponents = newRenderedComponents.concat(returnComponent(component));
-                } else {
-                    newRenderedComponents = renderedComponents.concat(returnComponent(component));
-                }
-                component.isRendered = true;
-
-                idx = idx + 1;
-                setRenderedComponents(newRenderedComponents);
-                renderedComponentsArr = newRenderedComponents;
-            }
+            RenderAllComponents(component);
         } else {
-            renderedComponentsArr = [];
-            idx = 0;
-            canvasStyleChange = false;
-            componentChange = false;
+            ResetRendering();
         }
     };
 
-    const getSizing = () => {
+    const GetSizing = () => {
         if (canvasStyling.boxSizing == "border-box") {
             return "border-box";
         } else {
@@ -266,11 +273,11 @@ const Renderer: React.FC<Props> = (props) => {
         }
     };
 
-    const getFontSizing = () => {
+    const GetFontSizing = () => {
         return canvasStyling.fontSize.toString() + "px";
     };
 
-    const renderComponents = (): JSX.Element[] => {
+    const RenderComponents = (): JSX.Element[] => {
         return renderedComponentsArr;
     };
 
@@ -289,10 +296,10 @@ const Renderer: React.FC<Props> = (props) => {
             id="renderer-component"
             className={classes.renderer}
             style={{
-                fontSize: getFontSizing(),
-                boxSizing: getSizing(),
+                fontSize: GetFontSizing(),
+                boxSizing: GetSizing(),
             }}>
-            {renderComponents()}
+            {RenderComponents()}
         </div>
     );
 };

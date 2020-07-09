@@ -53,6 +53,19 @@ const EditComponentTab: React.FC<Props> = (props) => {
         selected.length === 1 ? selected[0].innerText : ""
     );
 
+    React.useEffect(() => {
+        selected = components.filter((component) => component.selected === true);
+        if (stateComponents.length !== components.length || stateComponents !== components) {
+            RenderEditComponent();
+        }
+        if (selected[0] && selected.length === 1) {
+            setComponentName(selected[0].name);
+            setComponentType(selected[0].type);
+            setComponentInnerText(selected[0].innerText);
+            RenderEditComponent();
+        }
+    }, [open, components, keyPress, history, componentName]);
+
     const HandleExpand = (): void => {
         setOpen(!open);
     };
@@ -97,7 +110,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
         console.log(newComponent);
 
         props.EditComponent(newComponent);
-        // props.AddHistory({ undo: [selectedComp] });
+        props.AddHistory({ undo: [selectedComp] });
     };
 
     const CopyToClipboard = (): void => {
@@ -125,41 +138,42 @@ const EditComponentTab: React.FC<Props> = (props) => {
         }
     };
 
-    const GetSelectedName = () => {
+    const GetSelectedName = (): string => {
         if (HasSelectedComponent()) {
             return selected[0].name;
         }
         return "";
     };
 
-    const getSelectedType = () => {
+    const GetSelectedType = (): string => {
         if (HasSelectedComponent()) {
             return selected[0].type;
         }
         return "";
     };
 
-    const getSelectedId = () => {
+    const GetSelectedId = (): number => {
         if (HasSelectedComponent()) {
             return selected[0].id;
         }
         return 0;
     };
 
-    const getSelectedInnerText = () => {
+    const GetSelectedInnerText = (): string => {
         if (HasSelectedComponent()) {
             return selected[0].innerText;
         }
+        return "";
     };
 
-    let componentId = getSelectedId();
-    let newComponentType = getSelectedType();
+    let componentId = GetSelectedId();
+    let newComponentType = GetSelectedType();
     let newComponentName = GetSelectedName();
-    let newComponentInnerText = getSelectedInnerText();
+    let newComponentInnerText = GetSelectedInnerText();
 
-    const renderElementName = () => {
+    const renderElementName = (): JSX.Element[] => {
         if (!HasSelectedComponent()) {
-            return;
+            return [];
         }
         return selected.map((component) => (
             <TextField
@@ -174,9 +188,9 @@ const EditComponentTab: React.FC<Props> = (props) => {
         ));
     };
 
-    const renderElementInnerText = () => {
+    const renderElementInnerText = (): JSX.Element[] => {
         if (!HasSelectedComponent()) {
-            return;
+            return [];
         }
         return selected.map((component) => (
             <TextField
@@ -192,7 +206,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
         ));
     };
 
-    const renderElementType = () => {
+    const renderElementType = (): JSX.Element => {
         if (!HasSelectedComponent) return;
         if (newComponentName.length > -1 && selected.length === 1) {
             return (
@@ -209,7 +223,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
         }
     };
 
-    const renderEditComponent = () => {
+    const RenderEditComponent = (): void => {
         selected = components.filter((component) => component.selected === true);
         if (selected.length === 1) {
             setComponentName(selected[0].name);
@@ -297,28 +311,13 @@ const EditComponentTab: React.FC<Props> = (props) => {
         }
     };
 
-    const returnEditComponent = () => {
+    const ReturnEditComponent = () => {
         if (HasSelectedComponent()) {
             return renderedComponentArr;
         }
     };
 
-    React.useEffect(() => {
-        // setStateComponents([]);
-        console.log(components);
-        selected = components.filter((component) => component.selected === true);
-        if (stateComponents.length !== components.length || stateComponents !== components) {
-            renderEditComponent();
-        }
-        if (selected[0] && selected.length === 1) {
-            setComponentName(selected[0].name);
-            setComponentType(selected[0].type);
-            setComponentInnerText(selected[0].innerText);
-            renderEditComponent();
-        }
-    }, [open, components, keyPress, history, componentName]);
-
-    return <>{returnEditComponent()}</>;
+    return <>{ReturnEditComponent()}</>;
 };
 
 interface LinkStateProps {

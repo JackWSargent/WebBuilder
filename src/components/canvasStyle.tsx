@@ -49,14 +49,17 @@ const CanvasStyle: React.FC<Props> = (props) => {
     const [fontSize, setFontSize] = React.useState(canvasStyling.fontSize);
     const [boxSizing, setBoxSizing] = React.useState(canvasStyling.boxSizing);
     const [open, setOpen] = React.useState(false);
-    const handleFontSizeChange = (e) => {
+
+    React.useEffect(() => {}, [open]);
+
+    const HandleFontSizeChange = (e): void => {
         setFontSize(e.target.value);
     };
-    const handleBoxSizingChange = (e) => {
+    const HandleBoxSizeChange = (e): void => {
         setBoxSizing(e.target.value);
     };
 
-    const handleApplyChanges = (e) => {
+    const HandleApplyChanges = (e): void => {
         let canvasStyling = {
             fontSize,
             boxSizing,
@@ -65,11 +68,10 @@ const CanvasStyle: React.FC<Props> = (props) => {
         props.SetCanvasStyling(canvasStyling);
     };
 
-    const handleExpand = () => {
+    const HandleExpand = (): void => {
         setOpen(!open);
     };
 
-    React.useEffect(() => {}, [open]);
     return (
         <div style={{ maxWidth: "240px" }}>
             <ExpansionPanel expanded={open} style={{ borderTop: "1px solid rgba(255, 255, 255, 0.12)" }}>
@@ -78,7 +80,7 @@ const CanvasStyle: React.FC<Props> = (props) => {
                     aria-controls="panel1a-content"
                     id="panel1a-header"
                     style={{ backgroundColor: "#2e2e2e" }}
-                    onClick={handleExpand}>
+                    onClick={HandleExpand}>
                     <Typography className={classes.heading}>Canvas Styling</Typography>
                 </ExpansionPanelSummary>
 
@@ -92,7 +94,7 @@ const CanvasStyle: React.FC<Props> = (props) => {
                                 variant="outlined"
                                 type="number"
                                 defaultValue={fontSize}
-                                onChange={(e) => handleFontSizeChange(e)}
+                                onChange={(e) => HandleFontSizeChange(e)}
                                 inputProps={{
                                     style: { color: "#fff", borderColor: "#fff" },
                                 }}
@@ -124,7 +126,7 @@ const CanvasStyle: React.FC<Props> = (props) => {
                         <Grid item xs={6}>
                             <Select
                                 native
-                                onChange={(e) => handleBoxSizingChange(e)}
+                                onChange={(e) => HandleBoxSizeChange(e)}
                                 defaultValue={"border-box"}
                                 style={{
                                     justifyContent: "center",
@@ -144,7 +146,7 @@ const CanvasStyle: React.FC<Props> = (props) => {
                                 variant="contained"
                                 fullWidth
                                 size="small"
-                                onClick={handleApplyChanges}
+                                onClick={HandleApplyChanges}
                                 style={{
                                     fontSize: 20,
                                     color: "#fff",

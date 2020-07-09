@@ -43,11 +43,11 @@ const NewComponent: React.FC<Props> = (props) => {
 
     React.useEffect(() => {}, [open]);
 
-    const handleExpand = () => {
+    const HandleExpand = (): void => {
         setOpen(!open);
     };
 
-    const hasSelectedComponent = () => {
+    const HasSelectedComponent = (): Component => {
         let selectedComponents = [];
         components.map((comp) => {
             if (comp.selected === true) {
@@ -57,10 +57,10 @@ const NewComponent: React.FC<Props> = (props) => {
         if (selectedComponents.length === 1) {
             return selectedComponents[0];
         }
-        return false;
+        return;
     };
 
-    const getId = (): number => {
+    const GetId = (): number => {
         let highestId = 0;
         components.forEach((component) => {
             if (component.id > highestId) {
@@ -70,18 +70,17 @@ const NewComponent: React.FC<Props> = (props) => {
         return highestId + 100;
     };
 
-    const setComponentProps = (e) => {
+    const SetComponentProps = (e): void => {
         setNewComponentType(e.target.value);
     };
 
-    const handleNewComponent = () => {
-        if (!hasSelectedComponent) {
-            // console.log("does not have selected Component");
+    const HandleNewComponent = (): void => {
+        if (!HasSelectedComponent) {
             return;
         }
-        let parentComponent = hasSelectedComponent();
+        let parentComponent = HasSelectedComponent();
         let newComponentObj: Component = {
-            id: getId(),
+            id: GetId(),
             isRendered: false,
             name: "New Component",
             type: newComponentType,
@@ -91,7 +90,7 @@ const NewComponent: React.FC<Props> = (props) => {
             nestedLevel: parentComponent.nestedLevel + 1,
         };
 
-        // props.AddHistory({ undo: [newComponentObj] });
+        props.AddHistory({ undo: [newComponentObj] });
         props.AddComponent(newComponentObj);
     };
 
@@ -105,7 +104,7 @@ const NewComponent: React.FC<Props> = (props) => {
                     aria-controls="panel1a-content"
                     id="panel1a-header"
                     style={{ backgroundColor: "#2e2e2e" }}
-                    onClick={handleExpand}>
+                    onClick={HandleExpand}>
                     <Typography className={classes.heading}>New Component</Typography>
                 </ExpansionPanelSummary>
                 <Grid container>
@@ -117,7 +116,7 @@ const NewComponent: React.FC<Props> = (props) => {
                     <Grid item xs={9}>
                         <Select
                             native
-                            onChange={(e) => setComponentProps(e)}
+                            onChange={(e) => SetComponentProps(e)}
                             inputProps={{}}
                             defaultValue={"gridContainer"}
                             style={{
@@ -137,7 +136,7 @@ const NewComponent: React.FC<Props> = (props) => {
                             variant="contained"
                             fullWidth
                             size="small"
-                            onClick={handleNewComponent}
+                            onClick={HandleNewComponent}
                             style={{
                                 fontSize: 20,
                                 color: "#fff",

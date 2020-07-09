@@ -47,40 +47,40 @@ const Layout: React.FC<Props> = (props) => {
     const theme = useTheme();
 
     const PressingUndo = (): boolean => {
-        return keyPress["z"] === true && keyPress["ctrl"] === true && !keyPress["y"] ? true : false;
+        return keyPress["z"] === true && keyPress["ctrl"] === true && !keyPress["y"];
     };
 
     const PressingRedo = (): boolean => {
-        return !keyPress["z"] && keyPress["y"] && keyPress["ctrl"] ? true : false;
+        return !keyPress["z"] && keyPress["y"] && keyPress["ctrl"];
     };
 
     const PressingCTRL = (): boolean => {
-        return keyPress["ctrl"] === true ? true : false;
+        return keyPress["ctrl"] === true;
     };
 
-    const IsUndoComponent = (undoArray) => {
+    const IsUndoComponent = (undoArray): boolean => {
         let lastUndo = undoArray.length - 1;
-        return undoArray[lastUndo].id ? true : false;
+        return undoArray[lastUndo].id;
     };
 
-    const IsUndoComponentArray = (undoArray) => {
+    const IsUndoComponentArray = (undoArray): boolean => {
         let lastUndo = undoArray.length - 1;
-        return undoArray[lastUndo].comp ? true : false;
+        return undoArray[lastUndo].comp;
     };
 
-    const GetUndoComponent = (components, undoArray) => {
+    const GetUndoComponent = (components, undoArray): Component => {
         let lastUndo = undoArray.length - 1;
         let componentArray = components.filter((comp) => comp.id === undoArray[lastUndo].id);
         return componentArray[0];
     };
 
-    const UndoLastComponent = (storeComponents, undoArray) => {
+    const UndoLastComponent = (storeComponents, undoArray): void => {
         let selectedComponent = GetUndoComponent(storeComponents, undoArray);
         props.UndoComponent(undoArray);
         props.UndoHistory(selectedComponent);
     };
 
-    const UndoLastComponentArray = (storeComponents, undoArray) => {
+    const UndoLastComponentArray = (storeComponents, undoArray): void => {
         let lastUndo = undoArray.length - 1;
         let undoneComponentArr = undoArray[lastUndo].comp;
         let componentDifferential = false;
