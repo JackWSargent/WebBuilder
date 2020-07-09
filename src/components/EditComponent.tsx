@@ -94,6 +94,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
             selected: selectedComp.selected,
             innerText: newComponentInnerText,
         };
+        console.log(newComponent);
 
         props.EditComponent(newComponent);
         props.AddHistory({ undo: [selectedComp] });
@@ -157,7 +158,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
     let newComponentInnerText = getSelectedInnerText();
 
     const renderElementName = () => {
-        if (!HasSelectedComponent) {
+        if (!HasSelectedComponent()) {
             return;
         }
         return selected.map((component) => (
@@ -174,7 +175,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
     };
 
     const renderElementInnerText = () => {
-        if (!HasSelectedComponent) {
+        if (!HasSelectedComponent()) {
             return;
         }
         return selected.map((component) => (

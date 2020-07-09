@@ -108,7 +108,6 @@ const Layout: React.FC<Props> = (props) => {
                 // If latest action was done on a component
                 let newUndo = store.getState().history.undo;
                 let storeComponents = store.getState().components;
-                let endOfArray = newUndo.length - 1;
                 if (IsUndoComponent(newUndo)) {
                     UndoLastComponent(storeComponents, newUndo);
                 }

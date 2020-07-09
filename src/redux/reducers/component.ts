@@ -341,6 +341,7 @@ const componentReducer = (state = componentsReducerDefaultState, action: AppActi
                 return component;
             });
         case EDIT_COMPONENTS: {
+            console.log(state);
             return BuildComponentOrder(
                 state.map((component) => {
                     action.components.forEach((edit) => {

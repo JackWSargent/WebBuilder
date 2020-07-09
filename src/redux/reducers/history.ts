@@ -25,7 +25,7 @@ const historyReducer = (state = historyReducerDefaultState, action: HistoryActio
             let newUndoArr = [];
             let undoRef = action.history.undo.map((el) => el);
             let undoRef2 = undoRef.slice();
-            console.log(undoRef2);
+            // console.log(undoRef2);
             //Component Array (Selection of Components Undo)
             if (undoRef.length > 1 && undoRef[0].id) {
                 newUndoArr = state.undo.concat({ comp: undoRef2 });

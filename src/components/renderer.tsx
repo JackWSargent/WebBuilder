@@ -161,11 +161,6 @@ const Renderer: React.FC<Props> = (props) => {
                     </div>
                 );
         }
-        // }
-        // if (childrenVal) {
-        //     return <div key={id}>{returnChildren(component)}</div>;
-        // }
-        // return <div key={id}></div>;
     };
 
     const returnChildren = (component): Array<JSX.Element> => {
@@ -191,39 +186,54 @@ const Renderer: React.FC<Props> = (props) => {
     do the work again to go through the children.
     */
 
-    const reRenderComponents = (): void => {
-        if (canvasStyleChange) {
-            setRenderedComponents([]);
-        } else if (componentChange) {
-            renderedComponentsArr = [];
-        }
-        if (newComponents.length === 1 && newComponents[0].isRendered == true) {
-            return;
-        }
-        newComponents = components.map((element) => {
+    const CreateNewComponentList = (): Object[] => {
+        return components.map((element) => {
             let componentObject: Component = Object.assign({}, element);
             componentObject.isRendered = false;
             return componentObject;
         });
-        // Init and check to see if there are any elements
+    };
+
+    const IsAlreadyRendered = (): boolean => {
+        return newComponents.length === 1 && newComponents[0].isRendered == true ? true : false;
+    };
+
+    const RenderCanvas = (): void => {
+        renderedComponentsArr = [returnComponent(newComponents[idx])];
+        setRenderedComponents([returnComponent(newComponents[idx])]);
+        idx = idx + 1;
+    };
+
+    const IsComponentAlreadyRendered = (component): boolean => {
+        return !component || component.isRendered == true || component.parent !== null ? true : false;
+    };
+
+    const OnlyCanvas = (): boolean => {
+        return components.length === 1;
+    };
+
+    const ReRenderComponents = (): void => {
+        if (componentChange) {
+            renderedComponentsArr = [];
+        }
+        if (IsAlreadyRendered()) {
+            return;
+        }
+        newComponents = CreateNewComponentList();
         let component: Component = newComponents[idx];
         if (component) {
-            // Check to make sure that it is not rendered already
             if (component.isRendered) {
                 return;
             }
-            // Init a new array to
             let newRenderedComponents: JSX.Element[] = [];
             renderedComponentsArr = [];
-            if (components.length === 1) {
-                renderedComponentsArr = [returnComponent(newComponents[idx])];
-                setRenderedComponents([returnComponent(newComponents[idx])]);
-                idx = idx + 1;
+            if (OnlyCanvas()) {
+                RenderCanvas();
                 return;
             }
             for (let i: number = 1; i < newComponents.length; i++) {
                 component = newComponents[idx];
-                if (!component || component.isRendered == true || component.parent !== null) {
+                if (IsComponentAlreadyRendered(component)) {
                     return;
                 }
                 if (i == 1 && renderedComponents.length > 0) {
@@ -263,12 +273,13 @@ const Renderer: React.FC<Props> = (props) => {
 
     React.useEffect(() => {
         canvasStyleChange = true;
-        reRenderComponents();
+        setRenderedComponents([]);
+        ReRenderComponents();
     }, [canvasStyling]);
 
     React.useEffect(() => {
-        reRenderComponents();
-    }, [components, newComponents, renderedComponentsArr, history]);
+        ReRenderComponents();
+    }, [components, newComponents, renderedComponentsArr]);
 
     return (
         <div

@@ -237,7 +237,7 @@ const ComponentLayers: React.FC<Props> = (props) => {
         let newComponents: Component[] = CreateNewSelectedComponents(id, ctrl);
         if (!deleteChange) {
             newComponents = BuildComponentOrder(newComponents);
-            props.AddHistory({ undo: storeComponents });
+            props.AddHistory({ undo: newComponents });
             props.SetComponents(newComponents);
             setStateComponents(newComponents);
         }
