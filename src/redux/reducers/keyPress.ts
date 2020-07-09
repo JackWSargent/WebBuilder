@@ -80,13 +80,6 @@ const keyPressReducer = (state = keyPressReducerDefaultState, action: KeyPressAc
     switch (action.type) {
         case KEY_DOWN:
             state[aliasKey(action.keyPress)] = true;
-            // state[`${action.keyPress}`] = true;
-            // if (!state.indexOf(action.keyPress)) {
-            //     state.push({ keyPressed: true });
-            // } else {
-            //     state[`${action.keyPress}`] = true;
-            // }
-
             return state;
         case KEY_UP:
             state[aliasKey(action.keyPress)] = false;

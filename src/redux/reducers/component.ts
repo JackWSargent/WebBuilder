@@ -86,39 +86,39 @@ const componentsReducerDefaultState: Component[] = [
 
 let hasMoreChildren: boolean = false;
 
-const componentHasChildren = (component) => {
-    return component.children ? true : false;
+const ComponentHasChildren = (component): boolean => {
+    return component.children;
 };
 
-const hasMultipleChildren = (component) => {
-    return component.children.length > 1 ? true : false;
+const HasMultipleChildren = (component): boolean => {
+    return component.children.length > 1;
 };
 
-const getLengthOfChildren = (component) => {
+const GetLengthOfChildren = (component): number => {
     return component.children.length;
 };
 
-const getCurrentChild = (componentArray, currentNode, k) => {
+const GetCurrentChild = (componentArray, currentNode, k): Component => {
     let compArr = componentArray.filter((component) => currentNode.children[k] === component.id);
     return compArr[0];
 };
 
-const getIndexOfCurrentComponent = (componentArray, currentChild) => {
+const GetIndexOfCurrentComponent = (componentArray, currentChild): number => {
     return componentArray.indexOf(currentChild);
 };
 
-const checkForSiblings = (currentComponentIndex: number, componentArray: Component[], newArray: Component[]) => {
+const CheckForSiblings = (currentComponentIndex: number, componentArray: Component[], newArray: Component[]) => {
     for (let i = newArray.length - 2; i > -1; i--) {
         let currentNode = newArray[i];
-        if (componentHasChildren(currentNode)) {
-            if (hasMultipleChildren(currentNode)) {
-                for (let k = 1; k < getLengthOfChildren(currentNode); k++) {
-                    let currentChild = getCurrentChild(componentArray, currentNode, k);
+        if (ComponentHasChildren(currentNode)) {
+            if (HasMultipleChildren(currentNode)) {
+                for (let k = 1; k < GetLengthOfChildren(currentNode); k++) {
+                    let currentChild = GetCurrentChild(componentArray, currentNode, k);
                     if (!newArray.includes(currentChild)) {
-                        currentComponentIndex = getIndexOfCurrentComponent(componentArray, currentChild);
+                        currentComponentIndex = GetIndexOfCurrentComponent(componentArray, currentChild);
                         newArray.push(currentChild);
                         if (componentArray[currentComponentIndex].children) {
-                            runDownNestedComponents(currentComponentIndex, componentArray, newArray);
+                            RunDownNestedComponents(currentComponentIndex, componentArray, newArray);
                         }
                     }
                 }
@@ -127,7 +127,7 @@ const checkForSiblings = (currentComponentIndex: number, componentArray: Compone
     }
 };
 
-const runDownNestedComponents = (
+const RunDownNestedComponents = (
     currentComponentIndex: number,
     componentArray: Component[],
     newArray: Component[]
@@ -140,16 +140,16 @@ const runDownNestedComponents = (
     }
     if (componentArray[currentComponentIndex].children === null && componentArray.length !== newArray.length) {
         hasMoreChildren = false;
-        checkForSiblings(currentComponentIndex, componentArray, newArray);
+        CheckForSiblings(currentComponentIndex, componentArray, newArray);
     } else if (componentArray[currentComponentIndex].children === null && componentArray.length === newArray.length) {
         return newArray;
     } else {
         hasMoreChildren = true;
-        runDownNestedComponents(currentComponentIndex, componentArray, newArray);
+        RunDownNestedComponents(currentComponentIndex, componentArray, newArray);
     }
 };
 
-export function BuildComponentOrder(componentArray) {
+export function BuildComponentOrder(componentArray): Component[] {
     let areMoreComponents = true;
     let newArray = [];
     for (let i = 0; areMoreComponents; i++) {
@@ -160,7 +160,7 @@ export function BuildComponentOrder(componentArray) {
         let current = i;
         if (!newArray.includes(componentArray[i]) && !componentArray.parent) {
             newArray.push(componentArray[i]);
-            newArray.concat(runDownNestedComponents(current, componentArray, newArray));
+            newArray.concat(RunDownNestedComponents(current, componentArray, newArray));
         } else {
             if (newArray.length === componentArray.length) {
                 areMoreComponents = false;
@@ -171,7 +171,7 @@ export function BuildComponentOrder(componentArray) {
     return newArray;
 }
 
-const addComponent = (components) => {
+const AddComponent = (components): Component[] => {
     let selectedComponents = [];
     let parentComponent = null;
     let newComponentArr = [];
@@ -203,19 +203,19 @@ const addComponent = (components) => {
     return newComponentArr;
 };
 
-const GetParentIndex = (components, parent) => {
+const GetParentIndex = (components, parent): number => {
     return components.findIndex((comp) => comp.id === parent);
 };
 
-const GetChildIndex = (components, parentIndex, id) => {
+const GetChildIndex = (components, parentIndex, id): number => {
     return components[parentIndex].children.indexOf(id);
 };
 
-const ComponentHasSingleChild = (components, parentIndex) => {
-    return components[parentIndex].children.length == 1 ? true : false;
+const ComponentHasSingleChild = (components, parentIndex): boolean => {
+    return components[parentIndex].children.length == 1;
 };
 
-const SetParentChildrenToNull = (components, parentId) => {
+const SetParentChildrenToNull = (components, parentId): Component => {
     return components.map((comp) => {
         if (comp.id === parentId) {
             return {
@@ -227,7 +227,7 @@ const SetParentChildrenToNull = (components, parentId) => {
     });
 };
 
-const RemoveIdFromParent = (components, parentIndex, id, parentId) => {
+const RemoveIdFromParent = (components, parentIndex, id, parentId): Component[] => {
     let childIndex = GetChildIndex(components, parentIndex, id);
     if (ComponentHasSingleChild(components, parentIndex)) {
         components = SetParentChildrenToNull(components, parentId);
@@ -237,11 +237,11 @@ const RemoveIdFromParent = (components, parentIndex, id, parentId) => {
     return components;
 };
 
-const IsNextComponentNestedLevelEqualOrHigher = (components, component, nextIndex) => {
-    return components[nextIndex].nestedLevel >= component.nestedLevel ? true : false;
+const IsNextComponentNestedLevelEqualOrHigher = (components, component, nextIndex): boolean => {
+    return components[nextIndex].nestedLevel >= component.nestedLevel;
 };
 
-const RemoveChildren = (components, parentIndex, component) => {
+const RemoveChildren = (components, parentIndex, component): Component[] => {
     let numChildren = 0;
     let childrenFound = false;
     for (let k = parentIndex + 1; k < components.length - 1 || !childrenFound; k++) {
@@ -254,17 +254,15 @@ const RemoveChildren = (components, parentIndex, component) => {
     return components;
 };
 
-const GetComponentIndex = (components, component) => {
+const GetComponentIndex = (components, component): number => {
     return components.findIndex((comp) => comp === component);
 };
 
-const DeleteComponent = (component, state) => {
+const DeleteComponent = (component, state): Component[] => {
     let id = component.id;
     let children = component.children;
     let parentId = component.parent;
-    // console.log(state);
     let components = state;
-    // console.log(components);
     let componentIndex = GetComponentIndex(components, component);
     let parentIndex = GetParentIndex(components, parentId);
     if (parentIndex < 0) {
@@ -280,13 +278,11 @@ const DeleteComponent = (component, state) => {
     if (children) {
         components = RemoveChildren(components, parentIndex, component);
     }
-    // console.log("Component Index" + componentIndex);
     components.splice(componentIndex, 1);
-    // console.log(components);
     return components;
 };
 
-const UndoRedoComponent = (undo, components) => {
+const UndoRedoComponent = (undo, components): Component[] => {
     let component = null;
 
     let newComponents = components.map((i) => {
@@ -313,7 +309,7 @@ const UndoRedoComponent = (undo, components) => {
     return BuildComponentOrder(newComponents);
 };
 
-const PushParents = (oldComponents, state) => {
+const PushParents = (oldComponents, state): Component[] => {
     let currentComponents = state.map((el) => el);
     oldComponents.map((el) => {
         if (!currentComponents.includes(el)) {
@@ -328,10 +324,19 @@ const PushParents = (oldComponents, state) => {
     return BuildComponentOrder(currentComponents);
 };
 
+const GetPreviousComponentArray = (lastUndo): Component[] => {
+    return lastUndo[lastUndo.length - 1].comp;
+};
+
+const UndoDeleteComponents = (lastUndo, state): Component[] => {
+    let previousComponents = [lastUndo[lastUndo.length - 1].comp];
+    return PushParents(previousComponents[0], state);
+};
+
 const componentReducer = (state = componentsReducerDefaultState, action: AppActions) => {
     switch (action.type) {
         case ADD_COMPONENT:
-            let newComponents = addComponent([...state, action.component]);
+            let newComponents = AddComponent([...state, action.component]);
             return BuildComponentOrder(newComponents);
         case EDIT_COMPONENT:
             return state.map((component) => {
@@ -341,7 +346,6 @@ const componentReducer = (state = componentsReducerDefaultState, action: AppActi
                 return component;
             });
         case EDIT_COMPONENTS: {
-            console.log(state);
             return BuildComponentOrder(
                 state.map((component) => {
                     action.components.forEach((edit) => {
@@ -372,14 +376,9 @@ const componentReducer = (state = componentsReducerDefaultState, action: AppActi
         case UNDO_COMPONENT:
             return UndoRedoComponent(action.history.undo, state);
         case UNDO_COMPONENTS:
-            let previousComponentArr = action.history.undo[action.history.undo.length - 1].comp;
-            return previousComponentArr;
+            return GetPreviousComponentArray(action.history.undo);
         case UNDO_DELETE_COMPONENTS:
-            let previousComponents = [action.history.undo[action.history.undo.length - 1].comp];
-            previousComponents.map((el) => el);
-            console.log(previousComponents[0]);
-            let newState = PushParents(previousComponents[0], state);
-            return newState;
+            return UndoDeleteComponents(action.history.undo, state);
         case REDO_COMPONENT:
             return UndoRedoComponent(action.history.redo, state);
         default:
