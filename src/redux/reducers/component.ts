@@ -1,5 +1,6 @@
 import {
     Component,
+    Undo,
     AppActions,
     SET_COMPONENTS,
     DELETE_COMPONENT,
@@ -86,40 +87,38 @@ const componentsReducerDefaultState: Component[] = [
 
 let hasMoreChildren: boolean = false;
 
-const ComponentHasChildren = (component): boolean => {
-    return component.children;
-};
-
-const HasMultipleChildren = (component): boolean => {
+const HasMultipleChildren = (component: Component): boolean => {
     return component.children.length > 1;
 };
 
-const GetLengthOfChildren = (component): number => {
+const GetLengthOfChildren = (component: Component): number => {
     return component.children.length;
 };
 
-const GetCurrentChild = (componentArray, currentNode, k): Component => {
-    let compArr = componentArray.filter((component) => currentNode.children[k] === component.id);
+const GetCurrentChild = (componentArray: Component[], currentNode: Component, k: number): Component => {
+    let compArr: Component[] = componentArray.filter((component) => currentNode.children[k] === component.id);
     return compArr[0];
 };
 
-const GetIndexOfCurrentComponent = (componentArray, currentChild): number => {
+const GetIndexOfCurrentComponent = (componentArray: Component[], currentChild: Component): number => {
     return componentArray.indexOf(currentChild);
+};
+
+const HasChildren = (component: Component): boolean => {
+    return component.children ? true : false;
 };
 
 const CheckForSiblings = (currentComponentIndex: number, componentArray: Component[], newArray: Component[]) => {
     for (let i = newArray.length - 2; i > -1; i--) {
-        let currentNode = newArray[i];
-        if (ComponentHasChildren(currentNode)) {
-            if (HasMultipleChildren(currentNode)) {
-                for (let k = 1; k < GetLengthOfChildren(currentNode); k++) {
-                    let currentChild = GetCurrentChild(componentArray, currentNode, k);
-                    if (!newArray.includes(currentChild)) {
-                        currentComponentIndex = GetIndexOfCurrentComponent(componentArray, currentChild);
-                        newArray.push(currentChild);
-                        if (componentArray[currentComponentIndex].children) {
-                            RunDownNestedComponents(currentComponentIndex, componentArray, newArray);
-                        }
+        let currentNode: Component = newArray[i];
+        if (HasChildren(currentNode) && HasMultipleChildren(currentNode)) {
+            for (let k = 1; k < GetLengthOfChildren(currentNode); k++) {
+                let currentChild = GetCurrentChild(componentArray, currentNode, k);
+                if (!newArray.includes(currentChild)) {
+                    currentComponentIndex = GetIndexOfCurrentComponent(componentArray, currentChild);
+                    newArray.push(currentChild);
+                    if (HasChildren(componentArray[currentComponentIndex])) {
+                        RunDownNestedComponents(currentComponentIndex, componentArray, newArray);
                     }
                 }
             }
@@ -133,8 +132,10 @@ const RunDownNestedComponents = (
     newArray: Component[]
 ): Component[] => {
     if (componentArray[currentComponentIndex].children) {
-        let newChild = componentArray.filter((comp) => componentArray[currentComponentIndex].children[0] === comp.id);
-        let child = newChild[0];
+        let newChildArr: Component[] = componentArray.filter(
+            (comp) => componentArray[currentComponentIndex].children[0] === comp.id
+        );
+        let child: Component = newChildArr[0];
         currentComponentIndex = componentArray.indexOf(child);
         newArray.push(child);
     }
@@ -149,20 +150,23 @@ const RunDownNestedComponents = (
     }
 };
 
-export function BuildComponentOrder(componentArray): Component[] {
-    let areMoreComponents = true;
-    let newArray = [];
-    for (let i = 0; areMoreComponents; i++) {
-        if (!componentArray[i]) {
+const LengthsAreEqual = (arr1: Component[], arr2: Component[]): boolean => {
+    return arr1.length === arr2.length;
+};
+
+export function BuildComponentOrder(componentArray: Component[]): Component[] {
+    let areMoreComponents: boolean = true;
+    let newArray: Component[] = [];
+    for (let current = 0; areMoreComponents; current++) {
+        if (!componentArray[current]) {
             areMoreComponents = false;
             return newArray;
         }
-        let current = i;
-        if (!newArray.includes(componentArray[i]) && !componentArray.parent) {
-            newArray.push(componentArray[i]);
+        if (!newArray.includes(componentArray[current]) && !componentArray[current].parent) {
+            newArray.push(componentArray[current]);
             newArray.concat(RunDownNestedComponents(current, componentArray, newArray));
         } else {
-            if (newArray.length === componentArray.length) {
+            if (LengthsAreEqual(newArray, componentArray)) {
                 areMoreComponents = false;
                 return newArray;
             }
@@ -171,7 +175,7 @@ export function BuildComponentOrder(componentArray): Component[] {
     return newArray;
 }
 
-const PushSelectedComponents = (components, selectedComponents): Component[] => {
+const PushSelectedComponents = (components: Component[], selectedComponents: Component[]): Component[] => {
     components.map((component) => {
         if (component.selected === true) {
             selectedComponents.push(component);
@@ -180,31 +184,36 @@ const PushSelectedComponents = (components, selectedComponents): Component[] => 
     return selectedComponents;
 };
 
-const OnlyOneComponentSelected = (selectedComponents): boolean => {
+const OnlyOneComponentSelected = (selectedComponents: Component[]): boolean => {
     return selectedComponents.length === 1;
 };
 
-const IsIdEqual = (obj1, obj2): boolean => {
+const IsIdEqual = (obj1: Component, obj2: Component): boolean => {
     return obj1.id === obj2.id;
 };
 
-const DoesNotHaveChildren = (component): boolean => {
+const DoesNotHaveChildren = (component: Component): boolean => {
     return component.children === null;
 };
 
-const PushToParentsChildren = (parentComponent, componentId, component): Component => {
-    let newChildren = parentComponent.children.splice();
+const PushToParentsChildren = (parentComponent: Component, componentId: number, component: Component): Component => {
+    let newChildren = parentComponent.children.map((i) => i);
     newChildren.push(componentId);
     return { ...component, children: newChildren };
 };
 
-const AddComponentToArray = (selectedComponents, parentComponent, newComponentArr, components): Component[] => {
+const AddComponentToArray = (
+    selectedComponents: Component[],
+    parentComponent: Component,
+    newComponentArr: Component[],
+    components: Component[]
+): Component[] => {
     parentComponent = selectedComponents[0];
-    let componentId = components[components.length - 1].id;
+    let componentId: number = components[components.length - 1].id;
     newComponentArr = components.map((component) => {
         if (IsIdEqual(component, parentComponent)) {
             if (DoesNotHaveChildren(parentComponent)) {
-                let newChild = [componentId];
+                let newChild: number[] = [componentId];
                 return { ...component, children: newChild };
             }
             return PushToParentsChildren(parentComponent, componentId, component);
@@ -220,9 +229,9 @@ const ReturnOldComponents = (components): Component[] => {
 };
 
 const AddComponent = (components): Component[] => {
-    let selectedComponents = [];
-    let parentComponent = null;
-    let newComponentArr = [];
+    let selectedComponents: Component[] = [];
+    let parentComponent: Component = null;
+    let newComponentArr: Component[] = [];
     selectedComponents = PushSelectedComponents(components, selectedComponents);
     if (OnlyOneComponentSelected(selectedComponents)) {
         return AddComponentToArray(selectedComponents, parentComponent, newComponentArr, components);
@@ -230,19 +239,19 @@ const AddComponent = (components): Component[] => {
     return ReturnOldComponents(components);
 };
 
-const GetParentIndex = (components, parent): number => {
+const GetParentIndex = (components: Component[], parent: number): number => {
     return components.findIndex((comp) => comp.id === parent);
 };
 
-const GetChildIndex = (components, parentIndex, id): number => {
+const GetChildIndex = (components: Component[], parentIndex: number, id: number): number => {
     return components[parentIndex].children.indexOf(id);
 };
 
-const ComponentHasSingleChild = (components, parentIndex): boolean => {
+const ComponentHasSingleChild = (components: Component[], parentIndex: number): boolean => {
     return components[parentIndex].children.length == 1;
 };
 
-const SetParentChildrenToNull = (components, parentId): Component => {
+const SetParentChildrenToNull = (components: Component[], parentId: number): Component[] => {
     return components.map((comp) => {
         if (comp.id === parentId) {
             return {
@@ -254,8 +263,13 @@ const SetParentChildrenToNull = (components, parentId): Component => {
     });
 };
 
-const RemoveIdFromParent = (components, parentIndex, id, parentId): Component[] => {
-    let childIndex = GetChildIndex(components, parentIndex, id);
+const RemoveIdFromParent = (
+    components: Component[],
+    parentIndex: number,
+    id: number,
+    parentId: number
+): Component[] => {
+    let childIndex: number = GetChildIndex(components, parentIndex, id);
     if (ComponentHasSingleChild(components, parentIndex)) {
         components = SetParentChildrenToNull(components, parentId);
     } else {
@@ -264,14 +278,18 @@ const RemoveIdFromParent = (components, parentIndex, id, parentId): Component[] 
     return components;
 };
 
-const IsNextComponentNestedLevelEqualOrHigher = (components, component, nextIndex): boolean => {
+const IsNextComponentNestedLevelEqualOrHigher = (
+    components: Component[],
+    component: Component,
+    nextIndex: number
+): boolean => {
     return components[nextIndex].nestedLevel >= component.nestedLevel;
 };
 
-const RemoveChildren = (components, parentIndex, component): Component[] => {
-    let numChildren = 0;
-    let childrenFound = false;
-    for (let k = parentIndex + 1; k < components.length - 1 || !childrenFound; k++) {
+const RemoveChildren = (components: Component[], parentIndex: number, component: Component): Component[] => {
+    let numChildren: number = 0;
+    let childrenFound: boolean = false;
+    for (let k: number = parentIndex + 1; k < components.length - 1 || !childrenFound; k++) {
         if (IsNextComponentNestedLevelEqualOrHigher(components, component, k)) {
             numChildren = k - parentIndex - 1;
             childrenFound = true;
@@ -281,22 +299,26 @@ const RemoveChildren = (components, parentIndex, component): Component[] => {
     return components;
 };
 
-const GetComponentIndex = (components, component): number => {
+const GetComponentIndex = (components: Component[], component: Component): number => {
     return components.findIndex((comp) => comp === component);
 };
 
-const DeleteComponent = (component, state): Component[] => {
-    let id = component.id;
-    let children = component.children;
-    let parentId = component.parent;
-    let components = state;
-    let componentIndex = GetComponentIndex(components, component);
-    let parentIndex = GetParentIndex(components, parentId);
+const LengthIsOne = (arr: Array<any>): boolean => {
+    return arr.length === 1;
+};
+
+const DeleteComponent = (component: Component, state: Component[]): Component[] => {
+    let id: number = component.id;
+    let children: number[] = component.children;
+    let parentId: number = component.parent;
+    let components: Component[] = state;
+    let componentIndex: number = GetComponentIndex(components, component);
+    let parentIndex: number = GetParentIndex(components, parentId);
     if (parentIndex < 0) {
         console.error("Parent Component does not exist");
         return;
     }
-    if (components.length === 1) {
+    if (LengthIsOne(components)) {
         console.warn("Canvas does not contain anything");
     }
     if (parent) {
@@ -309,25 +331,23 @@ const DeleteComponent = (component, state): Component[] => {
     return components;
 };
 
-const UndoRedoComponent = (undo, components): Component[] => {
-    let component = null;
+const UndoRedoComponent = (undo: Undo[], components: Component[]): Component[] => {
+    let component: Component = null;
 
-    let newComponents = components.map((i) => {
-        if (i.id === undo[undo.length - 1].id) {
-            console.log("iteration id: ", i.id);
-            component = i;
-
-            return i;
+    let newComponents: Component[] = components.map((comp) => {
+        if (comp.id === undo[undo.length - 1].id) {
+            component = comp;
+            return comp;
         }
-        return i;
+        return comp;
     });
     if (!component) {
         return components;
     }
 
-    let newComponent = undo[undo.length - 1];
+    let newComponent: Undo = undo[undo.length - 1];
     if (component) {
-        let idx = newComponents.indexOf(component);
+        let idx: number = newComponents.indexOf(component);
         newComponents.splice(idx, 1);
         newComponents.push(newComponent);
         return BuildComponentOrder(newComponents);
@@ -336,31 +356,31 @@ const UndoRedoComponent = (undo, components): Component[] => {
     return BuildComponentOrder(newComponents);
 };
 
-const PushParents = (oldComponents, state): Component[] => {
-    let currentComponents = state.map((el) => el);
-    oldComponents.map((el) => {
-        if (!currentComponents.includes(el)) {
-            console.log("doesnt include: " + el.id);
+const PushParents = (oldComponents: Component[], state: Component[]): Component[] => {
+    let currentComponents: Component[] = state.map((i) => i);
+    oldComponents.map((oldComp) => {
+        if (!currentComponents.includes(oldComp)) {
+            console.log("doesnt include: " + oldComp.id);
             console.log(oldComponents);
-            let parentIdx = currentComponents.findIndex((comp) => comp.id === el.parent);
-            let oldIdx = oldComponents.findIndex((comp) => comp.id === el.parent);
+            let parentIdx: number = currentComponents.findIndex((comp) => comp.id === oldComp.parent);
+            let oldIdx: number = oldComponents.findIndex((comp) => comp.id === oldComp.parent);
             currentComponents[parentIdx].children = oldComponents[oldIdx].children;
-            currentComponents.push(el);
+            currentComponents.push(oldComp);
         }
     });
     return BuildComponentOrder(currentComponents);
 };
 
-const GetPreviousComponentArray = (lastUndo): Component[] => {
+const GetPreviousComponentArray = (lastUndo: Array<any>): Component[] => {
     return lastUndo[lastUndo.length - 1].comp;
 };
 
-const UndoDeleteComponents = (lastUndo, state): Component[] => {
-    let previousComponents = [lastUndo[lastUndo.length - 1].comp];
+const UndoDeleteComponents = (lastUndo: Array<any>, state: Component[]): Component[] => {
+    let previousComponents: any[] = [lastUndo[lastUndo.length - 1].comp];
     return PushParents(previousComponents[0], state);
 };
 
-const EditComponent = (state, newComponent): Component[] => {
+const EditComponent = (state: Component[], newComponent: Component): Component[] => {
     state.map((component) => {
         if (component.id === newComponent.id) {
             return { ...component, ...newComponent };
@@ -370,7 +390,7 @@ const EditComponent = (state, newComponent): Component[] => {
     return state;
 };
 
-const EditComponents = (state, newComponents): Component[] => {
+const EditComponents = (state: Component[], newComponents: Component[]): Component[] => {
     state.map((component) => {
         newComponents.forEach((comp) => {
             if (comp.id === component.id) {
