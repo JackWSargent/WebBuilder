@@ -171,36 +171,63 @@ export function BuildComponentOrder(componentArray): Component[] {
     return newArray;
 }
 
-const AddComponent = (components): Component[] => {
-    let selectedComponents = [];
-    let parentComponent = null;
-    let newComponentArr = [];
+const PushSelectedComponents = (components, selectedComponents): Component[] => {
     components.map((component) => {
         if (component.selected === true) {
             selectedComponents.push(component);
         }
     });
-    if (selectedComponents.length === 1) {
-        parentComponent = selectedComponents[0];
-        let newComponentObj = components[components.length - 1];
-        newComponentArr = components.map((obj) => {
-            if (obj.id === parentComponent.id) {
-                if (parentComponent.children === null) {
-                    let newChild = [newComponentObj.id];
-                    return { ...obj, children: newChild };
-                } else {
-                    let newChildren = parentComponent.children.map((el) => {
-                        return el;
-                    });
-                    newChildren.push(newComponentObj.id);
-                    return { ...obj, children: newChildren };
-                }
-            }
-            return obj;
-        });
-    }
+    return selectedComponents;
+};
 
+const OnlyOneComponentSelected = (selectedComponents): boolean => {
+    return selectedComponents.length === 1;
+};
+
+const IsIdEqual = (obj1, obj2): boolean => {
+    return obj1.id === obj2.id;
+};
+
+const DoesNotHaveChildren = (component): boolean => {
+    return component.children === null;
+};
+
+const PushToParentsChildren = (parentComponent, componentId, component): Component => {
+    let newChildren = parentComponent.children.splice();
+    newChildren.push(componentId);
+    return { ...component, children: newChildren };
+};
+
+const AddComponentToArray = (selectedComponents, parentComponent, newComponentArr, components): Component[] => {
+    parentComponent = selectedComponents[0];
+    let componentId = components[components.length - 1].id;
+    newComponentArr = components.map((component) => {
+        if (IsIdEqual(component, parentComponent)) {
+            if (DoesNotHaveChildren(parentComponent)) {
+                let newChild = [componentId];
+                return { ...component, children: newChild };
+            }
+            return PushToParentsChildren(parentComponent, componentId, component);
+        }
+        return component;
+    });
     return newComponentArr;
+};
+
+const ReturnOldComponents = (components): Component[] => {
+    components.splice(components.length - 1, 1);
+    return components;
+};
+
+const AddComponent = (components): Component[] => {
+    let selectedComponents = [];
+    let parentComponent = null;
+    let newComponentArr = [];
+    selectedComponents = PushSelectedComponents(components, selectedComponents);
+    if (OnlyOneComponentSelected(selectedComponents)) {
+        return AddComponentToArray(selectedComponents, parentComponent, newComponentArr, components);
+    }
+    return ReturnOldComponents(components);
 };
 
 const GetParentIndex = (components, parent): number => {
@@ -333,33 +360,38 @@ const UndoDeleteComponents = (lastUndo, state): Component[] => {
     return PushParents(previousComponents[0], state);
 };
 
+const EditComponent = (state, newComponent): Component[] => {
+    state.map((component) => {
+        if (component.id === newComponent.id) {
+            return { ...component, ...newComponent };
+        }
+        return component;
+    });
+    return state;
+};
+
+const EditComponents = (state, newComponents): Component[] => {
+    state.map((component) => {
+        newComponents.forEach((comp) => {
+            if (comp.id === component.id) {
+                return comp;
+            }
+        });
+        return component;
+    });
+    return state;
+};
+
 const componentReducer = (state = componentsReducerDefaultState, action: AppActions) => {
     switch (action.type) {
         case ADD_COMPONENT:
-            let newComponents = AddComponent([...state, action.component]);
-            return BuildComponentOrder(newComponents);
+            return BuildComponentOrder(AddComponent([...state, action.component]));
         case EDIT_COMPONENT:
+            return EditComponent(state, action.component);
+        case EDIT_COMPONENTS:
+            return BuildComponentOrder(EditComponents(state, action.components));
+        case PASTE_COMPONENT:
             return state.map((component) => {
-                if (component.id === action.component.id) {
-                    return { ...component, ...action.component };
-                }
-                return component;
-            });
-        case EDIT_COMPONENTS: {
-            return BuildComponentOrder(
-                state.map((component) => {
-                    action.components.forEach((edit) => {
-                        if (edit.id === component.id) {
-                            return edit;
-                        }
-                    });
-                    return component;
-                })
-            );
-        }
-        case PASTE_COMPONENT: {
-            return state.map((component) => {
-                let id = action.id;
                 if (action.id === component.id) {
                     return {
                         ...component,
@@ -368,7 +400,6 @@ const componentReducer = (state = componentsReducerDefaultState, action: AppActi
                 }
                 return component;
             });
-        }
         case DELETE_COMPONENT:
             return DeleteComponent(action.component, state);
         case SET_COMPONENTS:
