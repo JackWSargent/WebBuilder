@@ -1,6 +1,7 @@
 import {
     AppActions,
     Component,
+    CopiedComponent,
     Undo,
     Redo,
     SET_COMPONENTS,
@@ -63,11 +64,12 @@ export function EditComponents(components: Component[]) {
     };
 }
 
-export function PasteComponent(id: number) {
+export function PasteComponent(id: number, copiedComponent: CopiedComponent) {
     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
         dispatch({
             type: PASTE_COMPONENT,
             id,
+            copiedComponent,
         });
     };
 }

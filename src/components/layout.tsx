@@ -172,7 +172,6 @@ interface LinkDispatchProps {
     SetComponents: (components: Component[]) => void;
     AddComponent: (component: Component) => void;
     EditComponent: (component: Component) => void;
-    PasteComponent: (id: number) => void;
     UndoComponent: (undo: Undo[]) => void;
     UndoComponents: (undo: Undo[]) => void;
     UndoDeleteComponents: (undo: Undo[]) => void;
@@ -194,7 +193,6 @@ const mapDispatchToProps = (
     SetComponents: bindActionCreators(SetComponents, dispatch),
     AddComponent: bindActionCreators(AddComponent, dispatch),
     EditComponent: bindActionCreators(EditComponent, dispatch),
-    PasteComponent: bindActionCreators(PasteComponent, dispatch),
     UndoComponent: bindActionCreators(UndoComponent, dispatch),
     UndoComponents: bindActionCreators(UndoComponents, dispatch),
     UndoDeleteComponents: bindActionCreators(UndoDeleteComponents, dispatch),

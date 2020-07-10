@@ -119,6 +119,7 @@ export interface CopyComponentAction {
 export interface PasteComponentAction {
     type: typeof PASTE_COMPONENT;
     id: number;
+    copiedComponent: CopiedComponent;
 }
 
 export interface UndoComponentAction {

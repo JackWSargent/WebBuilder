@@ -42,7 +42,7 @@ let renderedComponentArr: JSX.Element[] = [];
 
 const EditComponentTab: React.FC<Props> = (props) => {
     const { components, clipboard, history, keyPress } = props;
-    let selected = components.filter((component) => component.selected === true);
+    let selected: Component[] = components.filter((component) => component.selected === true);
 
     const classes = useStyles();
     const [open, setOpen] = React.useState(true);
@@ -77,8 +77,8 @@ const EditComponentTab: React.FC<Props> = (props) => {
         return false;
     };
 
-    const SetComponentProps = (e, prop): void => {
-        let selectedComp = selected[0];
+    const SetComponentProps = (e, prop: string): void => {
+        let selectedComp: Component = selected[0];
         switch (prop) {
             case "type": {
                 newComponentType = e.target.value;
@@ -96,7 +96,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
                 break;
             }
         }
-        let newComponent = {
+        let newComponent: Component = {
             id: componentId,
             name: newComponentName,
             type: newComponentType,
@@ -107,7 +107,6 @@ const EditComponentTab: React.FC<Props> = (props) => {
             selected: selectedComp.selected,
             innerText: newComponentInnerText,
         };
-        console.log(newComponent);
 
         props.EditComponent(newComponent);
         props.AddHistory({ undo: [selectedComp] });
@@ -115,8 +114,8 @@ const EditComponentTab: React.FC<Props> = (props) => {
 
     const CopyToClipboard = (): void => {
         if (HasSelectedComponent() && GetSelectedName()) {
-            let selectedComponent = selected[0];
-            let convertedComponent = ConvertToCopiedComponent(selectedComponent);
+            let selectedComponent: Component = selected[0];
+            let convertedComponent: CopiedComponent = ConvertToCopiedComponent(selectedComponent);
             if (convertedComponent !== clipboard) {
                 props.CopyComponent(convertedComponent);
             }
@@ -125,10 +124,11 @@ const EditComponentTab: React.FC<Props> = (props) => {
 
     const PasteComponent = (): void => {
         if (HasSelectedComponent() && GetSelectedName()) {
-            let selectedComponent = selected[0];
-            let newComponent = {
+            let selectedComponent: Component = selected[0];
+            let copiedComponent: CopiedComponent = clipboard;
+            let newComponent: Component = {
                 ...selectedComponent,
-                ...clipboard,
+                ...copiedComponent,
             };
             props.EditComponent(newComponent);
             renderedComponentArr = [];
@@ -223,17 +223,90 @@ const EditComponentTab: React.FC<Props> = (props) => {
         }
     };
 
+    const RenderCopyPaste = (): JSX.Element => {
+        return (
+            <Grid container style={{ marginTop: "10px" }}>
+                <Grid item xs={4}>
+                    <MdCopy color="white" id="copy" fontSize="35px" onClick={() => CopyToClipboard()}></MdCopy>
+                    <MdClipboard
+                        color="white"
+                        id="paste"
+                        fontSize="35px"
+                        style={{ marginLeft: "4px" }}
+                        onClick={() => PasteComponent()}></MdClipboard>
+                </Grid>
+                <Grid item xs={8} />
+            </Grid>
+        );
+    };
+
+    const RenderNameField = (): JSX.Element => {
+        return (
+            <Grid container style={{ marginTop: "10px" }}>
+                <Grid item xs={3}>
+                    <Typography
+                        variant="subtitle1"
+                        style={{
+                            lineHeight: "64px",
+                            // marginLeft: "10px",
+                            // marginRight: "20px",
+                            alignItems: "left",
+                        }}>
+                        Name
+                    </Typography>
+                </Grid>
+                <Grid item xs={8}>
+                    {renderElementName()}
+                    <Grid item />
+                </Grid>
+            </Grid>
+        );
+    };
+
+    const RenderTypeField = (): JSX.Element => {
+        return (
+            <Grid container>
+                <Typography variant="subtitle1" style={{ lineHeight: "64px", marginLeft: "20px", marginRight: "20px" }}>
+                    Type
+                </Typography>
+                {renderElementType()}
+            </Grid>
+        );
+    };
+
+    const RenderInnerTextField = (): JSX.Element => {
+        return (
+            <Grid container>
+                <Grid item xs={3}>
+                    <Typography
+                        variant="subtitle1"
+                        style={{ lineHeight: "64px", marginLeft: "10px", marginRight: "40px" }}>
+                        InnerText
+                    </Typography>
+                </Grid>
+                <Grid item xs={8}>
+                    {renderElementInnerText()}
+                    <Grid item />
+                </Grid>
+            </Grid>
+        );
+    };
+
+    const LengthIsOne = (arr): boolean => {
+        return arr.length === 1;
+    };
+
     const RenderEditComponent = (): void => {
         selected = components.filter((component) => component.selected === true);
-        if (selected.length === 1) {
+        if (LengthIsOne(selected)) {
             setComponentName(selected[0].name);
             setComponentType(selected[0].type);
             setComponentInnerText(selected[0].innerText);
         }
         renderedComponentArr = [];
         if (HasSelectedComponent()) {
-            let comp = selected[0];
-            let editComp = (
+            let comp: Component = selected[0];
+            let editComp: JSX.Element = (
                 <div key={comp.id}>
                     <ExpansionPanel
                         expanded={open}
@@ -246,63 +319,11 @@ const EditComponentTab: React.FC<Props> = (props) => {
                             onClick={HandleExpand}>
                             <Typography className={classes.heading}>{comp.name}</Typography>
                         </ExpansionPanelSummary>
-                        <Grid container style={{ marginTop: "10px" }}>
-                            <Grid item xs={4}>
-                                <MdCopy
-                                    color="white"
-                                    id="copy"
-                                    fontSize="35px"
-                                    onClick={() => CopyToClipboard()}></MdCopy>
-                                <MdClipboard
-                                    color="white"
-                                    id="paste"
-                                    fontSize="35px"
-                                    style={{ marginLeft: "4px" }}
-                                    onClick={() => PasteComponent()}></MdClipboard>
-                            </Grid>
-                            <Grid item xs={8} />
-                        </Grid>
 
-                        <Grid container style={{ marginTop: "10px" }}>
-                            <Grid item xs={3}>
-                                <Typography
-                                    variant="subtitle1"
-                                    style={{
-                                        lineHeight: "64px",
-                                        // marginLeft: "10px",
-                                        // marginRight: "20px",
-                                        alignItems: "left",
-                                    }}>
-                                    Name
-                                </Typography>
-                            </Grid>
-                            <Grid item xs={8}>
-                                {renderElementName()}
-                                <Grid item />
-                            </Grid>
-                        </Grid>
-                        <Grid container>
-                            <Typography
-                                variant="subtitle1"
-                                style={{ lineHeight: "64px", marginLeft: "20px", marginRight: "20px" }}>
-                                Type
-                            </Typography>
-                            {renderElementType()}
-                        </Grid>
-
-                        <Grid container>
-                            <Grid item xs={3}>
-                                <Typography
-                                    variant="subtitle1"
-                                    style={{ lineHeight: "64px", marginLeft: "10px", marginRight: "40px" }}>
-                                    InnerText
-                                </Typography>
-                            </Grid>
-                            <Grid item xs={8}>
-                                {renderElementInnerText()}
-                                <Grid item />
-                            </Grid>
-                        </Grid>
+                        {RenderCopyPaste()}
+                        {RenderNameField()}
+                        {RenderTypeField()}
+                        {RenderInnerTextField()}
                     </ExpansionPanel>
                 </div>
             );
@@ -339,7 +360,7 @@ interface LinkDispatchProps {
     AddComponent: (component: Component) => void;
     EditComponent: (component: Component) => void;
     CopyComponent: (copiedComponent: CopiedComponent) => void;
-    PasteComponent: (id: number) => void;
+    PasteComponent: (id: number, copiedComponent: CopiedComponent) => void;
     AddHistory: (history: History) => void;
 }
 

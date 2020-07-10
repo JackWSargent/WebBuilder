@@ -415,7 +415,7 @@ const componentReducer = (state = componentsReducerDefaultState, action: AppActi
                 if (action.id === component.id) {
                     return {
                         ...component,
-                        // ...store.getState().clipboard,
+                        ...action.copiedComponent,
                     };
                 }
                 return component;
