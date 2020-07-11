@@ -34,6 +34,7 @@ export interface Component {
     children?: number[];
     selected?: boolean;
     innerText?: string;
+    sequenceNumber?: number;
 }
 
 export interface CopiedComponent {

@@ -123,7 +123,6 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 interface ComponentLayersProps {}
 
-let selected: Array<number> = [];
 let deleteChange: boolean = false;
 type Props = ComponentLayersProps & LinkStateProps & LinkDispatchProps;
 let deletedComp = {};
@@ -144,7 +143,7 @@ const ComponentLayers: React.FC<Props> = (props) => {
     React.useEffect(() => {
         changed = false;
         deleteChange = false;
-    }, [event, changed, selected, canvas, open, stateComponents, keyPress]);
+    }, [event, changed, canvas, open, stateComponents, keyPress]);
 
     React.useEffect(() => {
         if (stateComponents.length !== components.length || stateComponents !== components) {
@@ -180,16 +179,10 @@ const ComponentLayers: React.FC<Props> = (props) => {
     };
 
     const IsComponentNotSelected = (component): boolean => {
-        return !component.selected && !selected.includes(component.id);
+        return !component.selected;
     };
 
     const PushToSelected = (component, id, ctrl): Component => {
-        if (ctrl) {
-            selected.push(component.id);
-        } else {
-            selected.splice(0, selected.length);
-            selected.push(id);
-        }
         return {
             ...component,
             selected: true,
@@ -197,16 +190,10 @@ const ComponentLayers: React.FC<Props> = (props) => {
     };
 
     const IsComponentSelected = (component): boolean => {
-        return selected.includes(component.id) || component.selected;
+        return component.selected;
     };
 
     const RemoveFromSelected = (component, ctrl): Component => {
-        if (ctrl) {
-            let idx = selected.indexOf(component.id);
-            selected.splice(idx, 1);
-        } else {
-            selected.splice(0, selected.length);
-        }
         return {
             ...component,
             selected: false,
@@ -216,7 +203,7 @@ const ComponentLayers: React.FC<Props> = (props) => {
     const ReturnOtherComponents = (component, ctrl): Component => {
         if (ctrl) {
             return component;
-        } else if (selected.includes(component.id) && !ctrl) {
+        } else if (component.selected && !ctrl) {
             return { ...component, selected: false };
         }
 
@@ -232,7 +219,6 @@ const ComponentLayers: React.FC<Props> = (props) => {
                 if (IsComponentSelected(component)) {
                     return (component = RemoveFromSelected(component, ctrl));
                 }
-                selected.splice(selected.indexOf(id), 1);
                 return { ...component, selected: false };
             }
             return ReturnOtherComponents(component, ctrl);

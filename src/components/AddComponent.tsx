@@ -10,7 +10,6 @@ import { AppActions } from "../redux/types/actions";
 import { ThunkDispatch } from "redux-thunk";
 import { SetComponents, AddComponent } from "../redux/actions/components";
 import { AddHistory } from "../redux/actions/history";
-
 import {
     Grid,
     Select,
@@ -82,12 +81,13 @@ const NewComponent: React.FC<Props> = (props) => {
         let newComponentObj: Component = {
             id: GetId(),
             isRendered: false,
-            name: "New Component",
+            name: "New " + newComponentType,
             type: newComponentType,
             selected: false,
             children: null,
             parent: parentComponent.id,
             nestedLevel: parentComponent.nestedLevel + 1,
+            sequenceNumber: parentComponent.children.length ? parentComponent.children.length : 0,
         };
 
         props.AddHistory({ undo: [newComponentObj] });

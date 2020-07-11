@@ -27,6 +27,7 @@ const componentsReducerDefaultState: Component[] = [
         parent: null,
         nestedLevel: 0,
         innerText: "",
+        sequenceNumber: null,
     },
     {
         id: 200,
@@ -38,6 +39,7 @@ const componentsReducerDefaultState: Component[] = [
         parent: 100,
         nestedLevel: 1,
         innerText: "",
+        sequenceNumber: 0,
     },
     {
         id: 300,
@@ -49,6 +51,7 @@ const componentsReducerDefaultState: Component[] = [
         parent: 200,
         nestedLevel: 2,
         innerText: "",
+        sequenceNumber: 0,
     },
     {
         id: 400,
@@ -60,6 +63,7 @@ const componentsReducerDefaultState: Component[] = [
         parent: 200,
         nestedLevel: 2,
         innerText: "",
+        sequenceNumber: 1,
     },
     {
         id: 500,
@@ -71,6 +75,7 @@ const componentsReducerDefaultState: Component[] = [
         parent: 200,
         nestedLevel: 2,
         innerText: "",
+        sequenceNumber: 2,
     },
     {
         id: 600,
@@ -82,6 +87,7 @@ const componentsReducerDefaultState: Component[] = [
         parent: 100,
         nestedLevel: 1,
         innerText: "",
+        sequenceNumber: 1,
     },
 ];
 

@@ -292,7 +292,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
         );
     };
 
-    const LengthIsOne = (arr): boolean => {
+    const LengthIsOne = (arr: Array<any>): boolean => {
         return arr.length === 1;
     };
 
