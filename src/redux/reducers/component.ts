@@ -12,6 +12,7 @@ import {
     UNDO_COMPONENTS,
     REDO_COMPONENT,
     UNDO_DELETE_COMPONENTS,
+    CopiedComponent,
 } from "../types/actions";
 
 /* eslint-disable */
@@ -313,6 +314,40 @@ const LengthIsOne = (arr: Array<any>): boolean => {
     return arr.length === 1;
 };
 
+const GetSiblings = (components: Component[], parentIndex: number): boolean => {
+    return components[parentIndex].children.length > 1;
+};
+
+const IsLastChild = (components: Component[], parentIndex: number, id: number): boolean => {
+    //At end of array inside parent children array
+    if (components[parentIndex].children.indexOf(id) === components[parentIndex].children.length - 1) {
+        return true;
+    }
+    return false;
+};
+
+const ChangeSequenceNumbers = (components: Component[], parentIndex: number, id: number): Component[] => {
+    let newComponents = components.slice();
+    //Reset the sequence numbers of the children that are left by looping through the
+    //parent's children and then map through the components, match the id and change the sequence number to the index of the loop initially started
+    let parent = components[parentIndex];
+    console.log(parent.children);
+    for (let i: number = 0; i < parent.children.length; i++) {
+        console.log(i);
+        newComponents = newComponents.map((comp) => {
+            if (comp.id == parent.children[i]) {
+                console.log("Found id: " + comp.id);
+                return {
+                    ...comp,
+                    sequenceNumber: i,
+                };
+            }
+            return comp;
+        });
+    }
+    return newComponents;
+};
+
 const DeleteComponent = (component: Component, state: Component[]): Component[] => {
     let id: number = component.id;
     let children: number[] = component.children;
@@ -320,6 +355,7 @@ const DeleteComponent = (component: Component, state: Component[]): Component[] 
     let components: Component[] = state;
     let componentIndex: number = GetComponentIndex(components, component);
     let parentIndex: number = GetParentIndex(components, parentId);
+    let hasSiblings: boolean = GetSiblings(components, parentIndex);
     if (parentIndex < 0) {
         console.error("Parent Component does not exist");
         return;
@@ -334,6 +370,9 @@ const DeleteComponent = (component: Component, state: Component[]): Component[] 
         components = RemoveChildren(components, parentIndex, component);
     }
     components.splice(componentIndex, 1);
+    if (hasSiblings && !IsLastChild(components, parentIndex, id)) {
+        components = ChangeSequenceNumbers(components, parentIndex, id);
+    }
     return components;
 };
 
@@ -408,6 +447,19 @@ const EditComponents = (state: Component[], newComponents: Component[]): Compone
     return state;
 };
 
+const PasteComponent = (components: Component[], id: number, copiedComponent: CopiedComponent): Component[] => {
+    console.log("Pasting component, " + id);
+    return components.map((component) => {
+        if (id === component.id) {
+            return {
+                ...component,
+                ...copiedComponent,
+            };
+        }
+        return component;
+    });
+};
+
 const componentReducer = (state = componentsReducerDefaultState, action: AppActions) => {
     switch (action.type) {
         case ADD_COMPONENT:
@@ -417,15 +469,7 @@ const componentReducer = (state = componentsReducerDefaultState, action: AppActi
         case EDIT_COMPONENTS:
             return BuildComponentOrder(EditComponents(state, action.components));
         case PASTE_COMPONENT:
-            return state.map((component) => {
-                if (action.id === component.id) {
-                    return {
-                        ...component,
-                        ...action.copiedComponent,
-                    };
-                }
-                return component;
-            });
+            return PasteComponent(state, action.id, action.copiedComponent);
         case DELETE_COMPONENT:
             return DeleteComponent(action.component, state);
         case SET_COMPONENTS:

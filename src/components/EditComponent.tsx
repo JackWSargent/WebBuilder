@@ -113,16 +113,20 @@ const EditComponentTab: React.FC<Props> = (props) => {
     };
 
     const CopyToClipboard = (): void => {
+        console.log("Copy");
+
         if (HasSelectedComponent() && GetSelectedName()) {
             let selectedComponent: Component = selected[0];
             let convertedComponent: CopiedComponent = ConvertToCopiedComponent(selectedComponent);
             if (convertedComponent !== clipboard) {
+                console.log(convertedComponent);
                 props.CopyComponent(convertedComponent);
             }
         }
     };
 
     const PasteComponent = (): void => {
+        console.log("Paste");
         if (HasSelectedComponent() && GetSelectedName()) {
             let selectedComponent: Component = selected[0];
             let copiedComponent: CopiedComponent = clipboard;
@@ -130,7 +134,7 @@ const EditComponentTab: React.FC<Props> = (props) => {
                 ...selectedComponent,
                 ...copiedComponent,
             };
-            props.EditComponent(newComponent);
+            props.PasteComponent(selectedComponent.id, copiedComponent);
             renderedComponentArr = [];
             newComponentType = newComponent.type;
             newComponentName = newComponent.name;
