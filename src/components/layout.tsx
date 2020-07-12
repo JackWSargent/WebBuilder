@@ -60,6 +60,7 @@ const Layout: React.FC<Props> = (props) => {
 
     const IsUndoComponent = (undoArray): boolean => {
         let lastUndo = undoArray.length - 1;
+        console.log(undoArray[lastUndo]);
         return undoArray[lastUndo].id;
     };
 
@@ -109,9 +110,12 @@ const Layout: React.FC<Props> = (props) => {
                 let newUndo = store.getState().history.undo;
                 let storeComponents = store.getState().components;
                 if (IsUndoComponent(newUndo)) {
+                    console.log("is component");
                     UndoLastComponent(storeComponents, newUndo);
                 }
                 if (IsUndoComponentArray(newUndo)) {
+                    console.log("is array");
+                    console.log("store components", storeComponents, newUndo);
                     UndoLastComponentArray(storeComponents, newUndo);
                 }
             }

@@ -426,17 +426,19 @@ const UndoDeleteComponents = (lastUndo: Array<any>, state: Component[]): Compone
 };
 
 const EditComponent = (state: Component[], newComponent: Component): Component[] => {
-    state.map((component) => {
+    let newComponents = state.slice();
+    return newComponents.map((component) => {
         if (component.id === newComponent.id) {
-            return { ...component, ...newComponent };
+            console.log("new component: ", { ...newComponent });
+
+            return { ...newComponent };
         }
         return component;
     });
-    return state;
 };
 
 const EditComponents = (state: Component[], newComponents: Component[]): Component[] => {
-    state.map((component) => {
+    return state.map((component) => {
         newComponents.forEach((comp) => {
             if (comp.id === component.id) {
                 return comp;
@@ -444,7 +446,6 @@ const EditComponents = (state: Component[], newComponents: Component[]): Compone
         });
         return component;
     });
-    return state;
 };
 
 const PasteComponent = (components: Component[], id: number, copiedComponent: CopiedComponent): Component[] => {
@@ -467,7 +468,7 @@ const componentReducer = (state = componentsReducerDefaultState, action: AppActi
         case EDIT_COMPONENT:
             return EditComponent(state, action.component);
         case EDIT_COMPONENTS:
-            return BuildComponentOrder(EditComponents(state, action.components));
+            return EditComponents(state, action.components);
         case PASTE_COMPONENT:
             return PasteComponent(state, action.id, action.copiedComponent);
         case DELETE_COMPONENT:

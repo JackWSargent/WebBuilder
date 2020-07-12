@@ -147,7 +147,8 @@ const ComponentLayers: React.FC<Props> = (props) => {
 
     React.useEffect(() => {
         if (stateComponents.length !== components.length || stateComponents !== components) {
-            setStateComponents(components);
+            let newComponents = store.getState().components;
+            setStateComponents(newComponents);
             renderedComponents = [];
             ReRenderComponents();
         }
@@ -172,9 +173,7 @@ const ComponentLayers: React.FC<Props> = (props) => {
         }
         deleteChange = true;
         changed = true;
-        console.log(stateComponents);
-        props.AddHistory({ undo: store.getState().components });
-        console.log(deletedComponent);
+        props.AddHistory({ undo: components });
         props.DeleteComponent(deletedComponent);
     };
 
@@ -228,10 +227,11 @@ const ComponentLayers: React.FC<Props> = (props) => {
     const HandleSelectedState = (id): void => {
         changed = true;
         let ctrl: boolean = keyPress["ctrl"] ? keyPress["ctrl"] : false;
+        let oldComponents: Component[] = components.slice();
         let newComponents: Component[] = CreateNewSelectedComponents(id, ctrl);
         if (!deleteChange) {
             newComponents = BuildComponentOrder(newComponents);
-            props.AddHistory({ undo: newComponents });
+            props.AddHistory({ undo: oldComponents });
             props.SetComponents(newComponents);
             setStateComponents(newComponents);
         }

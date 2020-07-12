@@ -25,7 +25,7 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import MdCopy from "react-ionicons/lib/MdCopy";
 import MdClipboard from "react-ionicons/lib/MdClipboard";
 import { ConvertToCopiedComponent } from "../utils/ConvertComponent";
-
+import { store } from "../redux/store/storeConfiguration";
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         heading: {
@@ -54,8 +54,9 @@ const EditComponentTab: React.FC<Props> = (props) => {
     );
 
     React.useEffect(() => {
-        selected = components.filter((component) => component.selected === true);
+        selected = store.getState().components.filter((component) => component.selected === true);
         if (stateComponents.length !== components.length || stateComponents !== components) {
+            setStateComponents(components);
             RenderEditComponent();
         }
         if (selected[0] && selected.length === 1) {
@@ -104,37 +105,32 @@ const EditComponentTab: React.FC<Props> = (props) => {
             nestedLevel: selectedComp.nestedLevel,
             parent: selectedComp.parent,
             children: selectedComp.children,
-            selected: selectedComp.selected,
+            selected: selectedComp.selected, //
             innerText: newComponentInnerText,
+            sequenceNumber: selectedComp.sequenceNumber,
         };
-
         props.EditComponent(newComponent);
         props.AddHistory({ undo: [selectedComp] });
     };
 
     const CopyToClipboard = (): void => {
-        console.log("Copy");
-
         if (HasSelectedComponent() && GetSelectedName()) {
             let selectedComponent: Component = selected[0];
             let convertedComponent: CopiedComponent = ConvertToCopiedComponent(selectedComponent);
             if (convertedComponent !== clipboard) {
-                console.log(convertedComponent);
                 props.CopyComponent(convertedComponent);
             }
         }
     };
 
     const PasteComponent = (): void => {
-        console.log("Paste");
         if (HasSelectedComponent() && GetSelectedName()) {
             let selectedComponent: Component = selected[0];
-            let copiedComponent: CopiedComponent = clipboard;
             let newComponent: Component = {
                 ...selectedComponent,
-                ...copiedComponent,
+                ...clipboard,
             };
-            props.PasteComponent(selectedComponent.id, copiedComponent);
+            props.PasteComponent(selectedComponent.id, clipboard);
             renderedComponentArr = [];
             newComponentType = newComponent.type;
             newComponentName = newComponent.name;

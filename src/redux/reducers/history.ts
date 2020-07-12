@@ -32,8 +32,7 @@ const AddHistory = (lastUndo, state): History => {
     let undoRef = lastUndo.slice();
     if (IsComponentArray(undoRef)) {
         newUndoArr = state.undo.concat({ comp: undoRef });
-    }
-    if (IsComponent(state, undoRef)) {
+    } else if (IsComponent(state, undoRef)) {
         newUndoArr = state.undo.concat(...undoRef);
     }
     let newRedoArr: Redo[] = [];
