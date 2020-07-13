@@ -14,6 +14,7 @@ import {
     UNDO_DELETE_COMPONENTS,
     CopiedComponent,
 } from "../types/actions";
+import { EditorFormatListBulleted } from "material-ui/svg-icons";
 
 /* eslint-disable */
 
@@ -29,6 +30,7 @@ const componentsReducerDefaultState: Component[] = [
         nestedLevel: 0,
         innerText: "",
         sequenceNumber: null,
+        oldSequenceNumber: null,
     },
     {
         id: 200,
@@ -41,6 +43,7 @@ const componentsReducerDefaultState: Component[] = [
         nestedLevel: 1,
         innerText: "",
         sequenceNumber: 0,
+        oldSequenceNumber: null,
     },
     {
         id: 300,
@@ -53,6 +56,7 @@ const componentsReducerDefaultState: Component[] = [
         nestedLevel: 2,
         innerText: "",
         sequenceNumber: 0,
+        oldSequenceNumber: null,
     },
     {
         id: 400,
@@ -65,6 +69,7 @@ const componentsReducerDefaultState: Component[] = [
         nestedLevel: 2,
         innerText: "",
         sequenceNumber: 1,
+        oldSequenceNumber: null,
     },
     {
         id: 500,
@@ -77,6 +82,7 @@ const componentsReducerDefaultState: Component[] = [
         nestedLevel: 2,
         innerText: "",
         sequenceNumber: 2,
+        oldSequenceNumber: null,
     },
     {
         id: 600,
@@ -89,6 +95,7 @@ const componentsReducerDefaultState: Component[] = [
         nestedLevel: 1,
         innerText: "",
         sequenceNumber: 1,
+        oldSequenceNumber: null,
     },
 ];
 
@@ -331,16 +338,20 @@ const ChangeSequenceNumbers = (components: Component[], parentIndex: number, id:
     //Reset the sequence numbers of the children that are left by looping through the
     //parent's children and then map through the components, match the id and change the sequence number to the index of the loop initially started
     let parent = components[parentIndex];
-    console.log(parent.children);
     for (let i: number = 0; i < parent.children.length; i++) {
-        console.log(i);
         newComponents = newComponents.map((comp) => {
+            let newSequenceNumber = comp.sequenceNumber;
             if (comp.id == parent.children[i]) {
-                console.log("Found id: " + comp.id);
+                console.log(parent.children);
+                console.log({ ...comp, oldSequenceNumber: newSequenceNumber, sequenceNumber: i });
                 return {
                     ...comp,
+                    oldSequenceNumber: newSequenceNumber,
                     sequenceNumber: i,
                 };
+            }
+            if (comp.id === id) {
+                return { ...comp, oldSequenceNumber: newSequenceNumber };
             }
             return comp;
         });
@@ -363,6 +374,9 @@ const DeleteComponent = (component: Component, state: Component[]): Component[] 
     if (LengthIsOne(components)) {
         console.warn("Canvas does not contain anything");
     }
+    if (hasSiblings && !IsLastChild(components, parentIndex, id)) {
+        components = ChangeSequenceNumbers(components, parentIndex, id);
+    }
     if (parent) {
         components = RemoveIdFromParent(components, parentIndex, id, parentId);
     }
@@ -370,9 +384,7 @@ const DeleteComponent = (component: Component, state: Component[]): Component[] 
         components = RemoveChildren(components, parentIndex, component);
     }
     components.splice(componentIndex, 1);
-    if (hasSiblings && !IsLastChild(components, parentIndex, id)) {
-        components = ChangeSequenceNumbers(components, parentIndex, id);
-    }
+
     return components;
 };
 
@@ -401,15 +413,66 @@ const UndoRedoComponent = (undo: Undo[], components: Component[]): Component[] =
     return BuildComponentOrder(newComponents);
 };
 
+const AtEndOfArray = (oldComp: Component, oldComponents: Component[], parentIdx: number): boolean => {
+    console.log(parentIdx);
+    console.log(oldComponents[parentIdx]);
+    return oldComp.oldSequenceNumber === oldComponents[parentIdx].children.length;
+};
+
+const AtBeginningOfArray = (oldComp: Component, oldComponents: Component[], parentIdx: number): boolean => {
+    if (oldComp.oldSequenceNumber === 0) {
+        return true;
+    }
+    console.log(oldComp);
+    console.log(oldComp.oldSequenceNumber);
+};
+
+const ChildComponentIsIncluded = (currentComponents: Component[], oldComp: Component): boolean => {
+    let currentIds = currentComponents.map((comp) => {
+        return comp.id;
+    });
+    if (!currentIds.includes(oldComp.id)) {
+        return false;
+    }
+    return true;
+};
+
+const ParentExists = (currentComponents: Component[], oldComp: Component): boolean => {
+    let parent: Component[] = currentComponents.filter((comp) => comp.id === oldComp.parent);
+    return parent[0] && parent[0].children ? true : false;
+};
+
 const PushParents = (oldComponents: Component[], state: Component[]): Component[] => {
-    let currentComponents: Component[] = state.map((i) => i);
+    let currentComponents: Component[] = state.slice();
     oldComponents.map((oldComp) => {
-        if (!currentComponents.includes(oldComp)) {
+        if (!ChildComponentIsIncluded(currentComponents, oldComp) && ParentExists(currentComponents, oldComp)) {
             console.log("doesnt include: " + oldComp.id);
-            console.log(oldComponents);
-            let parentIdx: number = currentComponents.findIndex((comp) => comp.id === oldComp.parent);
+            console.log(currentComponents);
+            let parentIdx: number = oldComponents.findIndex((comp) => comp.id === oldComp.parent);
+            let currentParentIdx: number = currentComponents.findIndex((comp) => comp.id === oldComp.parent);
             let oldIdx: number = oldComponents.findIndex((comp) => comp.id === oldComp.parent);
-            currentComponents[parentIdx].children = oldComponents[oldIdx].children;
+            if (AtEndOfArray(oldComp, oldComponents, parentIdx)) {
+                console.log("was at end of children array: oldCompArr");
+                console.log(oldComp);
+                if (!currentComponents[currentParentIdx].children.includes(oldComp.id)) {
+                    currentComponents[currentParentIdx].children.push(oldComp.id);
+                }
+            } else if (AtBeginningOfArray(oldComp, oldComponents, parentIdx)) {
+                console.log("was at beginning of children array: oldCompArr");
+                console.log(oldComp);
+                if (!currentComponents[currentParentIdx].children.includes(oldComp.id)) {
+                    currentComponents[currentParentIdx].children.splice(oldComp.oldSequenceNumber, 0, oldComp.id);
+                }
+            } else {
+                console.log("was NOT at end or beginning of children array: oldCompArr");
+                console.log(oldComp);
+                console.log(currentComponents[currentParentIdx].children);
+                if (!currentComponents[currentParentIdx].children.includes(oldComp.id)) {
+                    currentComponents[currentParentIdx].children.splice(oldComp.oldSequenceNumber, 0, oldComp.id);
+                }
+                console.log(currentComponents[currentParentIdx].children);
+                console.log(oldComp.sequenceNumber, oldComp.id);
+            }
             currentComponents.push(oldComp);
         }
     });
@@ -417,7 +480,7 @@ const PushParents = (oldComponents: Component[], state: Component[]): Component[
 };
 
 const GetPreviousComponentArray = (lastUndo: Array<any>): Component[] => {
-    return lastUndo[lastUndo.length - 1].comp;
+    return lastUndo[lastUndo.length - 1].comp.slice();
 };
 
 const UndoDeleteComponents = (lastUndo: Array<any>, state: Component[]): Component[] => {
@@ -449,7 +512,6 @@ const EditComponents = (state: Component[], newComponents: Component[]): Compone
 };
 
 const PasteComponent = (components: Component[], id: number, copiedComponent: CopiedComponent): Component[] => {
-    console.log("Pasting component, " + id);
     return components.map((component) => {
         if (id === component.id) {
             return {

@@ -60,12 +60,17 @@ const Layout: React.FC<Props> = (props) => {
 
     const IsUndoComponent = (undoArray): boolean => {
         let lastUndo = undoArray.length - 1;
-        console.log(undoArray[lastUndo]);
+        if (!undoArray[lastUndo]) {
+            return false;
+        }
         return undoArray[lastUndo].id;
     };
 
     const IsUndoComponentArray = (undoArray): boolean => {
         let lastUndo = undoArray.length - 1;
+        if (!undoArray[lastUndo]) {
+            return false;
+        }
         return undoArray[lastUndo].comp;
     };
 

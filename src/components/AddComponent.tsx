@@ -117,7 +117,6 @@ const NewComponent: React.FC<Props> = (props) => {
                         <Select
                             native
                             onChange={(e) => SetComponentProps(e)}
-                            inputProps={{}}
                             defaultValue={"gridContainer"}
                             style={{
                                 justifyContent: "center",

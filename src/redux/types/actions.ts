@@ -35,6 +35,7 @@ export interface Component {
     selected?: boolean;
     innerText?: string;
     sequenceNumber?: number;
+    oldSequenceNumber?: number;
 }
 
 export interface CopiedComponent {
