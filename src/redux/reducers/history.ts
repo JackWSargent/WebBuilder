@@ -24,6 +24,10 @@ const IsComponentArray = (undoRef): boolean => {
     return undoRef.length > 1 && undoRef[0].id;
 };
 
+const IsCanvasStyling = (undoRef): boolean => {
+    return undoRef[0].fontSizing || undoRef[0].boxSizing;
+};
+
 const AddHistory = (lastUndo, state): History => {
     if (!canDispatch) {
         return state;
@@ -34,6 +38,8 @@ const AddHistory = (lastUndo, state): History => {
         newUndoArr = state.undo.concat({ comp: undoRef });
     } else if (IsComponent(state, undoRef)) {
         newUndoArr = state.undo.concat(...undoRef);
+    } else if (IsCanvasStyling(undoRef)) {
+        newUndoArr = state.undo.concat({ ...undoRef[0] });
     }
     let newRedoArr: Redo[] = [];
     return {

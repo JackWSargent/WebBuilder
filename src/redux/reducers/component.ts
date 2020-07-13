@@ -14,7 +14,6 @@ import {
     UNDO_DELETE_COMPONENTS,
     CopiedComponent,
 } from "../types/actions";
-import { EditorFormatListBulleted } from "material-ui/svg-icons";
 
 /* eslint-disable */
 

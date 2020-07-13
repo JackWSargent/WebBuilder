@@ -7,7 +7,7 @@ import { makeStyles, useTheme, Theme, createStyles } from "@material-ui/core/sty
 import { connect } from "react-redux";
 import { SetCanvas } from "../redux/actions/canvas";
 import { AddHistory, UndoHistory, RedoHistory, EnableDispatch } from "../redux/actions/history";
-import { SetCanvasStyling } from "../redux/actions/canvasStyling";
+import { SetCanvasStyling, UndoCanvasStyling } from "../redux/actions/canvasStyling";
 import {
     SetComponents,
     EditComponent,
@@ -66,6 +66,14 @@ const Layout: React.FC<Props> = (props) => {
         return undoArray[lastUndo].id;
     };
 
+    const IsCanvasStyling = (undoArray): boolean => {
+        let lastUndo = undoArray.length - 1;
+        if (!undoArray[lastUndo]) {
+            return false;
+        }
+        return undoArray[lastUndo].fontSize;
+    };
+
     const IsUndoComponentArray = (undoArray): boolean => {
         let lastUndo = undoArray.length - 1;
         if (!undoArray[lastUndo]) {
@@ -102,6 +110,13 @@ const Layout: React.FC<Props> = (props) => {
         props.UndoHistory(storeComponents);
     };
 
+    const UndoLastCanvasStyling = (storeCanvasStyling, undoArray): void => {
+        let lastUndo = undoArray.length - 1;
+        let newCanvasStyling = { ...undoArray[lastUndo] };
+        props.UndoCanvasStyling(newCanvasStyling);
+        props.UndoHistory(storeCanvasStyling);
+    };
+
     React.useEffect(() => {
         window.addEventListener("keydown", (event) => {
             if (!keyPress[event.keyCode] || keyPress[event.keyCode] === false) {
@@ -114,11 +129,15 @@ const Layout: React.FC<Props> = (props) => {
                 // If latest action was done on a component
                 let newUndo = store.getState().history.undo;
                 let storeComponents = store.getState().components;
+                let storeCanvasStyling = store.getState().canvasStyling;
                 if (IsUndoComponent(newUndo)) {
                     UndoLastComponent(storeComponents, newUndo);
                 }
                 if (IsUndoComponentArray(newUndo)) {
                     UndoLastComponentArray(storeComponents, newUndo);
+                }
+                if (IsCanvasStyling(newUndo)) {
+                    UndoLastCanvasStyling(storeCanvasStyling, newUndo);
                 }
             }
             if (PressingRedo() && canDispatch && history.redo.length > 0) {
@@ -175,6 +194,7 @@ interface LinkDispatchProps {
     RedoHistory: (undo: Undo) => void;
     EnableDispatch: () => void;
     SetCanvasStyling: (canvasStyling: CanvasStyling) => void;
+    UndoCanvasStyling: (canvasStyling: CanvasStyling) => void;
     SetComponents: (components: Component[]) => void;
     AddComponent: (component: Component) => void;
     EditComponent: (component: Component) => void;
@@ -196,6 +216,7 @@ const mapDispatchToProps = (
     UndoHistory: bindActionCreators(UndoHistory, dispatch),
     EnableDispatch: bindActionCreators(EnableDispatch, dispatch),
     SetCanvasStyling: bindActionCreators(SetCanvasStyling, dispatch),
+    UndoCanvasStyling: bindActionCreators(UndoCanvasStyling, dispatch),
     SetComponents: bindActionCreators(SetComponents, dispatch),
     AddComponent: bindActionCreators(AddComponent, dispatch),
     EditComponent: bindActionCreators(EditComponent, dispatch),

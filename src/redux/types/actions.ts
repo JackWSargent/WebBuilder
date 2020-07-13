@@ -5,6 +5,7 @@ export const DELETE_COMPONENT = "DELETE_COMPONENT";
 export const ADD_COMPONENT = "ADD_COMPONENT";
 
 export const SET_CANVAS_STYLING = "SET_CANVAS_STYLING";
+export const UNDO_CANVAS_STYLING = "UNDO_CANVAS_STYLING";
 
 export const COPY_COMPONENT = "COPY_COMPONENT";
 export const PASTE_COMPONENT = "PASTE_COMPONENT";
@@ -66,6 +67,7 @@ export interface Undo {
     newComponents?: Component[];
     canvas?: Canvas;
     id?: number;
+    canvasStyling?: CanvasStyling;
     boxSizing?: string;
     fontSize?: number;
     type?: string;
@@ -155,6 +157,11 @@ export interface SetCanvasStylingAction {
     canvasStyling: CanvasStyling;
 }
 
+export interface UndoCanvasStylingAction {
+    type: typeof UNDO_CANVAS_STYLING;
+    canvasStyling: CanvasStyling;
+}
+
 // CANVAS
 
 export interface SetCanvasAction {
@@ -215,7 +222,7 @@ export type ComponentActionTypes =
 
 export type ClipboardActionTypes = CopyComponentAction;
 
-export type CanvasStylingActionTypes = SetCanvasStylingAction;
+export type CanvasStylingActionTypes = SetCanvasStylingAction | UndoCanvasStylingAction;
 
 export type CanvasActionTypes = SetCanvasAction | EditCanvasAction;
 
