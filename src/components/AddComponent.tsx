@@ -3,20 +3,24 @@ import "../App.css";
 /* eslint-disable */
 import { makeStyles, useTheme, Theme, createStyles } from "@material-ui/core/styles";
 import { connect } from "react-redux";
-import { Component } from "../redux/types/actions";
+import { Component, History, Undo, Redo } from "../redux/types/actions";
 import { AppState } from "../redux/store/storeConfiguration";
 import { bindActionCreators } from "redux";
 import { AppActions } from "../redux/types/actions";
 import { ThunkDispatch } from "redux-thunk";
 import { SetComponents, AddComponent } from "../redux/actions/components";
-import { Grid } from "@material-ui/core";
-import Select from "@material-ui/core/Select";
-import Button from "@material-ui/core/Button";
-import Typography from "@material-ui/core/Typography";
-import ExpansionPanel from "@material-ui/core/ExpansionPanel";
-import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
-import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
+import { AddHistory } from "../redux/actions/history";
+import {
+    Grid,
+    Select,
+    Button,
+    Typography,
+    ExpansionPanel,
+    ExpansionPanelSummary,
+    ExpansionPanelDetails,
+} from "@material-ui/core";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         heading: {
@@ -31,33 +35,31 @@ interface NewComponentProps {}
 type Props = NewComponentProps & LinkStateProps & LinkDispatchProps;
 
 const NewComponent: React.FC<Props> = (props) => {
-    const { components } = props;
+    const { components, history } = props;
     const classes = useStyles();
     const [open, setOpen] = React.useState(false);
     const [newComponentType, setNewComponentType] = React.useState("gridContainer");
 
     React.useEffect(() => {}, [open]);
 
-    const handleExpand = () => {
+    const HandleExpand = (): void => {
         setOpen(!open);
     };
 
-    const hasSelectedLayer = () => {
+    const HasSelectedComponent = (): Component => {
         let selectedComponents = [];
-        components.map((layer) => {
-            if (layer.selected === true) {
-                selectedComponents.push(layer);
+        components.map((comp) => {
+            if (comp.selected === true) {
+                selectedComponents.push(comp);
             }
         });
         if (selectedComponents.length === 1) {
             return selectedComponents[0];
         }
-        // console.log(selectedComponents);
-        // console.log("false");
-        return false;
+        return;
     };
 
-    const getId = (): number => {
+    const GetId = (): number => {
         let highestId = 0;
         components.forEach((component) => {
             if (component.id > highestId) {
@@ -67,28 +69,28 @@ const NewComponent: React.FC<Props> = (props) => {
         return highestId + 100;
     };
 
-    const setComponentProps = (e) => {
+    const SetComponentProps = (e): void => {
         setNewComponentType(e.target.value);
     };
 
-    const handleNewComponent = () => {
-        if (!hasSelectedLayer) {
-            // console.log("does not have selected Component");
+    const HandleNewComponent = (): void => {
+        if (!HasSelectedComponent) {
             return;
         }
-        let parentLayer = hasSelectedLayer();
+        let parentComponent = HasSelectedComponent();
         let newComponentObj: Component = {
-            id: getId(),
+            id: GetId(),
             isRendered: false,
-            name: "New Component",
+            name: "New " + newComponentType,
             type: newComponentType,
             selected: false,
             children: null,
-            parent: parentLayer.id,
-            nestedLevel: parentLayer.nestedLevel + 1,
+            parent: parentComponent.id,
+            nestedLevel: parentComponent.nestedLevel + 1,
+            sequenceNumber: parentComponent.children.length ? parentComponent.children.length : 0,
         };
 
-        console.log(newComponentObj);
+        props.AddHistory({ undo: [newComponentObj] });
         props.AddComponent(newComponentObj);
     };
 
@@ -102,7 +104,7 @@ const NewComponent: React.FC<Props> = (props) => {
                     aria-controls="panel1a-content"
                     id="panel1a-header"
                     style={{ backgroundColor: "#2e2e2e" }}
-                    onClick={handleExpand}>
+                    onClick={HandleExpand}>
                     <Typography className={classes.heading}>New Component</Typography>
                 </ExpansionPanelSummary>
                 <Grid container>
@@ -114,8 +116,7 @@ const NewComponent: React.FC<Props> = (props) => {
                     <Grid item xs={9}>
                         <Select
                             native
-                            onChange={(e) => setComponentProps(e)}
-                            inputProps={{}}
+                            onChange={(e) => SetComponentProps(e)}
                             defaultValue={"gridContainer"}
                             style={{
                                 justifyContent: "center",
@@ -134,7 +135,7 @@ const NewComponent: React.FC<Props> = (props) => {
                             variant="contained"
                             fullWidth
                             size="small"
-                            onClick={handleNewComponent}
+                            onClick={HandleNewComponent}
                             style={{
                                 fontSize: 20,
                                 color: "#fff",
@@ -151,15 +152,18 @@ const NewComponent: React.FC<Props> = (props) => {
 
 interface LinkStateProps {
     components: Component[];
+    history: History;
 }
 
 const mapStateToProps = (state: AppState, ownProps: NewComponentProps): LinkStateProps => ({
     components: state.components,
+    history: state.history,
 });
 
 interface LinkDispatchProps {
     SetComponents: (components: Component[]) => void;
     AddComponent: (component: Component) => void;
+    AddHistory: (history: History) => void;
 }
 
 const mapDispatchToProps = (
@@ -168,6 +172,7 @@ const mapDispatchToProps = (
 ): LinkDispatchProps => ({
     SetComponents: bindActionCreators(SetComponents, dispatch),
     AddComponent: bindActionCreators(AddComponent, dispatch),
+    AddHistory: bindActionCreators(AddHistory, dispatch),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(NewComponent);

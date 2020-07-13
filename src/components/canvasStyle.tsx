@@ -6,17 +6,19 @@ import Select from "@material-ui/core/Select";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import { connect } from "react-redux";
-import { CanvasStyling } from "../redux/types/actions";
+import { CanvasStyling, History } from "../redux/types/actions";
 import { AppState } from "../redux/store/storeConfiguration";
 import { bindActionCreators } from "redux";
 import { AppActions } from "../redux/types/actions";
 import { ThunkDispatch } from "redux-thunk";
 import { TextField } from "@material-ui/core";
 import { SetCanvasStyling } from "../redux/actions/canvasStyling";
+import { AddHistory } from "../redux/actions/history";
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         root: {
@@ -42,30 +44,34 @@ interface CanvasStylingProps {}
 
 type Props = CanvasStylingProps & LinkStateProps & LinkDispatchProps;
 const CanvasStyle: React.FC<Props> = (props) => {
-    const { canvasStyling } = props;
+    const { canvasStyling, history } = props;
     const classes = useStyles();
     const [fontSize, setFontSize] = React.useState(canvasStyling.fontSize);
     const [boxSizing, setBoxSizing] = React.useState(canvasStyling.boxSizing);
     const [open, setOpen] = React.useState(false);
-    const handleFontSizeChange = (e) => {
+
+    React.useEffect(() => {}, [open]);
+
+    const HandleFontSizeChange = (e): void => {
         setFontSize(e.target.value);
     };
-    const handleBoxSizingChange = (e) => {
+    const HandleBoxSizeChange = (e): void => {
         setBoxSizing(e.target.value);
     };
 
-    const handleApplyChanges = (e) => {
-        onSet({ fontSize, boxSizing });
-    };
-    const onSet = (canvasStyling: CanvasStyling) => {
+    const HandleApplyChanges = (e): void => {
+        let canvasStyling = {
+            fontSize,
+            boxSizing,
+        };
+        // props.AddHistory({ undo: [canvasStyling] });
         props.SetCanvasStyling(canvasStyling);
     };
 
-    const handleExpand = () => {
+    const HandleExpand = (): void => {
         setOpen(!open);
     };
 
-    React.useEffect(() => {}, [open]);
     return (
         <div style={{ maxWidth: "240px" }}>
             <ExpansionPanel expanded={open} style={{ borderTop: "1px solid rgba(255, 255, 255, 0.12)" }}>
@@ -74,7 +80,7 @@ const CanvasStyle: React.FC<Props> = (props) => {
                     aria-controls="panel1a-content"
                     id="panel1a-header"
                     style={{ backgroundColor: "#2e2e2e" }}
-                    onClick={handleExpand}>
+                    onClick={HandleExpand}>
                     <Typography className={classes.heading}>Canvas Styling</Typography>
                 </ExpansionPanelSummary>
 
@@ -88,7 +94,7 @@ const CanvasStyle: React.FC<Props> = (props) => {
                                 variant="outlined"
                                 type="number"
                                 defaultValue={fontSize}
-                                onChange={(e) => handleFontSizeChange(e)}
+                                onChange={(e) => HandleFontSizeChange(e)}
                                 inputProps={{
                                     style: { color: "#fff", borderColor: "#fff" },
                                 }}
@@ -120,7 +126,7 @@ const CanvasStyle: React.FC<Props> = (props) => {
                         <Grid item xs={6}>
                             <Select
                                 native
-                                onChange={(e) => handleBoxSizingChange(e)}
+                                onChange={(e) => HandleBoxSizeChange(e)}
                                 defaultValue={"border-box"}
                                 style={{
                                     justifyContent: "center",
@@ -140,7 +146,7 @@ const CanvasStyle: React.FC<Props> = (props) => {
                                 variant="contained"
                                 fullWidth
                                 size="small"
-                                onClick={handleApplyChanges}
+                                onClick={HandleApplyChanges}
                                 style={{
                                     fontSize: 20,
                                     color: "#fff",
@@ -157,14 +163,17 @@ const CanvasStyle: React.FC<Props> = (props) => {
 };
 interface LinkStateProps {
     canvasStyling: CanvasStyling;
+    history: History;
 }
 
 const mapStateToProps = (state: AppState, ownProps: CanvasStylingProps): LinkStateProps => ({
     canvasStyling: state.canvasStyling,
+    history: state.history,
 });
 
 interface LinkDispatchProps {
     SetCanvasStyling: (canvasStyling: CanvasStyling) => void;
+    AddHistory: (history: History) => void;
 }
 
 const mapDispatchToProps = (
@@ -172,6 +181,7 @@ const mapDispatchToProps = (
     ownProps: CanvasStylingProps
 ): LinkDispatchProps => ({
     SetCanvasStyling: bindActionCreators(SetCanvasStyling, dispatch),
+    AddHistory: bindActionCreators(AddHistory, dispatch),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(CanvasStyle);

@@ -1,22 +1,21 @@
-import { Canvas } from "../types/actions";
-import { AppActions, SET_CANVAS, EDIT_CANVAS } from "../types/actions";
+import { AppActions, KeyPress, KEY_DOWN, KEY_UP } from "../types/actions";
 import { Dispatch } from "redux";
 import { AppState } from "../store/storeConfiguration";
 
-export function EditCanvas(canvas: Canvas) {
+export function KeyUp(keyPress: KeyPress) {
     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
         dispatch({
-            type: EDIT_CANVAS,
-            canvas,
+            type: KEY_UP,
+            keyPress,
         });
     };
 }
 
-export function SetCanvas(canvas: Canvas) {
+export function KeyDown(keyPress: KeyPress) {
     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
         dispatch({
-            type: SET_CANVAS,
-            canvas,
+            type: KEY_DOWN,
+            keyPress,
         });
     };
 }

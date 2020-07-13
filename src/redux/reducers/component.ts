@@ -1,14 +1,21 @@
 import {
     Component,
-    ComponentActionTypes,
+    Undo,
+    AppActions,
     SET_COMPONENTS,
     DELETE_COMPONENT,
     ADD_COMPONENT,
     EDIT_COMPONENT,
     EDIT_COMPONENTS,
     PASTE_COMPONENT,
+    UNDO_COMPONENT,
+    UNDO_COMPONENTS,
+    REDO_COMPONENT,
+    UNDO_DELETE_COMPONENTS,
+    CopiedComponent,
 } from "../types/actions";
-import { clipboardReducerDefaultState } from "./clipboard";
+import { EditorFormatListBulleted } from "material-ui/svg-icons";
+
 /* eslint-disable */
 
 const componentsReducerDefaultState: Component[] = [
@@ -21,6 +28,9 @@ const componentsReducerDefaultState: Component[] = [
         children: [200, 600],
         parent: null,
         nestedLevel: 0,
+        innerText: "",
+        sequenceNumber: null,
+        oldSequenceNumber: null,
     },
     {
         id: 200,
@@ -31,6 +41,9 @@ const componentsReducerDefaultState: Component[] = [
         children: [300, 400, 500],
         parent: 100,
         nestedLevel: 1,
+        innerText: "",
+        sequenceNumber: 0,
+        oldSequenceNumber: null,
     },
     {
         id: 300,
@@ -41,6 +54,9 @@ const componentsReducerDefaultState: Component[] = [
         children: null,
         parent: 200,
         nestedLevel: 2,
+        innerText: "",
+        sequenceNumber: 0,
+        oldSequenceNumber: null,
     },
     {
         id: 400,
@@ -51,6 +67,9 @@ const componentsReducerDefaultState: Component[] = [
         children: null,
         parent: 200,
         nestedLevel: 2,
+        innerText: "",
+        sequenceNumber: 1,
+        oldSequenceNumber: null,
     },
     {
         id: 500,
@@ -61,6 +80,9 @@ const componentsReducerDefaultState: Component[] = [
         children: null,
         parent: 200,
         nestedLevel: 2,
+        innerText: "",
+        sequenceNumber: 2,
+        oldSequenceNumber: null,
     },
     {
         id: 600,
@@ -71,30 +93,46 @@ const componentsReducerDefaultState: Component[] = [
         children: null,
         parent: 100,
         nestedLevel: 1,
+        innerText: "",
+        sequenceNumber: 1,
+        oldSequenceNumber: null,
     },
 ];
 
 let hasMoreChildren: boolean = false;
 
-const checkForSiblings = (
-    currentLayerIndex: number,
-    layersArray: Array<any>,
-    newArray: Array<any>,
-    hasMoreChildren: boolean
-) => {
+const HasMultipleChildren = (component: Component): boolean => {
+    return component.children.length > 1;
+};
+
+const GetLengthOfChildren = (component: Component): number => {
+    return component.children.length;
+};
+
+const GetCurrentChild = (componentArray: Component[], currentNode: Component, k: number): Component => {
+    let compArr: Component[] = componentArray.filter((component) => currentNode.children[k] === component.id);
+    return compArr[0];
+};
+
+const GetIndexOfCurrentComponent = (componentArray: Component[], currentChild: Component): number => {
+    return componentArray.indexOf(currentChild);
+};
+
+const HasChildren = (component: Component): boolean => {
+    return component.children ? true : false;
+};
+
+const CheckForSiblings = (currentComponentIndex: number, componentArray: Component[], newArray: Component[]) => {
     for (let i = newArray.length - 2; i > -1; i--) {
-        let currentNode = newArray[i];
-        if (currentNode.children) {
-            if (currentNode.children.length > 1) {
-                for (let k = 1; k < currentNode.children.length; k++) {
-                    let currentChild = layersArray.filter((layer) => currentNode.children[k] === layer.id);
-                    currentChild = currentChild[0];
-                    if (!newArray.includes(currentChild)) {
-                        currentLayerIndex = layersArray.indexOf(currentChild);
-                        newArray.push(currentChild);
-                        if (layersArray[currentLayerIndex].children) {
-                            runDownNestedLayers(currentLayerIndex, layersArray, newArray, hasMoreChildren);
-                        }
+        let currentNode: Component = newArray[i];
+        if (HasChildren(currentNode) && HasMultipleChildren(currentNode)) {
+            for (let k = 1; k < GetLengthOfChildren(currentNode); k++) {
+                let currentChild = GetCurrentChild(componentArray, currentNode, k);
+                if (!newArray.includes(currentChild)) {
+                    currentComponentIndex = GetIndexOfCurrentComponent(componentArray, currentChild);
+                    newArray.push(currentChild);
+                    if (HasChildren(componentArray[currentComponentIndex])) {
+                        RunDownNestedComponents(currentComponentIndex, componentArray, newArray);
                     }
                 }
             }
@@ -102,50 +140,47 @@ const checkForSiblings = (
     }
 };
 
-const runDownNestedLayers = (
-    currentLayerIndex: number,
-    layersArray: Array<any>,
-    newArray: Array<any>,
-    hasMoreChildren: boolean
-): Array<any> => {
-    if (layersArray[currentLayerIndex].children) {
-        let child = layersArray.filter((layer) => layersArray[currentLayerIndex].children[0] === layer.id);
-        child = child[0];
-        currentLayerIndex = layersArray.indexOf(child);
+const RunDownNestedComponents = (
+    currentComponentIndex: number,
+    componentArray: Component[],
+    newArray: Component[]
+): Component[] => {
+    if (componentArray[currentComponentIndex].children) {
+        let newChildArr: Component[] = componentArray.filter(
+            (comp) => componentArray[currentComponentIndex].children[0] === comp.id
+        );
+        let child: Component = newChildArr[0];
+        currentComponentIndex = componentArray.indexOf(child);
         newArray.push(child);
-        // console.log(child);
     }
-    if (layersArray[currentLayerIndex].children === null && layersArray.length !== newArray.length) {
+    if (componentArray[currentComponentIndex].children === null && componentArray.length !== newArray.length) {
         hasMoreChildren = false;
-        checkForSiblings(currentLayerIndex, layersArray, newArray, hasMoreChildren);
-    } else if (layersArray[currentLayerIndex].children === null && layersArray.length === newArray.length) {
+        CheckForSiblings(currentComponentIndex, componentArray, newArray);
+    } else if (componentArray[currentComponentIndex].children === null && componentArray.length === newArray.length) {
         return newArray;
     } else {
         hasMoreChildren = true;
-        runDownNestedLayers(currentLayerIndex, layersArray, newArray, hasMoreChildren);
+        RunDownNestedComponents(currentComponentIndex, componentArray, newArray);
     }
 };
 
-function buildLayerOrder(layersArray) {
-    let areMoreComponents = true;
-    let newArray = [];
-    for (let i = 0; areMoreComponents; i++) {
-        if (!layersArray[i]) {
+const LengthsAreEqual = (arr1: Component[], arr2: Component[]): boolean => {
+    return arr1.length === arr2.length;
+};
+
+export function BuildComponentOrder(componentArray: Component[]): Component[] {
+    let areMoreComponents: boolean = true;
+    let newArray: Component[] = [];
+    for (let current = 0; areMoreComponents; current++) {
+        if (!componentArray[current]) {
             areMoreComponents = false;
-            console.log("exit at: " + i);
-            console.log("input arr length: " + layersArray.length);
-            console.log("output arr length: " + newArray.length);
             return newArray;
         }
-        let current = i;
-        if (!newArray.includes(layersArray[i]) && !layersArray.parent) {
-            newArray.push(layersArray[i]);
-            newArray.concat(runDownNestedLayers(current, layersArray, newArray, hasMoreChildren));
+        if (!newArray.includes(componentArray[current]) && !componentArray[current].parent) {
+            newArray.push(componentArray[current]);
+            newArray.concat(RunDownNestedComponents(current, componentArray, newArray));
         } else {
-            if (newArray.length === layersArray.length) {
-                // console.log("Arrays before ending");
-                // console.log(newArray);
-                // console.log(layersArray);
+            if (LengthsAreEqual(newArray, componentArray)) {
                 areMoreComponents = false;
                 return newArray;
             }
@@ -154,142 +189,362 @@ function buildLayerOrder(layersArray) {
     return newArray;
 }
 
-const addComponent = (components) => {
-    let selectedComponents = [];
-    let parentLayer = null;
-    let newComponentArr = [];
-    components.map((layer) => {
-        if (layer.selected === true) {
-            selectedComponents.push(layer);
+const PushSelectedComponents = (components: Component[], selectedComponents: Component[]): Component[] => {
+    components.map((component) => {
+        if (component.selected === true) {
+            selectedComponents.push(component);
         }
     });
-    if (selectedComponents.length === 1) {
-        parentLayer = selectedComponents[0];
-        // console.log(selectedComponents[0]);
-        let newComponentObj = components[components.length - 1];
-        // console.log(components);
-        newComponentArr = components.map((obj) => {
-            // console.log(obj);
-            // console.log(parentLayer);
-            if (obj.id === parentLayer.id) {
-                if (parentLayer.children === null) {
-                    let newChild = [newComponentObj.id];
-                    // console.log(newChild);
-                    return { ...obj, children: newChild };
-                } else {
-                    let newChildren = parentLayer.children.map((el) => {
-                        return el;
-                    });
-                    newChildren.push(newComponentObj.id);
-                    // console.log(newChildren);
-                    return { ...obj, children: newChildren };
-                }
-            }
-            // console.log(obj);
-            return obj;
-        });
-    }
+    return selectedComponents;
+};
 
+const OnlyOneComponentSelected = (selectedComponents: Component[]): boolean => {
+    return selectedComponents.length === 1;
+};
+
+const IsIdEqual = (obj1: Component, obj2: Component): boolean => {
+    return obj1.id === obj2.id;
+};
+
+const DoesNotHaveChildren = (component: Component): boolean => {
+    return component.children === null;
+};
+
+const PushToParentsChildren = (parentComponent: Component, componentId: number, component: Component): Component => {
+    let newChildren = parentComponent.children.map((i) => i);
+    newChildren.push(componentId);
+    return { ...component, children: newChildren };
+};
+
+const AddComponentToArray = (
+    selectedComponents: Component[],
+    parentComponent: Component,
+    newComponentArr: Component[],
+    components: Component[]
+): Component[] => {
+    parentComponent = selectedComponents[0];
+    let componentId: number = components[components.length - 1].id;
+    newComponentArr = components.map((component) => {
+        if (IsIdEqual(component, parentComponent)) {
+            if (DoesNotHaveChildren(parentComponent)) {
+                let newChild: number[] = [componentId];
+                return { ...component, children: newChild };
+            }
+            return PushToParentsChildren(parentComponent, componentId, component);
+        }
+        return component;
+    });
     return newComponentArr;
 };
 
-const deleteComponent = (component, state) => {
-    let id = component.id;
-    let children = component.children;
-    let parent = component.parent;
-
-    let newLayers = state.map((layer) => {
-        return layer;
-    });
-
-    let idx = newLayers.findIndex((layer) => layer.id == id);
-    if (idx < 0) {
-        console.log("idx doesnt exist");
-        return;
-    }
-
-    let parentIdx = newLayers.findIndex((layer) => layer.id == parent);
-    if (newLayers.length == 1 || idx === 0) {
-        // newLayers = [];
-        console.log(newLayers);
-    }
-    if (parent !== null) {
-        let childIdx = newLayers[parentIdx].children.indexOf(id);
-        console.log(childIdx);
-        console.log(newLayers);
-        if (newLayers[parentIdx].children.length == 1) {
-            newLayers = newLayers.map((layer) => {
-                if (layer.id === parent) {
-                    return {
-                        ...layer,
-                        children: null,
-                    };
-                }
-                return layer;
-            });
-        } else {
-            newLayers[parentIdx].children.splice(childIdx, 1);
-        }
-    }
-    if (children !== null) {
-        let numChildren = 0;
-        let childrenFound = false;
-        for (let i = idx + 1; i < newLayers.length - 1 || !childrenFound; i++) {
-            if (newLayers[i].nestedLevel <= component.nestedLevel) {
-                console.log(i);
-                console.log(idx);
-                numChildren = i - idx - 1;
-                childrenFound = true;
-                console.log("children found");
-            }
-        }
-        newLayers.splice(idx + 1, numChildren);
-        console.log(numChildren);
-        console.log(newLayers);
-    }
-
-    newLayers.splice(idx, 1);
-    // console.log(newLayers);
-    return newLayers;
+const ReturnOldComponents = (components): Component[] => {
+    components.splice(components.length - 1, 1);
+    return components;
 };
 
-const componentReducer = (state = componentsReducerDefaultState, action: ComponentActionTypes) => {
+const AddComponent = (components): Component[] => {
+    let selectedComponents: Component[] = [];
+    let parentComponent: Component = null;
+    let newComponentArr: Component[] = [];
+    selectedComponents = PushSelectedComponents(components, selectedComponents);
+    if (OnlyOneComponentSelected(selectedComponents)) {
+        return AddComponentToArray(selectedComponents, parentComponent, newComponentArr, components);
+    }
+    return ReturnOldComponents(components);
+};
+
+const GetParentIndex = (components: Component[], parent: number): number => {
+    return components.findIndex((comp) => comp.id === parent);
+};
+
+const GetChildIndex = (components: Component[], parentIndex: number, id: number): number => {
+    return components[parentIndex].children.indexOf(id);
+};
+
+const ComponentHasSingleChild = (components: Component[], parentIndex: number): boolean => {
+    return components[parentIndex].children.length == 1;
+};
+
+const SetParentChildrenToNull = (components: Component[], parentId: number): Component[] => {
+    return components.map((comp) => {
+        if (comp.id === parentId) {
+            return {
+                ...comp,
+                children: null,
+            };
+        }
+        return comp;
+    });
+};
+
+const RemoveIdFromParent = (
+    components: Component[],
+    parentIndex: number,
+    id: number,
+    parentId: number
+): Component[] => {
+    let childIndex: number = GetChildIndex(components, parentIndex, id);
+    if (ComponentHasSingleChild(components, parentIndex)) {
+        components = SetParentChildrenToNull(components, parentId);
+    } else {
+        components[parentIndex].children.splice(childIndex, 1);
+    }
+    return components;
+};
+
+const IsNextComponentNestedLevelEqualOrHigher = (
+    components: Component[],
+    component: Component,
+    nextIndex: number
+): boolean => {
+    return components[nextIndex].nestedLevel >= component.nestedLevel;
+};
+
+const RemoveChildren = (components: Component[], parentIndex: number, component: Component): Component[] => {
+    let numChildren: number = 0;
+    let childrenFound: boolean = false;
+    for (let k: number = parentIndex + 1; k < components.length - 1 || !childrenFound; k++) {
+        if (IsNextComponentNestedLevelEqualOrHigher(components, component, k)) {
+            numChildren = k - parentIndex - 1;
+            childrenFound = true;
+        }
+    }
+    components.splice(parentIndex + 1, numChildren);
+    return components;
+};
+
+const GetComponentIndex = (components: Component[], component: Component): number => {
+    return components.findIndex((comp) => comp === component);
+};
+
+const LengthIsOne = (arr: Array<any>): boolean => {
+    return arr.length === 1;
+};
+
+const GetSiblings = (components: Component[], parentIndex: number): boolean => {
+    return components[parentIndex].children.length > 1;
+};
+
+const IsLastChild = (components: Component[], parentIndex: number, id: number): boolean => {
+    //At end of array inside parent children array
+    if (components[parentIndex].children.indexOf(id) === components[parentIndex].children.length - 1) {
+        return true;
+    }
+    return false;
+};
+
+const ChangeSequenceNumbers = (components: Component[], parentIndex: number, id: number): Component[] => {
+    let newComponents = components.slice();
+    //Reset the sequence numbers of the children that are left by looping through the
+    //parent's children and then map through the components, match the id and change the sequence number to the index of the loop initially started
+    let parent = components[parentIndex];
+    for (let i: number = 0; i < parent.children.length; i++) {
+        newComponents = newComponents.map((comp) => {
+            let newSequenceNumber = comp.sequenceNumber;
+            if (comp.id == parent.children[i]) {
+                console.log(parent.children);
+                console.log({ ...comp, oldSequenceNumber: newSequenceNumber, sequenceNumber: i });
+                return {
+                    ...comp,
+                    oldSequenceNumber: newSequenceNumber,
+                    sequenceNumber: i,
+                };
+            }
+            if (comp.id === id) {
+                return { ...comp, oldSequenceNumber: newSequenceNumber };
+            }
+            return comp;
+        });
+    }
+    return newComponents;
+};
+
+const DeleteComponent = (component: Component, state: Component[]): Component[] => {
+    let id: number = component.id;
+    let children: number[] = component.children;
+    let parentId: number = component.parent;
+    let components: Component[] = state;
+    let componentIndex: number = GetComponentIndex(components, component);
+    let parentIndex: number = GetParentIndex(components, parentId);
+    let hasSiblings: boolean = GetSiblings(components, parentIndex);
+    if (parentIndex < 0) {
+        console.error("Parent Component does not exist");
+        return;
+    }
+    if (LengthIsOne(components)) {
+        console.warn("Canvas does not contain anything");
+    }
+    if (hasSiblings && !IsLastChild(components, parentIndex, id)) {
+        components = ChangeSequenceNumbers(components, parentIndex, id);
+    }
+    if (parent) {
+        components = RemoveIdFromParent(components, parentIndex, id, parentId);
+    }
+    if (children) {
+        components = RemoveChildren(components, parentIndex, component);
+    }
+    components.splice(componentIndex, 1);
+
+    return components;
+};
+
+const UndoRedoComponent = (undo: Undo[], components: Component[]): Component[] => {
+    let component: Component = null;
+
+    let newComponents: Component[] = components.map((comp) => {
+        if (comp.id === undo[undo.length - 1].id) {
+            component = comp;
+            return comp;
+        }
+        return comp;
+    });
+    if (!component) {
+        return components;
+    }
+
+    let newComponent: Undo = undo[undo.length - 1];
+    if (component) {
+        let idx: number = newComponents.indexOf(component);
+        newComponents.splice(idx, 1);
+        newComponents.push(newComponent);
+        return BuildComponentOrder(newComponents);
+    }
+    newComponents.push(component);
+    return BuildComponentOrder(newComponents);
+};
+
+const AtEndOfArray = (oldComp: Component, oldComponents: Component[], parentIdx: number): boolean => {
+    console.log(parentIdx);
+    console.log(oldComponents[parentIdx]);
+    return oldComp.oldSequenceNumber === oldComponents[parentIdx].children.length;
+};
+
+const AtBeginningOfArray = (oldComp: Component, oldComponents: Component[], parentIdx: number): boolean => {
+    if (oldComp.oldSequenceNumber === 0) {
+        return true;
+    }
+    console.log(oldComp);
+    console.log(oldComp.oldSequenceNumber);
+};
+
+const ChildComponentIsIncluded = (currentComponents: Component[], oldComp: Component): boolean => {
+    let currentIds = currentComponents.map((comp) => {
+        return comp.id;
+    });
+    if (!currentIds.includes(oldComp.id)) {
+        return false;
+    }
+    return true;
+};
+
+const ParentExists = (currentComponents: Component[], oldComp: Component): boolean => {
+    let parent: Component[] = currentComponents.filter((comp) => comp.id === oldComp.parent);
+    return parent[0] && parent[0].children ? true : false;
+};
+
+const PushParents = (oldComponents: Component[], state: Component[]): Component[] => {
+    let currentComponents: Component[] = state.slice();
+    oldComponents.map((oldComp) => {
+        if (!ChildComponentIsIncluded(currentComponents, oldComp) && ParentExists(currentComponents, oldComp)) {
+            console.log("doesnt include: " + oldComp.id);
+            console.log(currentComponents);
+            let parentIdx: number = oldComponents.findIndex((comp) => comp.id === oldComp.parent);
+            let currentParentIdx: number = currentComponents.findIndex((comp) => comp.id === oldComp.parent);
+            let oldIdx: number = oldComponents.findIndex((comp) => comp.id === oldComp.parent);
+            if (AtEndOfArray(oldComp, oldComponents, parentIdx)) {
+                console.log("was at end of children array: oldCompArr");
+                console.log(oldComp);
+                if (!currentComponents[currentParentIdx].children.includes(oldComp.id)) {
+                    currentComponents[currentParentIdx].children.push(oldComp.id);
+                }
+            } else if (AtBeginningOfArray(oldComp, oldComponents, parentIdx)) {
+                console.log("was at beginning of children array: oldCompArr");
+                console.log(oldComp);
+                if (!currentComponents[currentParentIdx].children.includes(oldComp.id)) {
+                    currentComponents[currentParentIdx].children.splice(oldComp.oldSequenceNumber, 0, oldComp.id);
+                }
+            } else {
+                console.log("was NOT at end or beginning of children array: oldCompArr");
+                console.log(oldComp);
+                console.log(currentComponents[currentParentIdx].children);
+                if (!currentComponents[currentParentIdx].children.includes(oldComp.id)) {
+                    currentComponents[currentParentIdx].children.splice(oldComp.oldSequenceNumber, 0, oldComp.id);
+                }
+                console.log(currentComponents[currentParentIdx].children);
+                console.log(oldComp.sequenceNumber, oldComp.id);
+            }
+            currentComponents.push(oldComp);
+        }
+    });
+    return BuildComponentOrder(currentComponents);
+};
+
+const GetPreviousComponentArray = (lastUndo: Array<any>): Component[] => {
+    return lastUndo[lastUndo.length - 1].comp.slice();
+};
+
+const UndoDeleteComponents = (lastUndo: Array<any>, state: Component[]): Component[] => {
+    let previousComponents: any[] = [lastUndo[lastUndo.length - 1].comp];
+    return PushParents(previousComponents[0], state);
+};
+
+const EditComponent = (state: Component[], newComponent: Component): Component[] => {
+    let newComponents = state.slice();
+    return newComponents.map((component) => {
+        if (component.id === newComponent.id) {
+            console.log("new component: ", { ...newComponent });
+
+            return { ...newComponent };
+        }
+        return component;
+    });
+};
+
+const EditComponents = (state: Component[], newComponents: Component[]): Component[] => {
+    return state.map((component) => {
+        newComponents.forEach((comp) => {
+            if (comp.id === component.id) {
+                return comp;
+            }
+        });
+        return component;
+    });
+};
+
+const PasteComponent = (components: Component[], id: number, copiedComponent: CopiedComponent): Component[] => {
+    return components.map((component) => {
+        if (id === component.id) {
+            return {
+                ...component,
+                ...copiedComponent,
+            };
+        }
+        return component;
+    });
+};
+
+const componentReducer = (state = componentsReducerDefaultState, action: AppActions) => {
     switch (action.type) {
         case ADD_COMPONENT:
-            let newComponents = [...state, action.component];
-            newComponents = addComponent(newComponents);
-            return buildLayerOrder(newComponents);
+            return BuildComponentOrder(AddComponent([...state, action.component]));
         case EDIT_COMPONENT:
-            return state.map((component) => {
-                if (component.id === action.component.id) {
-                    return { ...component, ...action.component };
-                }
-                return component;
-            });
-        //TODO: Finish doing Edit Components, Basically SetComponents but with a selection accounted in, Might just restort to SetComponents instead and doing everything inside the react component (tsx)
-        case EDIT_COMPONENTS: {
-            return buildLayerOrder(
-                state.map((component) => {
-                    return component;
-                })
-            );
-        }
-        case PASTE_COMPONENT: {
-            return state.map((component) => {
-                let id = action.id;
-                if (action.id === component.id) {
-                    return {
-                        ...component,
-                        ...clipboardReducerDefaultState,
-                    };
-                }
-                return component;
-            });
-        }
+            return EditComponent(state, action.component);
+        case EDIT_COMPONENTS:
+            return EditComponents(state, action.components);
+        case PASTE_COMPONENT:
+            return PasteComponent(state, action.id, action.copiedComponent);
         case DELETE_COMPONENT:
-            return deleteComponent(action.component, state);
+            return DeleteComponent(action.component, state);
         case SET_COMPONENTS:
-            return buildLayerOrder(action.components);
+            return BuildComponentOrder(action.components);
+        case UNDO_COMPONENT:
+            return UndoRedoComponent(action.history.undo, state);
+        case UNDO_COMPONENTS:
+            return GetPreviousComponentArray(action.history.undo);
+        case UNDO_DELETE_COMPONENTS:
+            return UndoDeleteComponents(action.history.undo, state);
+        case REDO_COMPONENT:
+            return UndoRedoComponent(action.history.redo, state);
         default:
             return state;
     }

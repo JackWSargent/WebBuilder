@@ -21,21 +21,21 @@ import CanvasStyle from "./CanvasStyle";
 import NewComponent from "./AddComponent";
 import EditComponentTab from "./EditComponent";
 import { connect } from "react-redux";
-import { SetComponents, DeleteComponent, EditComponent } from "../redux/actions/components";
-// import { DeleteComponent } from "../redux/actions/component";
+import { SetComponents, DeleteComponent, EditComponent, EditComponents } from "../redux/actions/components";
 import { SetCanvas, EditCanvas } from "../redux/actions/canvas";
-import { Component, Canvas } from "../redux/types/actions";
-import { AppState } from "../redux/store/storeConfiguration";
+import { AddHistory } from "../redux/actions/history";
+import { Component, Canvas, History, KeyPress } from "../redux/types/actions";
+import { AppState, store } from "../redux/store/storeConfiguration";
 import { bindActionCreators } from "redux";
 import { AppActions } from "../redux/types/actions";
 import { ThunkDispatch } from "redux-thunk";
 import ClearIcon from "@material-ui/icons/Clear";
 import WebIcon from "@material-ui/icons/Web";
-
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import { BuildComponentOrder } from "../redux/reducers/component";
 
 let drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
@@ -71,11 +71,9 @@ const useStyles = makeStyles((theme: Theme) =>
             display: "none",
         },
         drawer: {
-            // width: drawerWidth,
             flexShrink: 0,
         },
         drawerPaper: {
-            // width: drawerWidth,
             backgroundColor: "#666666",
             color: "#fff",
         },
@@ -105,11 +103,11 @@ const useStyles = makeStyles((theme: Theme) =>
         icon: {
             color: "#fff",
         },
-        layer: {
+        component: {
             paddingTop: 0,
             paddingBottom: 0,
         },
-        layerSelected: {
+        componentSelected: {
             paddingTop: 0,
             paddingBottom: 0,
             backgroundColor: "#5e697c",
@@ -117,138 +115,141 @@ const useStyles = makeStyles((theme: Theme) =>
         divider: {
             backgroundColor: "#fff",
         },
-        marginNS: {
-            marginTop: "100%",
-            width: 400,
-            height: "100%",
-            backgroundColor: "#fff",
-            zIndex: 1000,
-        },
         heading: {
             fontSize: theme.typography.pxToRem(15),
             fontWeight: 600,
         },
-        details: {
-            padding: 0,
-        },
     })
 );
-interface LayerProps {}
+interface ComponentLayersProps {}
 
-let selected: Array<number> = [];
 let deleteChange: boolean = false;
-
-type Props = LayerProps & LinkStateProps & LinkDispatchProps;
-
+type Props = ComponentLayersProps & LinkStateProps & LinkDispatchProps;
+let deletedComp = {};
 let changed: boolean = true;
-let ctrl: boolean = false;
-
+let renderedComponents: JSX.Element[] = [];
 let open: boolean = true;
+let storeComponents = store.getState().components;
+let oldComponents = store.getState().components.slice();
 
-const Layer: React.FC<Props> = (props) => {
-    const { components, canvas } = props;
+const ComponentLayers: React.FC<Props> = (props) => {
+    const { components, canvas, history, keyPress } = props;
 
     const classes = useStyles();
     const theme = useTheme();
-    const [layers, setLayers] = React.useState(components);
-    const [layersOpen, setLayersOpen] = React.useState(true);
+    const [stateComponents, setStateComponents] = React.useState(components);
+    const [menuOpen, setMenuOpen] = React.useState(true);
 
-    const renderDelete = (deletedComponent) => {
+    React.useEffect(() => {
+        changed = false;
+        deleteChange = false;
+    }, [event, changed, canvas, open, stateComponents, keyPress]);
+
+    React.useEffect(() => {
+        if (stateComponents.length !== components.length || stateComponents !== components) {
+            let newComponents = store.getState().components;
+            setStateComponents(newComponents);
+            renderedComponents = [];
+            ReRenderComponents();
+        }
+    }, [components, menuOpen, history]);
+
+    const RenderDelete = (deletedComponent): JSX.Element => {
         if (deletedComponent.type === "canvas") {
             return;
         }
-        return <ClearIcon style={{ color: "#fff" }} onClick={() => handleDeleteChange(deletedComponent)} />;
+        return <ClearIcon style={{ color: "#fff" }} onClick={() => HandleDeleteChange(deletedComponent)} />;
     };
 
-    const renderCanvasIcon = (type) => {
+    const RenderCanvasIcon = (type): JSX.Element => {
         if (type === "canvas") {
             return <WebIcon style={{ color: "#fff" }} fontSize="small" />;
         }
     };
 
-    const handleDeleteChange = (deletedComponent) => {
+    const HandleDeleteChange = (deletedComponent): void => {
         if (deletedComponent.type === "canvas") {
             return;
         }
         deleteChange = true;
         changed = true;
+        props.AddHistory({ undo: components });
         props.DeleteComponent(deletedComponent);
     };
 
-    const handleSelectedState = (id) => {
-        changed = true;
-        let newLayers = layers.map((layer) => {
-            if (layer.id === id) {
-                //Not selected and not inside the selected array
-                if (!layer.selected && !selected.includes(layer.id)) {
-                    if (ctrl) {
-                        let newSelected = layer.id;
-                        selected.push(newSelected);
-                    } else {
-                        selected.splice(0, selected.length);
-                        selected.push(id);
-                    }
-                    return {
-                        ...layer,
-                        selected: true,
-                    };
-                    //Already Selected
-                } else if (selected.includes(layer.id) || layer.selected) {
-                    if (ctrl) {
-                        let idx = selected.indexOf(layer.id);
-                        selected.splice(idx, 1);
-                    } else {
-                        let idx = selected.indexOf(id);
-                        selected.splice(0, selected.length);
-                    }
+    const IsComponentNotSelected = (component): boolean => {
+        return !component.selected;
+    };
 
-                    return {
-                        ...layer,
-                        selected: false,
-                    };
-                    //Already Selected
-                } else {
-                    let idx = selected.indexOf(id);
-                    selected.splice(idx, 1);
-                    return { ...layer, selected: false };
+    const PushToSelected = (component, id, ctrl): Component => {
+        return {
+            ...component,
+            selected: true,
+        };
+    };
+
+    const IsComponentSelected = (component): boolean => {
+        return component.selected;
+    };
+
+    const RemoveFromSelected = (component, ctrl): Component => {
+        return {
+            ...component,
+            selected: false,
+        };
+    };
+
+    const ReturnOtherComponents = (component, ctrl): Component => {
+        if (ctrl) {
+            return component;
+        } else if (component.selected && !ctrl) {
+            return { ...component, selected: false };
+        }
+
+        return { ...component, selected: false };
+    };
+
+    const CreateNewSelectedComponents = (id, ctrl): Component[] => {
+        return components.map((component) => {
+            if (component.id === id) {
+                if (IsComponentNotSelected(component)) {
+                    return (component = PushToSelected(component, id, ctrl));
                 }
+                if (IsComponentSelected(component)) {
+                    return (component = RemoveFromSelected(component, ctrl));
+                }
+                return { ...component, selected: false };
             }
-            if (ctrl) {
-                return layer;
-            } else if (selected.includes(layer.id) && !ctrl) {
-                console.log(layer.id);
-                return { ...layer, selected: false };
-            }
-
-            return { ...layer, selected: false };
+            return ReturnOtherComponents(component, ctrl);
         });
+    };
+
+    const HandleSelectedState = (id): void => {
+        changed = true;
+        let ctrl: boolean = keyPress["ctrl"] ? keyPress["ctrl"] : false;
+        let oldComponents: Component[] = components.slice();
+        let newComponents: Component[] = CreateNewSelectedComponents(id, ctrl);
         if (!deleteChange) {
-            props.SetComponents(newLayers);
-            setLayers(newLayers);
+            newComponents = BuildComponentOrder(newComponents);
+            props.AddHistory({ undo: oldComponents });
+            props.SetComponents(newComponents);
+            setStateComponents(newComponents);
         }
     };
 
-    const createLayers = (layers) => {
-        let layersArray = layers.map((layer) => {
-            return layer;
-        });
-        return layersArray;
-    };
-
-    const renderLayers = () => {
-        let layersArray = createLayers(layers);
-        if (layersArray) {
-            return layersArray.map((layer) => {
+    const RenderComponentLayers = (componentArray): Component[] => {
+        if (componentArray) {
+            renderedComponents = componentArray.map((component) => {
                 return (
-                    <div key={layer.id}>
-                        <Grid container onClick={() => handleSelectedState(layer.id)}>
+                    <div key={component.id}>
+                        <Grid container onClick={() => HandleSelectedState(component.id)}>
                             <ListItem
                                 button
-                                className={clsx(classes.layer, {
-                                    [classes.layerSelected]: selected.includes(layer.id),
+                                className={clsx(classes.component, {
+                                    [classes.componentSelected]: component.selected,
                                 })}
                                 divider={true}>
-                                <div style={{ marginLeft: 10 * layer.nestedLevel }}></div>
+                                <div style={{ marginLeft: 10 * component.nestedLevel }}></div>
 
                                 <Typography
                                     variant="subtitle2"
@@ -258,58 +259,44 @@ const Layer: React.FC<Props> = (props) => {
                                         color: "#fff",
                                         fontSize: "1.15rem",
                                     }}>
-                                    {layer.name}
+                                    {component.name}
                                 </Typography>
 
-                                {renderCanvasIcon(layer.type)}
-                                {renderDelete(layer)}
+                                {RenderCanvasIcon(component.type)}
+                                {RenderDelete(component)}
                             </ListItem>
                         </Grid>
                     </div>
                 );
             });
         } else {
-            console.log("missing layers");
+            console.error("Missing State Components");
+            return [];
         }
     };
 
-    React.useEffect(() => {
-        window.addEventListener("keydown", (event) => {
-            if (event.keyCode === 17) {
-                ctrl = true;
-            }
-        });
-        window.addEventListener("keyup", (event) => {
-            if (event.keyCode === 17) {
-                ctrl = false;
-            }
-        });
-        changed = false;
-        deleteChange = false;
-    }, [event, changed, selected, canvas, open, layers]);
-
-    React.useEffect(() => {
-        if (layers.length !== components.length || layers !== components) {
-            setLayers(components);
-        }
-    }, [components, layersOpen]);
-
-    const handleExpand = () => {
-        setLayersOpen(!layersOpen);
+    const HandleExpand = (): void => {
+        setMenuOpen(!menuOpen);
     };
 
-    const handleDrawerOpen = () => {
+    const HandleDrawerOpen = (): void => {
         open = true;
         props.EditCanvas({
             drawerOpen: true,
         });
     };
 
-    const handleDrawerClose = () => {
+    const HandleDrawerClose = (): void => {
         open = false;
         props.EditCanvas({
             drawerOpen: false,
         });
+    };
+
+    const ReRenderComponents = (): JSX.Element[] => {
+        renderedComponents = [];
+        RenderComponentLayers(stateComponents);
+        return renderedComponents;
     };
 
     /* eslint-enable */
@@ -334,7 +321,7 @@ const Layer: React.FC<Props> = (props) => {
                         <IconButton
                             color="inherit"
                             aria-label="open drawer"
-                            onClick={handleDrawerOpen}
+                            onClick={HandleDrawerOpen}
                             edge="start"
                             className={clsx(classes.menuButton, open && classes.hide)}
                             style={{ zIndex: 1300 }}>
@@ -354,7 +341,7 @@ const Layer: React.FC<Props> = (props) => {
                         <Grid item xs={8}></Grid>
                         <Grid item xs={4}>
                             <div className={classes.drawerHeader}>
-                                <IconButton className={classes.icon} onClick={handleDrawerClose}>
+                                <IconButton className={classes.icon} onClick={HandleDrawerClose}>
                                     {theme.direction === "ltr" ? <ChevronLeftIcon /> : <ChevronRightIcon />}
                                 </IconButton>
                             </div>
@@ -362,17 +349,17 @@ const Layer: React.FC<Props> = (props) => {
                     </Grid>
 
                     <ExpansionPanel
-                        expanded={layersOpen}
+                        expanded={menuOpen}
                         style={{ marginTop: 0, marginBottom: 0, borderTop: "1px solid rgba(255, 255, 255, 0.12)" }}>
                         <ExpansionPanelSummary
                             expandIcon={<ExpandMoreIcon />}
                             aria-controls="panel1a-content"
                             id="panel1a-header"
                             style={{ backgroundColor: "#2e2e2e" }}
-                            onClick={handleExpand}>
+                            onClick={HandleExpand}>
                             <Typography className={classes.heading}>Explorer</Typography>
                         </ExpansionPanelSummary>
-                        {renderLayers()}
+                        {ReRenderComponents()}
                     </ExpansionPanel>
 
                     <CanvasStyle />
@@ -395,7 +382,7 @@ const Layer: React.FC<Props> = (props) => {
                         </Grid>
                         <Grid item xs={4}>
                             <div className={classes.drawerHeader}>
-                                <IconButton className={classes.icon} onClick={handleDrawerClose}>
+                                <IconButton className={classes.icon} onClick={HandleDrawerClose}>
                                     {theme.direction === "ltr" ? <ChevronRightIcon /> : <ChevronLeftIcon />}
                                 </IconButton>
                             </div>
@@ -418,6 +405,8 @@ const Layer: React.FC<Props> = (props) => {
 interface LinkStateProps {
     components: Component[];
     canvas: Canvas;
+    history: History;
+    keyPress: KeyPress;
 }
 
 interface LinkDispatchProps {
@@ -425,23 +414,29 @@ interface LinkDispatchProps {
     SetComponents: (components: Component[]) => void;
     SetCanvas: (canvas: Canvas) => void;
     EditComponent: (component: Component) => void;
+    EditComponents: (components: Component[]) => void;
     EditCanvas: (canvas: Canvas) => void;
+    AddHistory: (history: History) => void;
 }
 
-const mapStateToProps = (state: AppState, ownProps: LayerProps): LinkStateProps => ({
+const mapStateToProps = (state: AppState, ownProps: ComponentLayersProps): LinkStateProps => ({
     components: state.components,
     canvas: state.canvas,
+    history: state.history,
+    keyPress: state.keyPress,
 });
 
 const mapDispatchToProps = (
     dispatch: ThunkDispatch<any, any, AppActions>,
-    ownProps: LayerProps
+    ownProps: ComponentLayersProps
 ): LinkDispatchProps => ({
     DeleteComponent: bindActionCreators(DeleteComponent, dispatch),
     SetComponents: bindActionCreators(SetComponents, dispatch),
     SetCanvas: bindActionCreators(SetCanvas, dispatch),
     EditComponent: bindActionCreators(EditComponent, dispatch),
+    EditComponents: bindActionCreators(EditComponents, dispatch),
     EditCanvas: bindActionCreators(EditCanvas, dispatch),
+    AddHistory: bindActionCreators(AddHistory, dispatch),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(Layer);
+export default connect(mapStateToProps, mapDispatchToProps)(ComponentLayers);

@@ -2,7 +2,7 @@ import * as React from "react";
 /* eslint-disable */
 import { connect } from "react-redux";
 import { SetCanvas } from "../redux/actions/canvas";
-import { Component, Canvas } from "../redux/types/actions";
+import { Component, Canvas, History } from "../redux/types/actions";
 import { AppState } from "../redux/store/storeConfiguration";
 import { bindActionCreators } from "redux";
 import { AppActions } from "../redux/types/actions";
@@ -12,6 +12,7 @@ import { SetComponents } from "../redux/actions/components";
 import { Grid } from "@material-ui/core";
 import { CanvasStyling } from "../redux/types/actions";
 import clsx from "clsx";
+import { store } from "../redux/store/storeConfiguration";
 
 interface RendererProps {}
 
@@ -21,18 +22,18 @@ const useStyles = makeStyles((theme: Theme) =>
             minWidth: "100%",
             width: "100%",
         },
-        layer: {},
-        layerSelected: {
+        component: {},
+        componentSelected: {
             borderStyle: "dashed",
             borderWidth: "1px",
             borderColor: "#668ace",
         },
-        layerSelectedContainer: {
+        componentSelectedContainer: {
             borderStyle: "dashed",
             borderWidth: "2px",
             borderColor: "#668ace",
         },
-        layerSelectedCanvas: {
+        componentSelectedCanvas: {
             borderStyle: "dashed",
             borderWidth: "3px",
             borderColor: "#668ace",
@@ -41,24 +42,49 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 let idx: number = 0;
-let renderTimes: number = 0;
+// let renderTimes: number = 0;
 let newComponents = [];
 let canvasStyleChange: boolean = false;
 let componentChange: boolean = false;
 let renderedComponentsArr: JSX.Element[] = [];
+let storeComponents = store.getState().components;
 
 type Props = RendererProps & LinkStateProps & LinkDispatchProps;
 const Renderer: React.FC<Props> = (props) => {
-    const { components, canvasStyling, canvas } = props;
+    const { components, canvasStyling, canvas, history } = props;
     const classes = useStyles();
     const [renderedComponents, setRenderedComponents] = React.useState([]);
 
-    const returnComponent = (layer) => {
-        let id: number = layer.id;
-        let name: string = layer.name;
-        let innerText: string = layer.innerText;
-        let childrenVal: boolean = layer.children !== null;
-        switch (layer.type) {
+    const ReturnComponent = (component): JSX.Element => {
+        let id: number = component.id;
+        let name: string = component.name;
+        let innerText: string = component.innerText;
+        let childrenVal: boolean = component.children !== null;
+        switch (component.type) {
+            case "canvas":
+                if (childrenVal) {
+                    return (
+                        <div
+                            id={name}
+                            key={id}
+                            className={clsx(classes.component, {
+                                [classes.componentSelectedCanvas]: component.selected,
+                            })}>
+                            {innerText}
+                            {ReturnChildren(component)}
+                        </div>
+                    );
+                }
+                return (
+                    <div
+                        id={name}
+                        key={id}
+                        className={clsx(classes.component, {
+                            [classes.componentSelectedCanvas]: component.selected,
+                        })}>
+                        {innerText}
+                    </div>
+                );
             case "gridContainer":
                 if (childrenVal) {
                     return (
@@ -66,11 +92,11 @@ const Renderer: React.FC<Props> = (props) => {
                             container
                             id={name}
                             key={id}
-                            className={clsx(classes.layer, {
-                                [classes.layerSelectedContainer]: layer.selected,
+                            className={clsx(classes.component, {
+                                [classes.componentSelectedContainer]: component.selected,
                             })}>
                             {innerText}
-                            {returnChildren(layer)}
+                            {ReturnChildren(component)}
                         </Grid>
                     );
                 }
@@ -79,8 +105,8 @@ const Renderer: React.FC<Props> = (props) => {
                         container
                         id={name}
                         key={id}
-                        className={clsx(classes.layer, {
-                            [classes.layerSelectedContainer]: layer.selected,
+                        className={clsx(classes.component, {
+                            [classes.componentSelectedContainer]: component.selected,
                         })}>
                         {innerText}
                     </Grid>
@@ -92,11 +118,11 @@ const Renderer: React.FC<Props> = (props) => {
                             item
                             id={name}
                             key={id}
-                            className={clsx(classes.layer, {
-                                [classes.layerSelected]: layer.selected,
+                            className={clsx(classes.component, {
+                                [classes.componentSelected]: component.selected,
                             })}>
                             {innerText}
-                            {returnChildren(layer)}
+                            {ReturnChildren(component)}
                         </Grid>
                     );
                 }
@@ -105,47 +131,24 @@ const Renderer: React.FC<Props> = (props) => {
                         item
                         id={name}
                         key={id}
-                        className={clsx(classes.layer, {
-                            [classes.layerSelected]: layer.selected,
+                        className={clsx(classes.component, {
+                            [classes.componentSelected]: component.selected,
                         })}>
                         {innerText}
                     </Grid>
                 );
-            case "canvas":
-                if (childrenVal) {
-                    return (
-                        <div
-                            id={name}
-                            key={id}
-                            className={clsx(classes.layer, {
-                                [classes.layerSelectedCanvas]: layer.selected,
-                            })}>
-                            {innerText}
-                            {returnChildren(layer)}
-                        </div>
-                    );
-                }
-                return (
-                    <div
-                        id={name}
-                        key={id}
-                        className={clsx(classes.layer, {
-                            [classes.layerSelectedCanvas]: layer.selected,
-                        })}>
-                        {innerText}
-                    </div>
-                );
+
             default:
                 if (childrenVal) {
                     return (
                         <div
                             id={name}
                             key={id}
-                            className={clsx(classes.layer, {
-                                [classes.layerSelected]: layer.selected,
+                            className={clsx(classes.component, {
+                                [classes.componentSelected]: component.selected,
                             })}>
                             {innerText}
-                            {returnChildren(layer)}
+                            {ReturnChildren(component)}
                         </div>
                     );
                 }
@@ -153,30 +156,25 @@ const Renderer: React.FC<Props> = (props) => {
                     <div
                         id={name}
                         key={id}
-                        className={clsx(classes.layer, {
-                            [classes.layerSelected]: layer.selected,
+                        className={clsx(classes.component, {
+                            [classes.componentSelected]: component.selected,
                         })}>
                         {innerText}
                     </div>
                 );
         }
-        // }
-        // if (childrenVal) {
-        //     return <div key={id}>{returnChildren(layer)}</div>;
-        // }
-        // return <div key={id}></div>;
     };
 
-    const returnChildren = (layer): Array<JSX.Element> => {
+    const ReturnChildren = (component): Array<JSX.Element> => {
         let childrenArr: JSX.Element[] = [];
-        for (let i = 1; i < layer.children.length + 1; i++) {
+        for (let i = 1; i < component.children.length + 1; i++) {
             idx = idx + 1;
-            let layer = newComponents[idx];
-            if (layer == null || layer.isRendered) {
+            let component = newComponents[idx];
+            if (component == null || component.isRendered) {
                 return;
             }
-            layer.isRendered = true;
-            childrenArr.push(returnComponent(layer));
+            component.isRendered = true;
+            childrenArr.push(ReturnComponent(component));
         }
         return childrenArr;
     };
@@ -184,82 +182,90 @@ const Renderer: React.FC<Props> = (props) => {
     /*
     First start while loop and look at the first idx, it will be a root
     Send it to the render function where it first checks if there are children.
-    If not the component will be sent to the returnComponent function
-    If there are children then it will be sent to the returnComponent function and also have to trigger the function nested inside it to render the children/child.
+    If not the component will be sent to the ReturnComponent function
+    If there are children then it will be sent to the ReturnComponent function and also have to trigger the function nested inside it to render the children/child.
     It will run a loop of the children and all render them and check for their children and 
     do the work again to go through the children.
     */
 
-    const reRenderComponents = (): void => {
-        //Check for times rendered
-        renderTimes = renderTimes + 1;
-        // console.log("reRendering, render times: " + renderTimes);
-        //Check for style or properties changes and reset rendered elements
-        if (canvasStyleChange) {
-            setRenderedComponents([]);
-            // console.log("changing state");
-        } else if (componentChange) {
-            // console.log("changing components line 133");
-            renderedComponentsArr = [];
-        }
-        //Reset is rendered on the elements
-        // let oldComponents = newComponents.map((el) => {
-        //     return el;
-        // });
-        if (newComponents.length === 1 && newComponents[0].isRendered == true) {
-            console.log("rendered the first component");
-            return;
-        }
-        newComponents = components.map((element) => {
+    const CreateNewComponentList = (): Object[] => {
+        return components.map((element) => {
             let componentObject: Component = Object.assign({}, element);
             componentObject.isRendered = false;
             return componentObject;
         });
+    };
 
-        // console.log(newComponents);
-        // Init and check to see if there are any elements
-        let layer: Component = newComponents[idx];
-        if (layer) {
-            // Check to make sure that it is not rendered already
-            if (layer.isRendered) {
-                // console.warn("not rendering element: " + component.id);
+    const IsAlreadyRendered = (): boolean => {
+        return newComponents.length === 1 && newComponents[0].isRendered == true ? true : false;
+    };
+
+    const RenderCanvas = (): void => {
+        renderedComponentsArr = [ReturnComponent(newComponents[idx])];
+        setRenderedComponents([ReturnComponent(newComponents[idx])]);
+        idx = idx + 1;
+    };
+
+    const IsComponentAlreadyRendered = (component): boolean => {
+        return !component || component.isRendered == true || component.parent !== null ? true : false;
+    };
+
+    const OnlyCanvas = (): boolean => {
+        return components.length === 1;
+    };
+
+    const IsRenderedComponentsEmpty = (i): boolean => {
+        return i === 1 && renderedComponents.length > 0;
+    };
+
+    const RenderAllComponents = (component): void => {
+        let newRenderedComponents: JSX.Element[] = [];
+        for (let i: number = 1; i < newComponents.length; i++) {
+            component = newComponents[idx];
+            if (IsComponentAlreadyRendered(component)) {
                 return;
             }
-            // Init a new array to
-            let newRenderedComponents: JSX.Element[] = [];
-            // setRenderedComponents([]); ----------------------
-            renderedComponentsArr = [];
-            if (components.length === 1) {
-                renderedComponentsArr = [returnComponent(newComponents[idx])];
-                setRenderedComponents([returnComponent(newComponents[idx])]);
-                idx = idx + 1;
-                return;
+            if (IsRenderedComponentsEmpty(i)) {
+                newRenderedComponents = newRenderedComponents.concat(ReturnComponent(component));
+            } else {
+                newRenderedComponents = renderedComponents.concat(ReturnComponent(component));
             }
-            for (let i: number = 1; i < newComponents.length; i++) {
-                layer = newComponents[idx];
-                if (!layer || layer.isRendered == true || layer.parent !== null) {
-                    return;
-                }
-                if (i == 1 && renderedComponents.length > 0) {
-                    newRenderedComponents = newRenderedComponents.concat(returnComponent(layer));
-                } else {
-                    newRenderedComponents = renderedComponents.concat(returnComponent(layer));
-                }
-                layer.isRendered = true;
-
-                idx = idx + 1;
-                setRenderedComponents(newRenderedComponents);
-                renderedComponentsArr = newRenderedComponents;
-            }
-        } else {
-            renderedComponentsArr = [];
-            idx = 0;
-            canvasStyleChange = false;
-            componentChange = false;
+            component.isRendered = true;
+            idx = idx + 1;
+            setRenderedComponents(newRenderedComponents);
+            renderedComponentsArr = newRenderedComponents;
         }
     };
 
-    const getSizing = () => {
+    const ResetRendering = (): void => {
+        renderedComponentsArr = [];
+        idx = 0;
+        canvasStyleChange = false;
+        componentChange = false;
+    };
+
+    const ReRenderComponents = (): void => {
+        if (IsAlreadyRendered()) {
+            return;
+        }
+        newComponents = CreateNewComponentList();
+        let component: Component = newComponents[idx];
+        if (component) {
+            if (component.isRendered) {
+                return;
+            }
+            renderedComponentsArr = [];
+            if (OnlyCanvas()) {
+                RenderCanvas();
+                return;
+            }
+            RenderAllComponents(component);
+        } else {
+            ResetRendering();
+        }
+    };
+
+    const GetSizing = () => {
         if (canvasStyling.boxSizing == "border-box") {
             return "border-box";
         } else {
@@ -267,21 +273,22 @@ const Renderer: React.FC<Props> = (props) => {
         }
     };
 
-    const getFontSizing = () => {
+    const GetFontSizing = () => {
         return canvasStyling.fontSize.toString() + "px";
     };
 
-    const renderComponents = (): JSX.Element[] => {
+    const RenderComponents = (): JSX.Element[] => {
         return renderedComponentsArr;
     };
 
     React.useEffect(() => {
         canvasStyleChange = true;
-        reRenderComponents();
+        setRenderedComponents([]);
+        ReRenderComponents();
     }, [canvasStyling]);
 
     React.useEffect(() => {
-        reRenderComponents();
+        ReRenderComponents();
     }, [components, newComponents, renderedComponentsArr]);
 
     return (
@@ -289,10 +296,10 @@ const Renderer: React.FC<Props> = (props) => {
             id="renderer-component"
             className={classes.renderer}
             style={{
-                fontSize: getFontSizing(),
-                boxSizing: getSizing(),
+                fontSize: GetFontSizing(),
+                boxSizing: GetSizing(),
             }}>
-            {renderComponents()}
+            {RenderComponents()}
         </div>
     );
 };
@@ -300,12 +307,14 @@ interface LinkStateProps {
     components: Component[];
     canvas: Canvas;
     canvasStyling: CanvasStyling;
+    history: History;
 }
 
 const mapStateToProps = (state: AppState, ownProps: RendererProps): LinkStateProps => ({
     components: state.components,
     canvas: state.canvas,
     canvasStyling: state.canvasStyling,
+    history: state.history,
 });
 
 interface LinkDispatchProps {

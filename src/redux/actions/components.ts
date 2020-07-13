@@ -1,78 +1,123 @@
 import {
     AppActions,
     Component,
+    CopiedComponent,
+    Undo,
+    Redo,
     SET_COMPONENTS,
     DELETE_COMPONENT,
     ADD_COMPONENT,
     EDIT_COMPONENT,
     EDIT_COMPONENTS,
     PASTE_COMPONENT,
+    UNDO_COMPONENT,
+    UNDO_COMPONENTS,
+    UNDO_DELETE_COMPONENTS,
+    REDO_COMPONENT,
 } from "../types/actions";
 import { Dispatch } from "redux";
 import { AppState } from "../store/storeConfiguration";
+import { store } from "../store/storeConfiguration";
 
-export const setComponents = (components: Component[]): AppActions => ({
-    type: SET_COMPONENTS,
-    components,
-});
-
-export const deleteComponent = (component: Component): AppActions => ({
-    type: DELETE_COMPONENT,
-    component,
-});
-
-export const addComponent = (component: Component): AppActions => ({
-    type: ADD_COMPONENT,
-    component,
-});
-
-export const editComponent = (component: Component): AppActions => ({
-    type: EDIT_COMPONENT,
-    component,
-});
-
-export const editComponents = (components: Component[]): AppActions => ({
-    type: EDIT_COMPONENTS,
-    components,
-});
-
-export const pasteComponent = (id: number): AppActions => ({
-    type: PASTE_COMPONENT,
-    id,
-});
-
-export const SetComponents = (components: Component[]) => {
+export function SetComponents(components: Component[]) {
     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
-        dispatch(setComponents(components));
+        dispatch({
+            type: SET_COMPONENTS,
+            components,
+        });
     };
-};
+}
 
-export const DeleteComponent = (component: Component) => {
+export function DeleteComponent(component: Component) {
     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
-        dispatch(deleteComponent(component));
+        dispatch({
+            type: DELETE_COMPONENT,
+            component,
+        });
     };
-};
+}
 
-export const AddComponent = (component: Component) => {
+export function AddComponent(component: Component) {
     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
-        dispatch(addComponent(component));
+        dispatch({
+            type: ADD_COMPONENT,
+            component,
+        });
     };
-};
+}
 
-export const EditComponent = (component: Component) => {
+export function EditComponent(component: Component) {
     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
-        dispatch(editComponent(component));
+        dispatch({
+            type: EDIT_COMPONENT,
+            component,
+        });
     };
-};
+}
 
-export const EditComponents = (components: Component[]) => {
+export function EditComponents(components: Component[]) {
     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
-        dispatch(editComponents(components));
+        dispatch({
+            type: EDIT_COMPONENTS,
+            components,
+        });
     };
-};
+}
 
-export const PasteComponent = (id: number) => {
+export function PasteComponent(id: number, copiedComponent: CopiedComponent) {
     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
-        dispatch(pasteComponent(id));
+        dispatch({
+            type: PASTE_COMPONENT,
+            id,
+            copiedComponent,
+        });
     };
-};
+}
+
+export function UndoComponent(undo: Undo[]) {
+    return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
+        let reduxStore = store.getState();
+        let historyStore = reduxStore.history;
+        dispatch({
+            type: UNDO_COMPONENT,
+            undo,
+            history: historyStore,
+        });
+    };
+}
+
+export function UndoComponents(undo: Undo[]) {
+    return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
+        let reduxStore = store.getState();
+        let historyStore = reduxStore.history;
+        dispatch({
+            type: UNDO_COMPONENTS,
+            undo,
+            history: historyStore,
+        });
+    };
+}
+
+export function UndoDeleteComponents(undo: Undo[]) {
+    return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
+        let reduxStore = store.getState();
+        let historyStore = reduxStore.history;
+        dispatch({
+            type: UNDO_DELETE_COMPONENTS,
+            undo,
+            history: historyStore,
+        });
+    };
+}
+
+export function RedoComponent(redo: Redo[]) {
+    return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
+        let reduxStore = store.getState();
+        let historyStore = reduxStore.history;
+        dispatch({
+            type: REDO_COMPONENT,
+            redo,
+            history: historyStore,
+        });
+    };
+}
