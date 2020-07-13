@@ -454,7 +454,8 @@ const PushParents = (oldComponents: Component[], state: Component[]): Component[
                 }
             } else {
                 if (!currentComponents[currentParentIdx].children.includes(oldComp.id)) {
-                    currentComponents[currentParentIdx].children.splice(oldComp.oldSequenceNumber, 0, oldComp.id);
+                    console.log(oldComp.sequenceNumber, "Sequence num");
+                    currentComponents[currentParentIdx].children.splice(oldComp.sequenceNumber, 0, oldComp.id);
                 }
             }
             currentComponents.push(oldComp);
