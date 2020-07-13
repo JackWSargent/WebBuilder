@@ -234,7 +234,7 @@ const AddComponentToArray = (
         }
         return component;
     });
-    return newComponentArr;
+    return BuildComponentOrder(newComponentArr);
 };
 
 const ReturnOldComponents = (components): Component[] => {
@@ -342,8 +342,6 @@ const ChangeSequenceNumbers = (components: Component[], parentIndex: number, id:
         newComponents = newComponents.map((comp) => {
             let newSequenceNumber = comp.sequenceNumber;
             if (comp.id == parent.children[i]) {
-                console.log(parent.children);
-                console.log({ ...comp, oldSequenceNumber: newSequenceNumber, sequenceNumber: i });
                 return {
                     ...comp,
                     oldSequenceNumber: newSequenceNumber,
@@ -454,7 +452,6 @@ const PushParents = (oldComponents: Component[], state: Component[]): Component[
                 }
             } else {
                 if (!currentComponents[currentParentIdx].children.includes(oldComp.id)) {
-                    console.log(oldComp.sequenceNumber, "Sequence num");
                     currentComponents[currentParentIdx].children.splice(oldComp.sequenceNumber, 0, oldComp.id);
                 }
             }
@@ -477,8 +474,6 @@ const EditComponent = (state: Component[], newComponent: Component): Component[]
     let newComponents = state.slice();
     return newComponents.map((component) => {
         if (component.id === newComponent.id) {
-            console.log("new component: ", { ...newComponent });
-
             return { ...newComponent };
         }
         return component;

@@ -125,12 +125,9 @@ interface ComponentLayersProps {}
 
 let deleteChange: boolean = false;
 type Props = ComponentLayersProps & LinkStateProps & LinkDispatchProps;
-let deletedComp = {};
 let changed: boolean = true;
 let renderedComponents: JSX.Element[] = [];
 let open: boolean = true;
-let storeComponents = store.getState().components;
-let oldComponents = store.getState().components.slice();
 
 const ComponentLayers: React.FC<Props> = (props) => {
     const { components, canvas, history, keyPress } = props;
@@ -142,7 +139,6 @@ const ComponentLayers: React.FC<Props> = (props) => {
 
     React.useEffect(() => {
         changed = false;
-        deleteChange = false;
     }, [event, changed, canvas, open, stateComponents, keyPress]);
 
     React.useEffect(() => {
@@ -171,7 +167,6 @@ const ComponentLayers: React.FC<Props> = (props) => {
         if (deletedComponent.type === "canvas") {
             return;
         }
-        deleteChange = true;
         changed = true;
         props.AddHistory({ undo: components });
         props.DeleteComponent(deletedComponent);
@@ -230,7 +225,6 @@ const ComponentLayers: React.FC<Props> = (props) => {
         let oldComponents: Component[] = components.slice();
         let newComponents: Component[] = CreateNewSelectedComponents(id, ctrl);
         if (!deleteChange) {
-            newComponents = BuildComponentOrder(newComponents);
             props.AddHistory({ undo: oldComponents });
             props.SetComponents(newComponents);
             setStateComponents(newComponents);
