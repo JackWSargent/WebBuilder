@@ -414,8 +414,6 @@ const UndoRedoComponent = (undo: Undo[], components: Component[]): Component[] =
 };
 
 const AtEndOfArray = (oldComp: Component, oldComponents: Component[], parentIdx: number): boolean => {
-    console.log(parentIdx);
-    console.log(oldComponents[parentIdx]);
     return oldComp.oldSequenceNumber === oldComponents[parentIdx].children.length;
 };
 
@@ -423,8 +421,6 @@ const AtBeginningOfArray = (oldComp: Component, oldComponents: Component[], pare
     if (oldComp.oldSequenceNumber === 0) {
         return true;
     }
-    console.log(oldComp);
-    console.log(oldComp.oldSequenceNumber);
 };
 
 const ChildComponentIsIncluded = (currentComponents: Component[], oldComp: Component): boolean => {
@@ -446,32 +442,20 @@ const PushParents = (oldComponents: Component[], state: Component[]): Component[
     let currentComponents: Component[] = state.slice();
     oldComponents.map((oldComp) => {
         if (!ChildComponentIsIncluded(currentComponents, oldComp) && ParentExists(currentComponents, oldComp)) {
-            console.log("doesnt include: " + oldComp.id);
-            console.log(currentComponents);
             let parentIdx: number = oldComponents.findIndex((comp) => comp.id === oldComp.parent);
             let currentParentIdx: number = currentComponents.findIndex((comp) => comp.id === oldComp.parent);
-            let oldIdx: number = oldComponents.findIndex((comp) => comp.id === oldComp.parent);
             if (AtEndOfArray(oldComp, oldComponents, parentIdx)) {
-                console.log("was at end of children array: oldCompArr");
-                console.log(oldComp);
                 if (!currentComponents[currentParentIdx].children.includes(oldComp.id)) {
                     currentComponents[currentParentIdx].children.push(oldComp.id);
                 }
             } else if (AtBeginningOfArray(oldComp, oldComponents, parentIdx)) {
-                console.log("was at beginning of children array: oldCompArr");
-                console.log(oldComp);
                 if (!currentComponents[currentParentIdx].children.includes(oldComp.id)) {
                     currentComponents[currentParentIdx].children.splice(oldComp.oldSequenceNumber, 0, oldComp.id);
                 }
             } else {
-                console.log("was NOT at end or beginning of children array: oldCompArr");
-                console.log(oldComp);
-                console.log(currentComponents[currentParentIdx].children);
                 if (!currentComponents[currentParentIdx].children.includes(oldComp.id)) {
                     currentComponents[currentParentIdx].children.splice(oldComp.oldSequenceNumber, 0, oldComp.id);
                 }
-                console.log(currentComponents[currentParentIdx].children);
-                console.log(oldComp.sequenceNumber, oldComp.id);
             }
             currentComponents.push(oldComp);
         }
