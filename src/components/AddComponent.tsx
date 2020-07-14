@@ -87,10 +87,10 @@ const NewComponent: React.FC<Props> = (props) => {
             children: null,
             parent: parentComponent.id,
             nestedLevel: parentComponent.nestedLevel + 1,
-            sequenceNumber: parentComponent.children.length ? parentComponent.children.length : 0,
+            sequenceNumber: parentComponent.children !== null ? parentComponent.children.length : 0,
         };
 
-        props.AddHistory({ undo: [newComponentObj] });
+        props.AddHistory({ undo: components });
         props.AddComponent(newComponentObj);
     };
 

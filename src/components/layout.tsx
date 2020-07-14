@@ -18,6 +18,7 @@ import {
     UndoComponent,
     UndoComponents,
     UndoDeleteComponents,
+    UndoAddComponents,
     RedoComponent,
 } from "../redux/actions/components";
 import { KeyDown, KeyUp } from "../redux/actions/keyPress";
@@ -97,12 +98,20 @@ const Layout: React.FC<Props> = (props) => {
     const UndoLastComponentArray = (storeComponents, undoArray): void => {
         let lastUndo = undoArray.length - 1;
         let undoneComponentArr = undoArray[lastUndo].comp;
-        let componentDifferential = false;
+        let componentDifferential = 0;
         if (storeComponents.length < undoneComponentArr.length) {
-            componentDifferential = true;
+            componentDifferential = 1;
         }
-        if (componentDifferential === true) {
+        if (storeComponents > undoneComponentArr.length) {
+            componentDifferential = -1;
+        }
+        if (componentDifferential === 1) {
             props.UndoDeleteComponents([...undoneComponentArr]);
+            props.UndoHistory(storeComponents);
+            return;
+        }
+        if (componentDifferential === -1) {
+            props.UndoAddComponents([...undoneComponentArr]);
             props.UndoHistory(storeComponents);
             return;
         }
@@ -201,6 +210,7 @@ interface LinkDispatchProps {
     UndoComponent: (undo: Undo[]) => void;
     UndoComponents: (undo: Undo[]) => void;
     UndoDeleteComponents: (undo: Undo[]) => void;
+    UndoAddComponents: (undo: Undo[]) => void;
     RedoComponent: (redo: Redo[]) => void;
 }
 
@@ -223,6 +233,7 @@ const mapDispatchToProps = (
     UndoComponent: bindActionCreators(UndoComponent, dispatch),
     UndoComponents: bindActionCreators(UndoComponents, dispatch),
     UndoDeleteComponents: bindActionCreators(UndoDeleteComponents, dispatch),
+    UndoAddComponents: bindActionCreators(UndoAddComponents, dispatch),
     RedoComponent: bindActionCreators(RedoComponent, dispatch),
 });
 

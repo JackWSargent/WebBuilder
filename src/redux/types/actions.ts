@@ -12,6 +12,7 @@ export const PASTE_COMPONENT = "PASTE_COMPONENT";
 export const UNDO_COMPONENT = "UNDO_COMPONENT";
 export const UNDO_COMPONENTS = "UNDO_COMPONENTS";
 export const UNDO_DELETE_COMPONENTS = "UNDO_DELETE_COMPONENTS";
+export const UNDO_ADD_COMPONENTS = "UNDO_ADD_COMPONENTS";
 export const REDO_COMPONENT = "REDO_COMPONENT";
 
 export const SET_CANVAS = "SET_CANVAS";
@@ -68,8 +69,8 @@ export interface Undo {
     canvas?: Canvas;
     id?: number;
     canvasStyling?: CanvasStyling;
-    boxSizing?: string;
     fontSize?: number;
+    boxSizing?: string;
     type?: string;
     innerText?: string;
     comp?: Object;
@@ -78,12 +79,15 @@ export interface Undo {
 export interface Redo {
     component?: Component;
     components?: Component[];
+    newComponents?: Component[];
     canvas?: Canvas;
     id?: number;
-    boxSizing?: string;
+    canvasStyling?: CanvasStyling;
     fontSize?: number;
+    boxSizing?: string;
     type?: string;
     innerText?: string;
+    comp?: Object;
 }
 
 export interface KeyPress {}
@@ -140,6 +144,12 @@ export interface UndoComponentsAction {
 
 export interface UndoDeleteComponentsAction {
     type: typeof UNDO_DELETE_COMPONENTS;
+    undo: Undo[];
+    history: History;
+}
+
+export interface UndoAddComponentsAction {
+    type: typeof UNDO_ADD_COMPONENTS;
     undo: Undo[];
     history: History;
 }
@@ -218,6 +228,7 @@ export type ComponentActionTypes =
     | UndoComponentAction
     | UndoComponentsAction
     | UndoDeleteComponentsAction
+    | UndoAddComponentsAction
     | RedoComponentAction;
 
 export type ClipboardActionTypes = CopyComponentAction;

@@ -13,6 +13,7 @@ import {
     UNDO_COMPONENT,
     UNDO_COMPONENTS,
     UNDO_DELETE_COMPONENTS,
+    UNDO_ADD_COMPONENTS,
     REDO_COMPONENT,
 } from "../types/actions";
 import { Dispatch } from "redux";
@@ -104,6 +105,18 @@ export function UndoDeleteComponents(undo: Undo[]) {
         let historyStore = reduxStore.history;
         dispatch({
             type: UNDO_DELETE_COMPONENTS,
+            undo,
+            history: historyStore,
+        });
+    };
+}
+
+export function UndoAddComponents(undo: Undo[]) {
+    return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
+        let reduxStore = store.getState();
+        let historyStore = reduxStore.history;
+        dispatch({
+            type: UNDO_ADD_COMPONENTS,
             undo,
             history: historyStore,
         });

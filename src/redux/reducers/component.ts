@@ -1,6 +1,7 @@
 import {
     Component,
     Undo,
+    CopiedComponent,
     AppActions,
     SET_COMPONENTS,
     DELETE_COMPONENT,
@@ -12,7 +13,7 @@ import {
     UNDO_COMPONENTS,
     REDO_COMPONENT,
     UNDO_DELETE_COMPONENTS,
-    CopiedComponent,
+    UNDO_ADD_COMPONENTS,
 } from "../types/actions";
 
 /* eslint-disable */
@@ -435,7 +436,7 @@ const ParentExists = (currentComponents: Component[], oldComp: Component): boole
     return parent[0] && parent[0].children ? true : false;
 };
 
-const PushParents = (oldComponents: Component[], state: Component[]): Component[] => {
+const PushComponent = (oldComponents: Component[], state: Component[]): Component[] => {
     let currentComponents: Component[] = state.slice();
     oldComponents.map((oldComp) => {
         if (!ChildComponentIsIncluded(currentComponents, oldComp) && ParentExists(currentComponents, oldComp)) {
@@ -460,13 +461,35 @@ const PushParents = (oldComponents: Component[], state: Component[]): Component[
     return BuildComponentOrder(currentComponents);
 };
 
+const DeleteComponents = (oldComponents: Component[], state: Component[]): Component[] => {
+    let newComponents = state.slice();
+    let addedComponent = FindAddedComponent(oldComponents, state);
+    newComponents = DeleteComponent(addedComponent, state);
+    return BuildComponentOrder(newComponents);
+};
+
+const FindAddedComponent = (oldComponents: Component[], state: Component[]): Component => {
+    let component = {};
+    state.forEach((comp) => {
+        if (!oldComponents.includes(comp)) {
+            component = comp;
+        }
+    });
+    return component;
+};
+
 const GetPreviousComponentArray = (lastUndo: Array<any>): Component[] => {
     return lastUndo[lastUndo.length - 1].comp.slice();
 };
 
 const UndoDeleteComponents = (lastUndo: Array<any>, state: Component[]): Component[] => {
     let previousComponents: any[] = [lastUndo[lastUndo.length - 1].comp];
-    return PushParents(previousComponents[0], state);
+    return PushComponent(previousComponents[0], state);
+};
+
+const UndoAddComponents = (lastUndo: Array<any>, state: Component[]): Component[] => {
+    let previousComponents: any[] = [lastUndo[lastUndo.length - 1].comp];
+    return DeleteComponents(previousComponents[0], state);
 };
 
 const EditComponent = (state: Component[], newComponent: Component): Component[] => {
@@ -505,7 +528,7 @@ const PasteComponent = (components: Component[], id: number, copiedComponent: Co
 const componentReducer = (state = componentsReducerDefaultState, action: AppActions) => {
     switch (action.type) {
         case ADD_COMPONENT:
-            return BuildComponentOrder(AddComponent([...state, action.component]));
+            return AddComponent([...state, action.component]);
         case EDIT_COMPONENT:
             return EditComponent(state, action.component);
         case EDIT_COMPONENTS:
@@ -522,6 +545,8 @@ const componentReducer = (state = componentsReducerDefaultState, action: AppActi
             return GetPreviousComponentArray(action.history.undo);
         case UNDO_DELETE_COMPONENTS:
             return UndoDeleteComponents(action.history.undo, state);
+        case UNDO_ADD_COMPONENTS:
+            return UndoAddComponents(action.history.undo, state);
         case REDO_COMPONENT:
             return UndoRedoComponent(action.history.redo, state);
         default:
