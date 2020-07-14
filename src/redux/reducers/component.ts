@@ -10,10 +10,13 @@ import {
     EDIT_COMPONENTS,
     PASTE_COMPONENT,
     UNDO_COMPONENT,
-    UNDO_COMPONENTS,
     REDO_COMPONENT,
+    UNDO_COMPONENTS,
+    REDO_COMPONENTS,
     UNDO_DELETE_COMPONENTS,
+    REDO_DELETE_COMPONENTS,
     UNDO_ADD_COMPONENTS,
+    REDO_ADD_COMPONENTS,
 } from "../types/actions";
 
 /* eslint-disable */
@@ -479,8 +482,11 @@ const FindAddedComponent = (oldComponents: Component[], state: Component[]): Com
 };
 
 const GetPreviousComponentArray = (lastUndo: Array<any>): Component[] => {
+    console.log(lastUndo);
     return lastUndo[lastUndo.length - 1].comp.slice();
 };
+
+// const GetOldComponentArray = (oldArray: Array<any>): Component[] => {};
 
 const UndoDeleteComponents = (lastUndo: Array<any>, state: Component[]): Component[] => {
     let previousComponents: any[] = [lastUndo[lastUndo.length - 1].comp];
@@ -541,14 +547,21 @@ const componentReducer = (state = componentsReducerDefaultState, action: AppActi
             return BuildComponentOrder(action.components);
         case UNDO_COMPONENT:
             return UndoRedoComponent(action.history.undo, state);
-        case UNDO_COMPONENTS:
-            return GetPreviousComponentArray(action.history.undo);
-        case UNDO_DELETE_COMPONENTS:
-            return UndoDeleteComponents(action.history.undo, state);
-        case UNDO_ADD_COMPONENTS:
-            return UndoAddComponents(action.history.undo, state);
         case REDO_COMPONENT:
             return UndoRedoComponent(action.history.redo, state);
+        case UNDO_COMPONENTS:
+            return GetPreviousComponentArray(action.history.undo);
+        case REDO_COMPONENTS:
+            return GetPreviousComponentArray(action.history.redo);
+        case UNDO_DELETE_COMPONENTS:
+            return UndoDeleteComponents(action.history.undo, state);
+        case REDO_DELETE_COMPONENTS:
+            return UndoDeleteComponents(action.history.redo, state);
+        case UNDO_ADD_COMPONENTS:
+            return UndoAddComponents(action.history.undo, state);
+        case REDO_ADD_COMPONENTS:
+            return UndoAddComponents(action.history.redo, state);
+
         default:
             return state;
     }

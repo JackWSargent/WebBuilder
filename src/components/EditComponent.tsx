@@ -105,10 +105,13 @@ const EditComponentTab: React.FC<Props> = (props) => {
             nestedLevel: selectedComp.nestedLevel,
             parent: selectedComp.parent,
             children: selectedComp.children,
-            selected: selectedComp.selected, //
+            selected: selectedComp.selected,
             innerText: newComponentInnerText,
             sequenceNumber: selectedComp.sequenceNumber,
         };
+        if (components.includes(newComponent)) {
+            return;
+        }
         props.EditComponent(newComponent);
         props.AddHistory({ undo: [selectedComp] });
     };
