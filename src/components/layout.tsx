@@ -204,7 +204,9 @@ const Layout: React.FC<Props> = (props) => {
         });
         window.addEventListener("keyup", (event) => {
             props.KeyUp(event.keyCode);
-            props.EnableDispatch();
+            if (!canDispatch) {
+                props.EnableDispatch();
+            }
             event.preventDefault();
         });
     }, [components, history]);

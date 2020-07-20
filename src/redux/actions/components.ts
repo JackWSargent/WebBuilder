@@ -11,13 +11,13 @@ import {
     EDIT_COMPONENTS,
     PASTE_COMPONENT,
     UNDO_COMPONENT,
+    REDO_COMPONENT,
     UNDO_COMPONENTS,
+    REDO_COMPONENTS,
     UNDO_DELETE_COMPONENTS,
     REDO_DELETE_COMPONENTS,
     UNDO_ADD_COMPONENTS,
     REDO_ADD_COMPONENTS,
-    REDO_COMPONENT,
-    REDO_COMPONENTS,
 } from "../types/actions";
 import { Dispatch } from "redux";
 import { AppState } from "../store/storeConfiguration";

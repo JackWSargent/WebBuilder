@@ -37,7 +37,7 @@ type Props = NewComponentProps & LinkStateProps & LinkDispatchProps;
 const NewComponent: React.FC<Props> = (props) => {
     const { components, history } = props;
     const classes = useStyles();
-    const [open, setOpen] = React.useState(false);
+    const [open, setOpen] = React.useState(true);
     const [newComponentType, setNewComponentType] = React.useState("gridContainer");
 
     React.useEffect(() => {}, [open]);

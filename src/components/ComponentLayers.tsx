@@ -19,6 +19,7 @@ import ListItem from "@material-ui/core/ListItem";
 // import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
 import CanvasStyle from "./CanvasStyle";
 import NewComponent from "./AddComponent";
+import LoadConfig from "./LoadConfig";
 import EditComponentTab from "./EditComponent";
 import { connect } from "react-redux";
 import { SetComponents, DeleteComponent, EditComponent, EditComponents } from "../redux/actions/components";
@@ -358,6 +359,7 @@ const ComponentLayers: React.FC<Props> = (props) => {
 
                     <CanvasStyle />
                     <NewComponent />
+                    <LoadConfig />
                 </Drawer>
 
                 <Drawer

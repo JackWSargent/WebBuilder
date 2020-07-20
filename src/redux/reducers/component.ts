@@ -18,7 +18,6 @@ import {
     UNDO_ADD_COMPONENTS,
     REDO_ADD_COMPONENTS,
 } from "../types/actions";
-
 /* eslint-disable */
 
 const componentsReducerDefaultState: Component[] = [
@@ -175,12 +174,13 @@ export function BuildComponentOrder(componentArray: Component[]): Component[] {
     let areMoreComponents: boolean = true;
     let newArray: Component[] = [];
     for (let current = 0; areMoreComponents; current++) {
-        if (!componentArray[current]) {
+        let currentComponent = componentArray[current];
+        if (!currentComponent) {
             areMoreComponents = false;
             return newArray;
         }
-        if (!newArray.includes(componentArray[current]) && !componentArray[current].parent) {
-            newArray.push(componentArray[current]);
+        if (!newArray.includes(currentComponent) && !currentComponent.parent) {
+            newArray.push(currentComponent);
             newArray.concat(RunDownNestedComponents(current, componentArray, newArray));
         } else {
             if (LengthsAreEqual(newArray, componentArray)) {
@@ -329,7 +329,6 @@ const GetSiblings = (components: Component[], parentIndex: number): boolean => {
 };
 
 const IsLastChild = (components: Component[], parentIndex: number, id: number): boolean => {
-    //At end of array inside parent children array
     if (components[parentIndex].children.indexOf(id) === components[parentIndex].children.length - 1) {
         return true;
     }
@@ -338,9 +337,8 @@ const IsLastChild = (components: Component[], parentIndex: number, id: number): 
 
 const ChangeSequenceNumbers = (components: Component[], parentIndex: number, id: number): Component[] => {
     let newComponents = components.slice();
-    //Reset the sequence numbers of the children that are left by looping through the
-    //parent's children and then map through the components, match the id and change the sequence number to the index of the loop initially started
     let parent = components[parentIndex];
+    // Run through
     for (let i: number = 0; i < parent.children.length; i++) {
         newComponents = newComponents.map((comp) => {
             let newSequenceNumber = comp.sequenceNumber;
@@ -439,23 +437,28 @@ const ParentExists = (currentComponents: Component[], oldComp: Component): boole
     return parent[0] && parent[0].children ? true : false;
 };
 
+const ContainsOldComponent = (currentChildren: number[], id: number): boolean => {
+    return currentChildren.includes(id);
+};
+
 const PushComponent = (oldComponents: Component[], state: Component[]): Component[] => {
     let currentComponents: Component[] = state.slice();
     oldComponents.map((oldComp) => {
         if (!ChildComponentIsIncluded(currentComponents, oldComp) && ParentExists(currentComponents, oldComp)) {
             let parentIdx: number = oldComponents.findIndex((comp) => comp.id === oldComp.parent);
             let currentParentIdx: number = currentComponents.findIndex((comp) => comp.id === oldComp.parent);
+            let currentChildren = currentComponents[currentParentIdx].children;
             if (AtEndOfArray(oldComp, oldComponents, parentIdx)) {
-                if (!currentComponents[currentParentIdx].children.includes(oldComp.id)) {
-                    currentComponents[currentParentIdx].children.push(oldComp.id);
+                if (!ContainsOldComponent(currentChildren, oldComp.id)) {
+                    currentChildren.push(oldComp.id);
                 }
             } else if (AtBeginningOfArray(oldComp, oldComponents, parentIdx)) {
-                if (!currentComponents[currentParentIdx].children.includes(oldComp.id)) {
-                    currentComponents[currentParentIdx].children.splice(oldComp.oldSequenceNumber, 0, oldComp.id);
+                if (!ContainsOldComponent(currentChildren, oldComp.id)) {
+                    currentChildren.splice(oldComp.oldSequenceNumber, 0, oldComp.id);
                 }
             } else {
-                if (!currentComponents[currentParentIdx].children.includes(oldComp.id)) {
-                    currentComponents[currentParentIdx].children.splice(oldComp.sequenceNumber, 0, oldComp.id);
+                if (!ContainsOldComponent(currentChildren, oldComp.id)) {
+                    currentChildren.splice(oldComp.sequenceNumber, 0, oldComp.id);
                 }
             }
             currentComponents.push(oldComp);
@@ -482,11 +485,8 @@ const FindAddedComponent = (oldComponents: Component[], state: Component[]): Com
 };
 
 const GetPreviousComponentArray = (lastUndo: Array<any>): Component[] => {
-    console.log(lastUndo);
     return lastUndo[lastUndo.length - 1].comp.slice();
 };
-
-// const GetOldComponentArray = (oldArray: Array<any>): Component[] => {};
 
 const UndoDeleteComponents = (lastUndo: Array<any>, state: Component[]): Component[] => {
     let previousComponents: any[] = [lastUndo[lastUndo.length - 1].comp];
