@@ -16,12 +16,19 @@ export let historyReducerDefaultState: History = {
 
 export let canDispatch = true;
 
-const IsComponent = (state, undoRef): boolean => {
-    return state.undo[state.undo.length - 1] !== undoRef[undoRef.length - 1] && undoRef[0].id;
+const IsComponent = (state, undoRedoRef): boolean => {
+    return state.undo[state.undo.length - 1] !== undoRedoRef[undoRedoRef.length - 1] && undoRedoRef[0].id;
 };
 
 const IsComponentArray = (undoRef): boolean => {
     return undoRef.length > 1 && undoRef[0].id;
+};
+
+const IsCanvasStyling = (undoRef): boolean => {
+    if (!undoRef[0]) {
+        return undoRef;
+    }
+    return undoRef[0].fontSizing || undoRef[0].boxSizing;
 };
 
 const AddHistory = (lastUndo, state): History => {
@@ -34,6 +41,8 @@ const AddHistory = (lastUndo, state): History => {
         newUndoArr = state.undo.concat({ comp: undoRef });
     } else if (IsComponent(state, undoRef)) {
         newUndoArr = state.undo.concat(...undoRef);
+    } else if (IsCanvasStyling(undoRef)) {
+        newUndoArr = state.undo.concat({ ...undoRef[0] });
     }
     let newRedoArr: Redo[] = [];
     return {
@@ -47,9 +56,18 @@ const UndoHistory = (redo, state): History => {
         canDispatch = false;
         return state;
     }
-    let undoArr = state.undo.slice();
-    let redoArr = state.redo.slice();
-    redoArr.push(redo);
+    let redoRef = redo;
+    let undoArr = state.undo;
+    let redoArr = [];
+    if (IsComponentArray(redoRef)) {
+        redoArr = state.redo.concat({ comp: redoRef });
+    } else if (IsComponent(state, [redoRef])) {
+        redoArr = state.redo.concat(redoRef);
+    } else if (IsCanvasStyling(redoRef)) {
+        redoArr = state.redo.concat(redoRef);
+    } else {
+        redoArr = state.redo;
+    }
     undoArr.splice(undoArr.length - 1, 1);
     canDispatch = false;
     return {
@@ -63,9 +81,18 @@ const RedoHistory = (undo, state): History => {
         canDispatch = false;
         return state;
     }
-    let newUndoArray = state.undo.slice();
-    let newRedoArray = state.redo.slice();
-    newUndoArray.push(undo);
+    let undoRef = undo;
+    let newUndoArray = [];
+    let newRedoArray = state.redo;
+    if (IsComponentArray(undoRef)) {
+        newUndoArray = state.undo.concat({ comp: undoRef });
+    } else if (IsComponent(state, [undoRef])) {
+        newUndoArray = state.undo.concat(undoRef);
+    } else if (IsCanvasStyling(undoRef)) {
+        newUndoArray = state.undo.concat({ ...undoRef[0] });
+    } else {
+        newUndoArray = state.undo;
+    }
     newRedoArray.splice(newRedoArray.length - 1, 1);
     canDispatch = false;
     return {

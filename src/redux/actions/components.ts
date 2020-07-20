@@ -11,9 +11,13 @@ import {
     EDIT_COMPONENTS,
     PASTE_COMPONENT,
     UNDO_COMPONENT,
-    UNDO_COMPONENTS,
-    UNDO_DELETE_COMPONENTS,
     REDO_COMPONENT,
+    UNDO_COMPONENTS,
+    REDO_COMPONENTS,
+    UNDO_DELETE_COMPONENTS,
+    REDO_DELETE_COMPONENTS,
+    UNDO_ADD_COMPONENTS,
+    REDO_ADD_COMPONENTS,
 } from "../types/actions";
 import { Dispatch } from "redux";
 import { AppState } from "../store/storeConfiguration";
@@ -86,6 +90,18 @@ export function UndoComponent(undo: Undo[]) {
     };
 }
 
+export function RedoComponent(redo: Redo[]) {
+    return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
+        let reduxStore = store.getState();
+        let historyStore = reduxStore.history;
+        dispatch({
+            type: REDO_COMPONENT,
+            redo,
+            history: historyStore,
+        });
+    };
+}
+
 export function UndoComponents(undo: Undo[]) {
     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
         let reduxStore = store.getState();
@@ -93,6 +109,18 @@ export function UndoComponents(undo: Undo[]) {
         dispatch({
             type: UNDO_COMPONENTS,
             undo,
+            history: historyStore,
+        });
+    };
+}
+
+export function RedoComponents(redo: Redo[]) {
+    return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
+        let reduxStore = store.getState();
+        let historyStore = reduxStore.history;
+        dispatch({
+            type: REDO_COMPONENTS,
+            redo,
             history: historyStore,
         });
     };
@@ -110,12 +138,36 @@ export function UndoDeleteComponents(undo: Undo[]) {
     };
 }
 
-export function RedoComponent(redo: Redo[]) {
+export function RedoDeleteComponents(redo: Redo[]) {
     return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
         let reduxStore = store.getState();
         let historyStore = reduxStore.history;
         dispatch({
-            type: REDO_COMPONENT,
+            type: REDO_DELETE_COMPONENTS,
+            redo,
+            history: historyStore,
+        });
+    };
+}
+
+export function UndoAddComponents(undo: Undo[]) {
+    return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
+        let reduxStore = store.getState();
+        let historyStore = reduxStore.history;
+        dispatch({
+            type: UNDO_ADD_COMPONENTS,
+            undo,
+            history: historyStore,
+        });
+    };
+}
+
+export function RedoAddComponents(redo: Redo[]) {
+    return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
+        let reduxStore = store.getState();
+        let historyStore = reduxStore.history;
+        dispatch({
+            type: REDO_ADD_COMPONENTS,
             redo,
             history: historyStore,
         });

@@ -1,6 +1,7 @@
 import {
     Component,
     Undo,
+    CopiedComponent,
     AppActions,
     SET_COMPONENTS,
     DELETE_COMPONENT,
@@ -9,13 +10,14 @@ import {
     EDIT_COMPONENTS,
     PASTE_COMPONENT,
     UNDO_COMPONENT,
-    UNDO_COMPONENTS,
     REDO_COMPONENT,
+    UNDO_COMPONENTS,
+    REDO_COMPONENTS,
     UNDO_DELETE_COMPONENTS,
-    CopiedComponent,
+    REDO_DELETE_COMPONENTS,
+    UNDO_ADD_COMPONENTS,
+    REDO_ADD_COMPONENTS,
 } from "../types/actions";
-import { EditorFormatListBulleted } from "material-ui/svg-icons";
-
 /* eslint-disable */
 
 const componentsReducerDefaultState: Component[] = [
@@ -172,12 +174,13 @@ export function BuildComponentOrder(componentArray: Component[]): Component[] {
     let areMoreComponents: boolean = true;
     let newArray: Component[] = [];
     for (let current = 0; areMoreComponents; current++) {
-        if (!componentArray[current]) {
+        let currentComponent = componentArray[current];
+        if (!currentComponent) {
             areMoreComponents = false;
             return newArray;
         }
-        if (!newArray.includes(componentArray[current]) && !componentArray[current].parent) {
-            newArray.push(componentArray[current]);
+        if (!newArray.includes(currentComponent) && !currentComponent.parent) {
+            newArray.push(currentComponent);
             newArray.concat(RunDownNestedComponents(current, componentArray, newArray));
         } else {
             if (LengthsAreEqual(newArray, componentArray)) {
@@ -234,7 +237,7 @@ const AddComponentToArray = (
         }
         return component;
     });
-    return newComponentArr;
+    return BuildComponentOrder(newComponentArr);
 };
 
 const ReturnOldComponents = (components): Component[] => {
@@ -326,7 +329,6 @@ const GetSiblings = (components: Component[], parentIndex: number): boolean => {
 };
 
 const IsLastChild = (components: Component[], parentIndex: number, id: number): boolean => {
-    //At end of array inside parent children array
     if (components[parentIndex].children.indexOf(id) === components[parentIndex].children.length - 1) {
         return true;
     }
@@ -335,15 +337,12 @@ const IsLastChild = (components: Component[], parentIndex: number, id: number): 
 
 const ChangeSequenceNumbers = (components: Component[], parentIndex: number, id: number): Component[] => {
     let newComponents = components.slice();
-    //Reset the sequence numbers of the children that are left by looping through the
-    //parent's children and then map through the components, match the id and change the sequence number to the index of the loop initially started
     let parent = components[parentIndex];
+    // Run through
     for (let i: number = 0; i < parent.children.length; i++) {
         newComponents = newComponents.map((comp) => {
             let newSequenceNumber = comp.sequenceNumber;
             if (comp.id == parent.children[i]) {
-                console.log(parent.children);
-                console.log({ ...comp, oldSequenceNumber: newSequenceNumber, sequenceNumber: i });
                 return {
                     ...comp,
                     oldSequenceNumber: newSequenceNumber,
@@ -414,8 +413,6 @@ const UndoRedoComponent = (undo: Undo[], components: Component[]): Component[] =
 };
 
 const AtEndOfArray = (oldComp: Component, oldComponents: Component[], parentIdx: number): boolean => {
-    console.log(parentIdx);
-    console.log(oldComponents[parentIdx]);
     return oldComp.oldSequenceNumber === oldComponents[parentIdx].children.length;
 };
 
@@ -423,8 +420,6 @@ const AtBeginningOfArray = (oldComp: Component, oldComponents: Component[], pare
     if (oldComp.oldSequenceNumber === 0) {
         return true;
     }
-    console.log(oldComp);
-    console.log(oldComp.oldSequenceNumber);
 };
 
 const ChildComponentIsIncluded = (currentComponents: Component[], oldComp: Component): boolean => {
@@ -442,41 +437,51 @@ const ParentExists = (currentComponents: Component[], oldComp: Component): boole
     return parent[0] && parent[0].children ? true : false;
 };
 
-const PushParents = (oldComponents: Component[], state: Component[]): Component[] => {
+const ContainsOldComponent = (currentChildren: number[], id: number): boolean => {
+    return currentChildren.includes(id);
+};
+
+const PushComponent = (oldComponents: Component[], state: Component[]): Component[] => {
     let currentComponents: Component[] = state.slice();
     oldComponents.map((oldComp) => {
         if (!ChildComponentIsIncluded(currentComponents, oldComp) && ParentExists(currentComponents, oldComp)) {
-            console.log("doesnt include: " + oldComp.id);
-            console.log(currentComponents);
             let parentIdx: number = oldComponents.findIndex((comp) => comp.id === oldComp.parent);
             let currentParentIdx: number = currentComponents.findIndex((comp) => comp.id === oldComp.parent);
-            let oldIdx: number = oldComponents.findIndex((comp) => comp.id === oldComp.parent);
+            let currentChildren = currentComponents[currentParentIdx].children;
             if (AtEndOfArray(oldComp, oldComponents, parentIdx)) {
-                console.log("was at end of children array: oldCompArr");
-                console.log(oldComp);
-                if (!currentComponents[currentParentIdx].children.includes(oldComp.id)) {
-                    currentComponents[currentParentIdx].children.push(oldComp.id);
+                if (!ContainsOldComponent(currentChildren, oldComp.id)) {
+                    currentChildren.push(oldComp.id);
                 }
             } else if (AtBeginningOfArray(oldComp, oldComponents, parentIdx)) {
-                console.log("was at beginning of children array: oldCompArr");
-                console.log(oldComp);
-                if (!currentComponents[currentParentIdx].children.includes(oldComp.id)) {
-                    currentComponents[currentParentIdx].children.splice(oldComp.oldSequenceNumber, 0, oldComp.id);
+                if (!ContainsOldComponent(currentChildren, oldComp.id)) {
+                    currentChildren.splice(oldComp.oldSequenceNumber, 0, oldComp.id);
                 }
             } else {
-                console.log("was NOT at end or beginning of children array: oldCompArr");
-                console.log(oldComp);
-                console.log(currentComponents[currentParentIdx].children);
-                if (!currentComponents[currentParentIdx].children.includes(oldComp.id)) {
-                    currentComponents[currentParentIdx].children.splice(oldComp.oldSequenceNumber, 0, oldComp.id);
+                if (!ContainsOldComponent(currentChildren, oldComp.id)) {
+                    currentChildren.splice(oldComp.sequenceNumber, 0, oldComp.id);
                 }
-                console.log(currentComponents[currentParentIdx].children);
-                console.log(oldComp.sequenceNumber, oldComp.id);
             }
             currentComponents.push(oldComp);
         }
     });
     return BuildComponentOrder(currentComponents);
+};
+
+const DeleteComponents = (oldComponents: Component[], state: Component[]): Component[] => {
+    let newComponents = state.slice();
+    let addedComponent = FindAddedComponent(oldComponents, state);
+    newComponents = DeleteComponent(addedComponent, state);
+    return BuildComponentOrder(newComponents);
+};
+
+const FindAddedComponent = (oldComponents: Component[], state: Component[]): Component => {
+    let component = {};
+    state.forEach((comp) => {
+        if (!oldComponents.includes(comp)) {
+            component = comp;
+        }
+    });
+    return component;
 };
 
 const GetPreviousComponentArray = (lastUndo: Array<any>): Component[] => {
@@ -485,15 +490,18 @@ const GetPreviousComponentArray = (lastUndo: Array<any>): Component[] => {
 
 const UndoDeleteComponents = (lastUndo: Array<any>, state: Component[]): Component[] => {
     let previousComponents: any[] = [lastUndo[lastUndo.length - 1].comp];
-    return PushParents(previousComponents[0], state);
+    return PushComponent(previousComponents[0], state);
+};
+
+const UndoAddComponents = (lastUndo: Array<any>, state: Component[]): Component[] => {
+    let previousComponents: any[] = [lastUndo[lastUndo.length - 1].comp];
+    return DeleteComponents(previousComponents[0], state);
 };
 
 const EditComponent = (state: Component[], newComponent: Component): Component[] => {
     let newComponents = state.slice();
     return newComponents.map((component) => {
         if (component.id === newComponent.id) {
-            console.log("new component: ", { ...newComponent });
-
             return { ...newComponent };
         }
         return component;
@@ -526,7 +534,7 @@ const PasteComponent = (components: Component[], id: number, copiedComponent: Co
 const componentReducer = (state = componentsReducerDefaultState, action: AppActions) => {
     switch (action.type) {
         case ADD_COMPONENT:
-            return BuildComponentOrder(AddComponent([...state, action.component]));
+            return AddComponent([...state, action.component]);
         case EDIT_COMPONENT:
             return EditComponent(state, action.component);
         case EDIT_COMPONENTS:
@@ -539,12 +547,21 @@ const componentReducer = (state = componentsReducerDefaultState, action: AppActi
             return BuildComponentOrder(action.components);
         case UNDO_COMPONENT:
             return UndoRedoComponent(action.history.undo, state);
-        case UNDO_COMPONENTS:
-            return GetPreviousComponentArray(action.history.undo);
-        case UNDO_DELETE_COMPONENTS:
-            return UndoDeleteComponents(action.history.undo, state);
         case REDO_COMPONENT:
             return UndoRedoComponent(action.history.redo, state);
+        case UNDO_COMPONENTS:
+            return GetPreviousComponentArray(action.history.undo);
+        case REDO_COMPONENTS:
+            return GetPreviousComponentArray(action.history.redo);
+        case UNDO_DELETE_COMPONENTS:
+            return UndoDeleteComponents(action.history.undo, state);
+        case REDO_DELETE_COMPONENTS:
+            return UndoDeleteComponents(action.history.redo, state);
+        case UNDO_ADD_COMPONENTS:
+            return UndoAddComponents(action.history.undo, state);
+        case REDO_ADD_COMPONENTS:
+            return UndoAddComponents(action.history.redo, state);
+
         default:
             return state;
     }

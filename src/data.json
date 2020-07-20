@@ -1,0 +1,108 @@
+{
+  "Canvas": {
+    "drawerOpen": true,
+    "drawerLeftMargin": 240,
+    "drawerClicked": false
+  },
+  "CanvasStyling": {
+    "fontSize": 24,
+    "boxSizing": "border-box"
+  },
+  "Clipboard": {
+    "name": "",
+    "type": "",
+    "innerText": ""
+  },
+  "Components": [
+    {
+      "id": 100,
+      "isRendered": false,
+      "name": "Canvas",
+      "type": "canvas",
+      "selected": false,
+      "children": [
+        200,
+        600
+      ],
+      "parent": null,
+      "nestedLevel": 0,
+      "innerText": "",
+      "sequenceNumber": null,
+      "oldSequenceNumber": null
+    },
+    {
+      "id": 200,
+      "isRendered": false,
+      "name": "Item",
+      "type": "gridItem",
+      "selected": false,
+      "children": [
+        300,
+        400,
+        500
+      ],
+      "parent": 100,
+      "nestedLevel": 1,
+      "innerText": "",
+      "sequenceNumber": 0,
+      "oldSequenceNumber": null
+    },
+    {
+      "id": 300,
+      "isRendered": false,
+      "name": "Item2",
+      "type": "gridItem",
+      "selected": false,
+      "children": null,
+      "parent": 200,
+      "nestedLevel": 2,
+      "innerText": "",
+      "sequenceNumber": 0,
+      "oldSequenceNumber": null
+    },
+    {
+      "id": 400,
+      "isRendered": false,
+      "name": "Item3",
+      "type": "gridItem",
+      "selected": false,
+      "children": null,
+      "parent": 200,
+      "nestedLevel": 2,
+      "innerText": "",
+      "sequenceNumber": 1,
+      "oldSequenceNumber": null
+    },
+    {
+      "id": 500,
+      "isRendered": false,
+      "name": "Container",
+      "type": "gridContainer",
+      "selected": false,
+      "children": null,
+      "parent": 200,
+      "nestedLevel": 2,
+      "innerText": "",
+      "sequenceNumber": 2,
+      "oldSequenceNumber": null
+    },
+    {
+      "id": 600,
+      "isRendered": false,
+      "name": "Container",
+      "type": "gridContainer",
+      "selected": false,
+      "children": null,
+      "parent": 100,
+      "nestedLevel": 1,
+      "innerText": "",
+      "sequenceNumber": 1,
+      "oldSequenceNumber": null
+    }
+  ],
+  "history": {
+    "undo": [],
+    "redo": []
+  },
+  "keyPress": []
+}
