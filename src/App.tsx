@@ -5,6 +5,10 @@ import Layout from "./components/Layout";
 import { Provider } from "react-redux";
 import { store } from "./redux/store/storeConfiguration";
 import { makeStyles, useTheme, Theme, createStyles, ThemeProvider, createMuiTheme } from "@material-ui/core/styles";
+import Amplify from "aws-amplify";
+import { withAuthenticator } from "aws-amplify-react";
+import config from "./aws-exports";
+Amplify.configure(config);
 
 const useStyles = makeStyles((theme: Theme) => createStyles({}));
 
@@ -32,4 +36,4 @@ const App: React.FC = () => {
     );
 };
 
-export default App;
+export default withAuthenticator(App);
