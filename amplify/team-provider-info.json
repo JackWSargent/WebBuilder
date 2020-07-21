@@ -1,0 +1,22 @@
+{
+    "dev": {
+        "awscloudformation": {
+            "AuthRoleName": "amplify-webschawp-dev-204421-authRole",
+            "UnauthRoleArn": "arn:aws:iam::594024691558:role/amplify-webschawp-dev-204421-unauthRole",
+            "AuthRoleArn": "arn:aws:iam::594024691558:role/amplify-webschawp-dev-204421-authRole",
+            "Region": "us-east-1",
+            "DeploymentBucketName": "amplify-webschawp-dev-204421-deployment",
+            "UnauthRoleName": "amplify-webschawp-dev-204421-unauthRole",
+            "StackName": "amplify-webschawp-dev-204421",
+            "StackId": "arn:aws:cloudformation:us-east-1:594024691558:stack/amplify-webschawp-dev-204421/28840160-ca22-11ea-8165-0ee829539650",
+            "AmplifyAppId": "d2dthkqq1yj5y6"
+        },
+        "categories": {
+            "auth": {
+                "webschawp1b42c40f": {
+                    "hostedUIProviderCreds": "[]"
+                }
+            }
+        }
+    }
+}

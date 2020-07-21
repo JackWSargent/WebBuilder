@@ -36,6 +36,7 @@ const useStyles = makeStyles((theme: Theme) =>
         },
         details: {
             padding: 0,
+            maxWidth: 240,
         },
     })
 );
@@ -75,7 +76,7 @@ const LoadConfig: React.FC<Props> = (props) => {
                     <ExpansionPanelDetails className={classes.details}>
                         <Grid container style={{ height: 64 }}>
                             <input
-                                style={{ height: 64, paddingLeft: 20, paddingTop: 20 }}
+                                style={{ height: 64, paddingLeft: 20, paddingTop: 20, maxWidth: 240 }}
                                 type="file"
                                 id="config-input"
                                 onChange={(e) => HandleFile(e)}
