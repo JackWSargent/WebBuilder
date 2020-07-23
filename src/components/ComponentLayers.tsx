@@ -37,6 +37,7 @@ import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import { BuildComponentOrder } from "../redux/reducers/component";
+import { withAuthenticator, AmplifySignOut, AmplifySignUp, AmplifySignIn } from "@aws-amplify/ui-react";
 
 let drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
@@ -313,6 +314,7 @@ const ComponentLayers: React.FC<Props> = (props) => {
                         [classes.appBarShift]: open,
                     })}>
                     <Toolbar style={{ backgroundColor: "#666666", color: "#fff" }}>
+                        <AmplifySignOut style={{ maxWidth: 100, backgroundColor: "#666666", color: "#666666" }} />
                         <IconButton
                             color="inherit"
                             aria-label="open drawer"
