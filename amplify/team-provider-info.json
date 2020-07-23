@@ -15,7 +15,8 @@
             "auth": {
                 "webschawp1b42c40f": {
                     "hostedUIProviderCreds": "[{\"ProviderName\":\"Google\",\"client_id\":\"101967660719-l8fs15hogfgk10qibevat27d1ev64181.apps.googleusercontent.com\",\"client_secret\":\"b-HX9D16E7S2t2a8j6_uC789\"}]"
-                }
+                },
+                "userPoolGroups": {}
             },
             "function": {
                 "webschawp1b42c40fCreateAuthChallenge": {},
@@ -27,7 +28,8 @@
                 "webschawp1b42c40fDefineAuthChallenge": {},
                 "webschawp1b42c40fVerifyAuthChallengeResponse": {
                     "RECAPTCHASECRET": "6Ldb5rQZAAAAAO1udOT-raO9grCOUY0s2W_VHQvt"
-                }
+                },
+                "AdminQueries3f788585": {}
             }
         }
     }
