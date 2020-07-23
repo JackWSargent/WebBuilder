@@ -9,6 +9,48 @@ Parameters:
     Type: String
   
   
+  
+  
+  functionwebschawp1b42c40fCreateAuthChallengeArn: 
+    Type: String
+    Default: functionwebschawp1b42c40fCreateAuthChallengeArn
+  
+  functionwebschawp1b42c40fCreateAuthChallengeName: 
+    Type: String
+    Default: functionwebschawp1b42c40fCreateAuthChallengeName
+  
+  
+  
+  functionwebschawp1b42c40fCustomMessageArn: 
+    Type: String
+    Default: functionwebschawp1b42c40fCustomMessageArn
+  
+  functionwebschawp1b42c40fCustomMessageName: 
+    Type: String
+    Default: functionwebschawp1b42c40fCustomMessageName
+  
+  
+  
+  functionwebschawp1b42c40fDefineAuthChallengeArn: 
+    Type: String
+    Default: functionwebschawp1b42c40fDefineAuthChallengeArn
+  
+  functionwebschawp1b42c40fDefineAuthChallengeName: 
+    Type: String
+    Default: functionwebschawp1b42c40fDefineAuthChallengeName
+  
+  
+  
+  functionwebschawp1b42c40fVerifyAuthChallengeResponseArn: 
+    Type: String
+    Default: functionwebschawp1b42c40fVerifyAuthChallengeResponseArn
+  
+  functionwebschawp1b42c40fVerifyAuthChallengeResponseName: 
+    Type: String
+    Default: functionwebschawp1b42c40fVerifyAuthChallengeResponseName
+  
+  
+  
 
     
   identityPoolName:
@@ -58,10 +100,10 @@ Parameters:
         
   userpoolClientGenerateSecret:
     Type: String
-                
+            
   userpoolClientRefreshTokenValidity:
-    Type: Number
-                  
+    Type: String
+                      
   userpoolClientWriteAttributes:
     Type: CommaDelimitedList
               
@@ -103,10 +145,31 @@ Parameters:
       
   hostedUIProviderMeta:
     Type: String
-              
-  hostedUIProviderCreds:
+                
+  userPoolGroups:
     Type: String
               
+  adminQueries:
+    Type: String
+            
+  triggers:
+    Type: String
+              
+  verificationBucketName:
+    Type: String
+                    
+  parentStack:
+    Type: String
+                
+  permissions:
+    Type: CommaDelimitedList
+      
+  hostedUIProviderCreds:
+    Type: String
+                
+  thirdPartyAuth:
+    Type: String
+            
   oAuthMetadata:
     Type: String
                         
@@ -114,6 +177,27 @@ Conditions:
   ShouldNotCreateEnvResources: !Equals [ !Ref env, NONE ]
 
 Resources:
+  
+  CustomMessageConfirmationBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: "Retain"
+    Properties:
+      BucketName:  !If [ShouldNotCreateEnvResources, !Ref verificationBucketName, !Join ['',[!Ref verificationBucketName, '-', !Ref env]]]
+      AccessControl: "Private"
+      WebsiteConfiguration:
+        IndexDocument: "index.html"
+        ErrorDocument: "index.html"
+      CorsConfiguration:
+        CorsRules:
+          - 
+            AllowedHeaders:
+              - "Authorization" 
+              - "Content-Length"
+            AllowedMethods:
+              - "GET"
+            AllowedOrigins:
+              - "*"
+            MaxAge: 3000
   
   
   # BEGIN SNS ROLE RESOURCE
@@ -163,12 +247,28 @@ Resources:
         
       
       
+      LambdaConfig:
+        
+          CreateAuthChallenge: !Ref functionwebschawp1b42c40fCreateAuthChallengeArn
+        
+        
+          CustomMessage: !Ref functionwebschawp1b42c40fCustomMessageArn
+        
+        
+          DefineAuthChallenge: !Ref functionwebschawp1b42c40fDefineAuthChallengeArn
+        
+        
+        
+        
+        
+        
+        
+          VerifyAuthChallengeResponse: !Ref functionwebschawp1b42c40fVerifyAuthChallengeResponseArn
+        
+      
       
       AutoVerifiedAttributes: !Ref autoVerifiedAttributes
       
-      
-      EmailVerificationMessage: !Ref emailVerificationMessage
-      EmailVerificationSubject: !Ref emailVerificationSubject
             
       Policies:
         PasswordPolicy:
@@ -185,7 +285,57 @@ Resources:
       SmsConfiguration: 
         SnsCallerArn: !GetAtt SNSRole.Arn
         ExternalId: websch1b42c40f_role_external_id
+          
+    DependsOn: SNSRole
     
+  
+  
+  UserPoolCreateAuthChallengeLambdaInvokePermission: 
+    Type: "AWS::Lambda::Permission"
+    DependsOn: UserPool
+    Properties: 
+      Action: "lambda:invokeFunction"
+      Principal: "cognito-idp.amazonaws.com"
+      FunctionName: !Ref functionwebschawp1b42c40fCreateAuthChallengeName
+      SourceArn: !GetAtt UserPool.Arn
+    
+  
+  UserPoolCustomMessageLambdaInvokePermission: 
+    Type: "AWS::Lambda::Permission"
+    DependsOn: UserPool
+    Properties: 
+      Action: "lambda:invokeFunction"
+      Principal: "cognito-idp.amazonaws.com"
+      FunctionName: !Ref functionwebschawp1b42c40fCustomMessageName
+      SourceArn: !GetAtt UserPool.Arn
+    
+  
+  UserPoolDefineAuthChallengeLambdaInvokePermission: 
+    Type: "AWS::Lambda::Permission"
+    DependsOn: UserPool
+    Properties: 
+      Action: "lambda:invokeFunction"
+      Principal: "cognito-idp.amazonaws.com"
+      FunctionName: !Ref functionwebschawp1b42c40fDefineAuthChallengeName
+      SourceArn: !GetAtt UserPool.Arn
+  
+    
+    
+  
+  
+   
+  
+  UserPoolVerifyAuthChallengeResponseLambdaInvokePermission: 
+    Type: "AWS::Lambda::Permission"
+    DependsOn: UserPool
+    Properties: 
+      Action: "lambda:invokeFunction"
+      Principal: "cognito-idp.amazonaws.com"
+      FunctionName: !Ref functionwebschawp1b42c40fVerifyAuthChallengeResponseName
+      SourceArn: !GetAtt UserPool.Arn
+    
+  # Updating lambda role with permissions to Cognito
+  
   
   UserPoolClientWeb:
   # Created provide application access to user pool
@@ -193,6 +343,9 @@ Resources:
     Type: "AWS::Cognito::UserPoolClient"
     Properties:
       ClientName: websch1b42c40f_app_clientWeb
+      
+      ReadAttributes: !Ref userpoolClientReadAttributes
+      WriteAttributes: !Ref userpoolClientWriteAttributes
       
       RefreshTokenValidity: !Ref userpoolClientRefreshTokenValidity
       UserPoolId: !Ref UserPool
@@ -203,6 +356,9 @@ Resources:
     Type: "AWS::Cognito::UserPoolClient"
     Properties:
       ClientName: websch1b42c40f_app_client
+      
+      ReadAttributes: !Ref userpoolClientReadAttributes
+      WriteAttributes: !Ref userpoolClientWriteAttributes
       
       GenerateSecret: !Ref userpoolClientGenerateSecret
       RefreshTokenValidity: !Ref userpoolClientRefreshTokenValidity
@@ -663,6 +819,132 @@ Resources:
   
 
   
+  # BEGIN MFA LAMBDA RESOURCES
+  MFALambdaRole:
+  # Created to execute Lambda which sets MFA config values
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !If [ShouldNotCreateEnvResources, 'websch1b42c40f_totp_lambda_role', !Join ['',['websch1b42c40f_totp_lambda_role', '-', !Ref env]]]
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+      - PolicyName: websch1b42c40f_totp_pass_role_policy
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'iam:PassRole'
+              Resource: !If [ShouldNotCreateEnvResources, 'arn:aws:iam:::role/websch1b42c40f_totp_lambda_role', !Join ['',['arn:aws:iam:::role/websch1b42c40f_totp_lambda_role', '-', !Ref env]]]
+  MFALambda:
+  # Lambda which sets MFA config values
+  # Depends on MFALambdaRole for role ARN
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Code:
+        ZipFile: !Join 
+          - |+
+          - - 'const response = require(''cfn-response'');'
+            - 'const aws = require(''aws-sdk'');'
+            - 'const identity = new aws.CognitoIdentityServiceProvider();'
+            - 'exports.handler = (event, context, callback) => {'
+            - ' if (event.RequestType == ''Delete'') { '
+            - '   response.send(event, context, response.SUCCESS, {})'
+            - ' }'
+            - ' if (event.RequestType == ''Update'' || event.RequestType == ''Create'') {'
+            - '   let totpParams = {};'
+            - '   try {'
+            - '     totpParams = {'
+            - '       UserPoolId: event.ResourceProperties.userPoolId,'
+            - '       MfaConfiguration: event.ResourceProperties.mfaConfiguration,'
+            - '       SmsMfaConfiguration: {'
+            - '         SmsAuthenticationMessage: event.ResourceProperties.smsAuthenticationMessage,'
+            - '         SmsConfiguration: {'
+            - '           SnsCallerArn: event.ResourceProperties.smsConfigCaller,'
+            - '           ExternalId: event.ResourceProperties.smsConfigExternalId'
+            - '         }'
+            - '       },'
+            - '       SoftwareTokenMfaConfiguration: {Enabled: event.ResourceProperties.totpEnabled.toLowerCase() === ''true'' ? true : false}'
+            - '     };'
+            - '   } catch(e) {'
+            - '     response.send(event, context, response.FAILED, {e});'
+            - '   };'
+            - '   identity.setUserPoolMfaConfig(totpParams).promise()'
+            - '     .then((res) => {'
+            - '       response.send(event, context, response.SUCCESS, {res});'   
+            - '     })'
+            - '     .catch((err) => {'
+            - '       response.send(event, context, response.FAILED, {err});'
+            - '     });'
+            - ' }'
+            - '};'
+      Handler: index.handler
+      Runtime: nodejs10.x
+      Timeout: '300'
+      Role: !GetAtt 
+        - MFALambdaRole
+        - Arn
+    DependsOn: MFALambdaRole
+  MFALambdaPolicy:
+  # Sets policy for the role that executes the MFA Lambda
+  # Depends on Userpool for Arn
+  # Marked as depending on MFALambda for easier to understand CFN sequencing
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: websch1b42c40f_totp_lambda_iam_policy
+      Roles: 
+        - !If [ShouldNotCreateEnvResources, 'websch1b42c40f_totp_lambda_role', !Join ['',['websch1b42c40f_totp_lambda_role', '-', !Ref env]]]
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'cognito-idp:SetUserPoolMfaConfig'
+            Resource: !GetAtt UserPool.Arn
+    DependsOn: MFALambda
+  MFALogPolicy:
+  # Sets log policy for the role that executes the MFA Lambda
+  # Marked as depending on MFALambdaPolicy for easier to understand CFN sequencing
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: websch1b42c40f_totp_lambda_log_policy
+      Roles: 
+        - !If [ShouldNotCreateEnvResources, 'websch1b42c40f_totp_lambda_role', !Join ['',['websch1b42c40f_totp_lambda_role', '-', !Ref env]]]
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'logs:CreateLogGroup'
+              - 'logs:CreateLogStream'
+              - 'logs:PutLogEvents'
+            Resource: !Sub  
+              - arn:aws:logs:${region}:${account}:log-group:/aws/lambda/${lambda}:log-stream:*
+              - { region: !Ref "AWS::Region",  account: !Ref "AWS::AccountId", lambda: !Ref MFALambda}
+    DependsOn: MFALambdaPolicy  
+  MFALambdaInputs:
+  # Values passed to MFA Lambda
+  # Depends on UserPool for Arn
+  # Depends on MFALambda for Arn
+  # Marked as depending on MFALambdaPolicy for easier to understand CFN sequencing
+    Type: 'Custom::LambdaCallout'
+    Properties:
+      ServiceToken: !GetAtt MFALambda.Arn
+      userPoolId: !Ref UserPool
+      mfaConfiguration: !Ref mfaConfiguration
+      totpEnabled: false
+      smsConfigCaller: !GetAtt SNSRole.Arn
+      smsAuthenticationMessage: !Ref smsAuthenticationMessage
+      smsConfigExternalId: websch1b42c40f_role_external_id
+    DependsOn: MFALogPolicy
+  
     
   # BEGIN IDENTITY POOL RESOURCES
   
@@ -671,7 +953,7 @@ Resources:
   # Always created
     Type: AWS::Cognito::IdentityPool
     Properties: 
-      IdentityPoolName: !If [ShouldNotCreateEnvResources, 'webschawp1b42c40f_identitypool_1b42c40f', !Join ['',['webschawp1b42c40f_identitypool_1b42c40f', '__', !Ref env]]]
+      IdentityPoolName: !If [ShouldNotCreateEnvResources, 'webschawp1b42c40f_identitypool_fb12aba4', !Join ['',['webschawp1b42c40f_identitypool_fb12aba4', '__', !Ref env]]]
       
       CognitoIdentityProviders:
         - ClientId:  !Ref UserPoolClient
@@ -731,6 +1013,10 @@ Outputs :
     Description: The user pool app client id
   AppClientSecret:
     Value: !GetAtt UserPoolClientInputs.appSecret
+  
+  CreatedSNSRole: 
+    Value: !GetAtt SNSRole.Arn
+    Description: role arn
   
    
    
