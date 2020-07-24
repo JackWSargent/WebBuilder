@@ -1,35 +1,19 @@
 {
-    "dev": {
+    "devtwo": {
         "awscloudformation": {
-            "AuthRoleName": "amplify-webschawp-dev-204421-authRole",
-            "UnauthRoleArn": "arn:aws:iam::594024691558:role/amplify-webschawp-dev-204421-unauthRole",
-            "AuthRoleArn": "arn:aws:iam::594024691558:role/amplify-webschawp-dev-204421-authRole",
+            "AuthRoleName": "amplify-webschawp-devtwo-165227-authRole",
+            "UnauthRoleArn": "arn:aws:iam::594024691558:role/amplify-webschawp-devtwo-165227-unauthRole",
+            "AuthRoleArn": "arn:aws:iam::594024691558:role/amplify-webschawp-devtwo-165227-authRole",
             "Region": "us-east-1",
-            "DeploymentBucketName": "amplify-webschawp-dev-204421-deployment",
-            "UnauthRoleName": "amplify-webschawp-dev-204421-unauthRole",
-            "StackName": "amplify-webschawp-dev-204421",
-            "StackId": "arn:aws:cloudformation:us-east-1:594024691558:stack/amplify-webschawp-dev-204421/28840160-ca22-11ea-8165-0ee829539650",
-            "AmplifyAppId": "d2dthkqq1yj5y6"
+            "DeploymentBucketName": "amplify-webschawp-devtwo-165227-deployment",
+            "UnauthRoleName": "amplify-webschawp-devtwo-165227-unauthRole",
+            "StackName": "amplify-webschawp-devtwo-165227",
+            "StackId": "arn:aws:cloudformation:us-east-1:594024691558:stack/amplify-webschawp-devtwo-165227/6be17350-cd26-11ea-b646-0a1540e225b5",
+            "AmplifyAppId": "d29cfd28uwim0u"
         },
         "categories": {
             "auth": {
-                "webschawp1b42c40f": {
-                    "hostedUIProviderCreds": "[{\"ProviderName\":\"Google\",\"client_id\":\"101967660719-l8fs15hogfgk10qibevat27d1ev64181.apps.googleusercontent.com\",\"client_secret\":\"b-HX9D16E7S2t2a8j6_uC789\"}]"
-                },
-                "userPoolGroups": {}
-            },
-            "function": {
-                "webschawp1b42c40fCreateAuthChallenge": {},
-                "webschawp1b42c40fCustomMessage": {
-                    "REDIRECTURL": "http://localhost:3000/",
-                    "EMAILSUBJECT": "Comfirmation Email - Webschawp",
-                    "EMAILMESSAGE": "Thank you for signing up at Webschawp. Please explore the editor and feel free to reach support at VezparSoftware@gmail.com"
-                },
-                "webschawp1b42c40fDefineAuthChallenge": {},
-                "webschawp1b42c40fVerifyAuthChallengeResponse": {
-                    "RECAPTCHASECRET": "6Ldb5rQZAAAAAO1udOT-raO9grCOUY0s2W_VHQvt"
-                },
-                "AdminQueries3f788585": {}
+                "webschawpc18d6f27": {}
             }
         }
     }

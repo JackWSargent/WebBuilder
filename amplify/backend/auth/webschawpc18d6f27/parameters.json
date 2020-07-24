@@ -1,8 +1,8 @@
 {
-    "identityPoolName": "webschawp1b42c40f_identitypool_1b42c40f",
+    "identityPoolName": "webschawpc18d6f27_identitypool_c18d6f27",
     "allowUnauthenticatedIdentities": false,
-    "resourceNameTruncated": "websch1b42c40f",
-    "userPoolName": "webschawp1b42c40f_userpool_1b42c40f",
+    "resourceNameTruncated": "webschc18d6f27",
+    "userPoolName": "webschawpc18d6f27_userpool_c18d6f27",
     "autoVerifiedAttributes": [
         "email"
     ],
@@ -28,9 +28,10 @@
     "userpoolClientReadAttributes": [
         "email"
     ],
-    "userpoolClientLambdaRole": "websch1b42c40f_userpoolclient_lambda_role",
+    "userpoolClientLambdaRole": "webschc18d6f27_userpoolclient_lambda_role",
     "userpoolClientSetAttributes": false,
-    "resourceName": "webschawp1b42c40f",
+    "sharedId": "c18d6f27",
+    "resourceName": "webschawpc18d6f27",
     "authSelections": "identityPoolAndUserPool",
     "authRoleArn": {
         "Fn::GetAtt": [
@@ -44,15 +45,10 @@
             "Arn"
         ]
     },
-    "useDefault": "defaultSocial",
+    "useDefault": "default",
     "usernameAttributes": [
-        "email, phone_number"
+        "email"
     ],
     "userPoolGroupList": [],
-    "dependsOn": [],
-    "hostedUI": true,
-    "hostedUIDomainName": "webschawp169aa880-169aa880",
-    "authProvidersUserPool": [],
-    "hostedUIProviderMeta": "[]",
-    "oAuthMetadata": "{\"AllowedOAuthFlows\":[\"code\"],\"AllowedOAuthScopes\":[\"phone\",\"email\",\"openid\",\"profile\",\"aws.cognito.signin.user.admin\"],\"CallbackURLs\":[\"http://localhost:3000/\"],\"LogoutURLs\":[\"http://localhost:3000/\"]}"
+    "dependsOn": []
 }
